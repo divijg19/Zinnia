@@ -1,15 +1,8 @@
 {
-  "public": true,
-  "functions": {
-    "api/**/*.[jt]s": {
-      "runtime": "@vercel/node",
-      "maxDuration": 15
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/$1"
+      "destination": "/api"
     }
   ]
 }
