@@ -462,6 +462,13 @@ export const themes = {
     icon_color: "ffffff",
     bg_color: "35,4158d0,c850c0,ffcc70",
   },
+  watchdog: {
+    title_color: "F8D847",
+    text_color: "A9FEF7",
+    icon_color: "EB8C30",
+    border_color: "E4E2E2",
+    bg_color: "45,520806,021D4A",
+  },
 };
 
 export default themes;
