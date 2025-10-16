@@ -1,0 +1,47 @@
+{
+	"version": 3,
+	"builds": [
+		{
+			"src": "trophy/api/**/*.ts",
+			"use": "@vercel/node"
+		},
+		{
+			"src": "stats/api/**/*.ts",
+			"use": "@vercel/node"
+		},
+		{
+			"src": "streak/api/**/*.ts",
+			"use": "@vercel/node"
+		},
+		{
+			"src": "leetcode/api/**/*.ts",
+			"use": "@vercel/node"
+		},
+		{
+			"src": "github/api/**/*.ts",
+			"use": "@vercel/node"
+		}
+	],
+	"routes": [
+		{
+			"src": "/trophy/(.*)",
+			"dest": "trophy/api/index.ts"
+		},
+		{
+			"src": "/stats/(.*)",
+			"dest": "stats/api/index.ts"
+		},
+		{
+			"src": "/streak/(.*)",
+			"dest": "streak/api/index.ts"
+		},
+		{
+			"src": "/leetcode/(.*)",
+			"dest": "leetcode/api/index.ts"
+		},
+		{
+			"src": "/github/(.*)",
+			"dest": "github/api/index.ts"
+		}
+	]
+}

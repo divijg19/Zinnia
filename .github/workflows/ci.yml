@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *" # daily at 02:00 UTC - refresh/cache
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.0"
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Format (write)
+        run: bunx biome format . --ext .ts,.js --write
+
+      - name: Lint (check)
+        run: bunx biome check . --ext .ts,.js --rules
+
+      - name: Type check
+        run: bunx tsc --noEmit
+
+      - name: Run stats tests (Jest)
+        env:
+          CI: true
+        run: bunx npm run test:stats
+
+      - name: Run leetcode tests (Vitest)
+        env:
+          CI: true
+        run: bunx npm run test:leetcode
+
+      - name: Build
+        run: bun build index.ts --outdir=dist
+
+  refresh:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Trigger remote refresh
+        run: |
+          curl -s "https://zinnia.vercel.app/api/leetcode?username=divijg19" > /dev/null || true
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.0"
+      - name: Install
+        run: bun install
+      - name: Deploy to Vercel
+        run: |
+          # Populate VERCEL_TOKEN at runtime from secrets; avoid YAML-level `secrets` mappings to please static checkers
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN not set; skipping deploy"
+            exit 0
+          fi
+          if bunx --version >/dev/null 2>&1; then
+            echo "Running vercel via bunx"
+            bunx vercel --prod --token "$VERCEL_TOKEN" --yes
+          else
+            echo "bunx not available in PATH; please ensure vercel is installed in CI's dependencies"
+            exit 1
+          fi

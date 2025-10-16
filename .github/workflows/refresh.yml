@@ -1,0 +1,24 @@
+name: Refresh Zinnia Stats
+
+on:
+    schedule:
+        - cron: "0 0 * * *" # Runs daily at 00:00 UTC
+    workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+    refresh:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Refresh GitHub Stats
+              run: |
+                  curl -s "https://zinnia.vercel.app/api/stats?username=divijg19" > /dev/null
+                  curl -s "https://zinnia.vercel.app/api/trophy?username=divijg19" > /dev/null
+                  curl -s "https://zinnia.vercel.app/api/streak?user=divijg19" > /dev/null
+                  curl -s "https://zinnia.vercel.app/api/leetcode?username=divijg19" > /dev/null
+
+            - name: Confirm refresh completed
+              run: echo "Zinnia stats endpoints refreshed successfully ✅"

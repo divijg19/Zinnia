@@ -1,0 +1,50 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			"!**/coverage",
+			"!**/node_modules",
+			"!**/*.min.js",
+			"!**/dist",
+			"!**/stats/coverage",
+			"!**/leetcode/packages/**/dist",
+			"!**/leetcode/packages/**/dist",
+			"!**/streak/src/demo",
+			"!**/leetcode/packages/**/src/demo",
+			"!**/leetcode/packages/**/src/**/demo"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}
