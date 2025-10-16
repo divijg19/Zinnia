@@ -2,6 +2,7 @@
 .github/workflows/refresh.yml
 .gitignore
 .gitmodules
+Codebase.txt
 DEV_NOTES.md
 README.md
 biome.json
