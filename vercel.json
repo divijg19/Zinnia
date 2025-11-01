@@ -1,7 +1,21 @@
 {
 	"version": 2,
 	"functions": {
-		"runtime": "nodejs18.x"
+		"trophy/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		},
+		"stats/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		},
+		"streak/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		},
+		"leetcode/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		},
+		"github/api/**/*.ts": {
+			"runtime": "nodejs18.x"
+		}
 	},
 	"builds": [
 		{

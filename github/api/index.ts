@@ -17,7 +17,8 @@ export default async function handler(req: Request): Promise<Response> {
 	return new Response(svg, {
 		headers: new Headers({
 			"Content-Type": "image/svg+xml",
-			"Cache-Control": "public, max-age=300",
+			"Cache-Control":
+				"public, max-age=300, s-maxage=300, stale-while-revalidate=86400",
 		}),
 	});
 }
