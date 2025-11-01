@@ -35,6 +35,34 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 	```
 - For GitHub integration, connect your repo in the Vercel dashboard and set any required environment variables.
 
+## Embeds
+
+Replace YOUR-DOMAIN with your deployed Vercel domain. Both direct and /api paths are available; /api is recommended.
+
+- Stats
+	- `<img src="https://zinnia-rho.vercel.app/api/stats?username=divijg19&show_icons=true&cache_seconds=86400" />`
+- Top Languages (if enabled in stats)
+	- `<img src="https://zinnia-rho.vercel.app/api/stats/top-langs?username=divijg19&layout=compact&cache_seconds=86400" />`
+- Streak
+	- `<img src="https://zinnia-rho.vercel.app/api/streak?user=divijg19&cache_seconds=86400" />`
+- Trophy
+	- Upstream (default proxy):
+		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=darkhub&cache_seconds=86400" />`
+	- Local Node/TS (experimental):
+		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&mode=local&theme=dark&columns=4&cache_seconds=86400" />`
+- LeetCode
+	- `<img src="https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&site=us&cache=3600" />`
+- GitHub (placeholder)
+	- `<img src="https://zinnia-rho.vercel.app/api/github?username=divijg19&cache_seconds=86400" />`
+
+Tips
+- Prefer `cache_seconds` (or `cache`) to reduce upstream load and speed up render.
+- If any embed fails to render on GitHub, open the image URL in a browser and confirm it returns `Content-Type: image/svg+xml` and HTTP 200.
+
+## Developer Notes
+
+See `DEV_NOTES.md` for implementation details, service-specific notes, and porting roadmaps (e.g., the Trophy TS port plan).
+
 ### Maintainer Notes
 - All configs are now centralized. Add new packages by extending root configs.
 - Use a single lockfile (`bun.lockb`, `package-lock.json`, or `pnpm-lock.yaml`) for deterministic installs.

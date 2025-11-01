@@ -51,9 +51,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Trigger remote refresh
+      - name: Warm prod cache (optional)
+        env:
+          PROD_DOMAIN: ${{ secrets.PROD_DOMAIN }}
         run: |
-          curl -s "https://zinnia.vercel.app/api/leetcode?username=divijg19" > /dev/null || true
+          if [ -z "${PROD_DOMAIN}" ]; then
+            echo "No PROD_DOMAIN set, skipping warmup."
+            exit 0
+          fi
+          set -e
+          for path in \\
+            "/stats?username=divijg19" \\
+            "/streak?user=divijg19" \\
+            "/leetcode?username=divijg19&site=us" \\
+            "/trophy?username=divijg19" \\
+            "/github?username=divijg19" \\
+          ; do
+            curl -fsS "https://${PROD_DOMAIN}${path}" -o /dev/null || true
+          done
 
   deploy:
     if: github.ref == 'refs/heads/main'

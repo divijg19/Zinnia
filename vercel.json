@@ -1,5 +1,8 @@
 {
 	"version": 2,
+	"functions": {
+		"runtime": "nodejs18.x"
+	},
 	"builds": [
 		{
 			"src": "trophy/api/**/*.ts",
@@ -41,6 +44,26 @@
 		},
 		{
 			"src": "/github/(.*)",
+			"dest": "github/api/index.ts"
+		},
+		{
+			"src": "/api/trophy/(.*)",
+			"dest": "trophy/api/index.ts"
+		},
+		{
+			"src": "/api/stats/(.*)",
+			"dest": "stats/api/index.ts"
+		},
+		{
+			"src": "/api/streak/(.*)",
+			"dest": "streak/api/index.ts"
+		},
+		{
+			"src": "/api/leetcode/(.*)",
+			"dest": "leetcode/api/index.ts"
+		},
+		{
+			"src": "/api/github/(.*)",
 			"dest": "github/api/index.ts"
 		}
 	]
