@@ -140,7 +140,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-.vercel
+.vercel/
 
 # Vendor backups and large archives
 _vendor_backup/
