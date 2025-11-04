@@ -10,7 +10,7 @@
 			"use": "@vercel/node"
 		},
 		{
-			"src": "stats/api/**/*.js",
+			"src": "stats/api/top-langs.js",
 			"use": "@vercel/node"
 		},
 		{
@@ -40,26 +40,6 @@
 			"dest": "stats/api/top-langs.js"
 		},
 		{
-			"src": "/stats/pin$",
-			"dest": "stats/api/pin.js"
-		},
-		{
-			"src": "/stats/gist$",
-			"dest": "stats/api/gist.js"
-		},
-		{
-			"src": "/stats/wakatime$",
-			"dest": "stats/api/wakatime.js"
-		},
-		{
-			"src": "/stats/status/up$",
-			"dest": "stats/api/status/up.js"
-		},
-		{
-			"src": "/stats/status/pat-info$",
-			"dest": "stats/api/status/pat-info.js"
-		},
-		{
 			"src": "/streak/(.*)",
 			"dest": "streak/api/index.ts"
 		},
@@ -82,26 +62,6 @@
 		{
 			"src": "/api/stats/top-langs$",
 			"dest": "stats/api/top-langs.js"
-		},
-		{
-			"src": "/api/stats/pin$",
-			"dest": "stats/api/pin.js"
-		},
-		{
-			"src": "/api/stats/gist$",
-			"dest": "stats/api/gist.js"
-		},
-		{
-			"src": "/api/stats/wakatime$",
-			"dest": "stats/api/wakatime.js"
-		},
-		{
-			"src": "/api/stats/status/up$",
-			"dest": "stats/api/status/up.js"
-		},
-		{
-			"src": "/api/stats/status/pat-info$",
-			"dest": "stats/api/status/pat-info.js"
 		},
 		{
 			"src": "/api/streak/(.*)",
