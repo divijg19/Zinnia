@@ -19,14 +19,26 @@ const source = {
 	},
 };
 
-export default class Header extends Headers {
-	add(...types: (keyof typeof source)[]): Headers {
+// Lightweight headers accumulator that returns a plain object suitable for
+// the Web Response init. Avoids depending on DOM "Headers" in Node builds.
+export default class Header {
+	private store: Record<string, string> = {};
+
+	add(...types: (keyof typeof source)[]): this {
 		for (const type of types) {
 			for (const [key, value] of Object.entries(source[type])) {
 				this.set(key, value);
 			}
 		}
-
 		return this;
+	}
+
+	set(key: string, value: string): this {
+		this.store[key] = value;
+		return this;
+	}
+
+	toObject(): Record<string, string> {
+		return { ...this.store };
 	}
 }

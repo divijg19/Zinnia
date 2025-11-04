@@ -1,7 +1,7 @@
-import Header from "../packages/cloudflare-worker/src/headers";
-import { sanitize } from "../packages/cloudflare-worker/src/sanitize";
-import { Generator } from "../packages/core/src/card";
-import type { Config } from "../packages/core/src/types";
+import Header from "../packages/cloudflare-worker/src/headers.js";
+import { sanitize } from "../packages/cloudflare-worker/src/sanitize.js";
+import { Generator } from "../packages/core/src/card.js";
+import type { Config } from "../packages/core/src/types.js";
 
 async function generate(
 	config: Record<string, string>,
@@ -36,7 +36,9 @@ async function generate(
 		`public, max-age=${cache_time}, s-maxage=${cache_time}, stale-while-revalidate=86400`,
 	);
 
-	return new Response(await generator.generate(sanitized), { headers });
+	return new Response(await generator.generate(sanitized), {
+		headers: headers.toObject(),
+	});
 }
 
 export default async function handler(req: Request): Promise<Response> {
@@ -54,7 +56,7 @@ export default async function handler(req: Request): Promise<Response> {
 	>;
 	if (!query.username) {
 		// return simple HTML demo
-		const demo = (await import("../packages/cloudflare-worker/src/demo"))
+		const demo = (await import("../packages/cloudflare-worker/src/demo/index.js"))
 			.default;
 		return new Response(demo, {
 			headers: new Headers({ "Content-Type": "text/html" }),
