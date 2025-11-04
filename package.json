@@ -14,7 +14,8 @@
 		"type-check": "tsc --noEmit",
 		"test:stats": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./stats/jest.config.js --runInBand -u",
 		"test:leetcode": "cd leetcode && bunx vitest --run --coverage --coverage.include 'packages/*/src'",
-		"test": "npm run test:stats && npm run test:leetcode"
+		"test": "npm run test:stats && npm run test:leetcode",
+		"verify:deploy": "node scripts/verify-deploy.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.3",

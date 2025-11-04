@@ -61,16 +61,34 @@ Tips
 
 ### Cache tuning
 
-You can tune CDN cache defaults via environment variables (explicit query params always win):
+You can tune CDN cache defaults via environment variables. Explicit query params always take precedence over env defaults.
 
-- Global default TTL: `CACHE_SECONDS` (e.g., 300)
-- Service-specific overrides:
-	- `LEETCODE_CACHE_SECONDS`
-	- `TROPHY_CACHE_SECONDS`
-	- `STREAK_CACHE_SECONDS`
-	- `GITHUB_CACHE_SECONDS`
+- Global default TTL for all services: `CACHE_SECONDS` (e.g., 300)
+- Service-specific TTL env (optional):
+	- `LEETCODE_CACHE_SECONDS` (LeetCode only; query param is `cache`)
+	- `TROPHY_CACHE_SECONDS` (Trophy; no query override today)
+	- `STREAK_CACHE_SECONDS` (Streak; no query override today)
+	- `GITHUB_CACHE_SECONDS` (GitHub placeholder)
 
-Example precedence for LeetCode: `?cache=...` > `LEETCODE_CACHE_SECONDS` > `CACHE_SECONDS` > 300.
+Precedence by service:
+- LeetCode: `?cache=...` > `LEETCODE_CACHE_SECONDS` > `CACHE_SECONDS` > 300
+- Stats/Top-Langs/Gist/Pin: `?cache_seconds=...` > `CACHE_SECONDS` > service defaults
+- Trophy/Streak proxies: `TROPHY_CACHE_SECONDS` or `STREAK_CACHE_SECONDS` > `CACHE_SECONDS` > 300
+
+To set envs in Vercel, use your Project → Settings → Environment Variables. See the next section for a quick checklist.
+
+### Environment variables on Vercel
+
+Recommended non-secret variables you can set in Vercel Project Settings:
+
+- `CACHE_SECONDS` = 300
+- `LEETCODE_CACHE_SECONDS` = 3600
+- `TROPHY_CACHE_SECONDS` = 86400
+- `STREAK_CACHE_SECONDS` = 86400
+- `GITHUB_CACHE_SECONDS` = 86400
+- Optional: `HUSKY` = 0 (skips any husky hooks during CI/build; repo already ignores .husky in deploys)
+
+You can also define per-Environment values (Production/Preview/Development) as needed.
 
 ## Developer Notes
 
