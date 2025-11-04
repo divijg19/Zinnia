@@ -1,0 +1,39 @@
+{
+  "data": {
+    "problems": [
+      { "difficulty": "Easy", "count": 809 },
+      { "difficulty": "Medium", "count": 677 },
+      { "difficulty": "Hard", "count": 764 }
+    ],
+    "user": {
+      "username": "divijg19",
+      "profile": {
+        "realname": "Divij G",
+        "about": "About",
+        "avatar": "https://example.com/avatar.png",
+        "skills": ["arrays", "dp"],
+        "country": "IN",
+        "ranking": 0
+      },
+      "submits": {
+        "ac": [
+          { "difficulty": "All", "count": 200 },
+          { "difficulty": "Easy", "count": 120 },
+          { "difficulty": "Medium", "count": 70 },
+          { "difficulty": "Hard", "count": 10 }
+        ]
+      }
+    },
+    "submissions": [
+      {
+        "id": "1",
+        "title": "Two Sum",
+        "slug": "two-sum",
+        "time": "1600000000",
+        "status": "Accepted",
+        "lang": "JavaScript"
+      }
+    ],
+    "contest": { "rating": 1500, "ranking": 1000, "badge": { "name": "A" } }
+  }
+}

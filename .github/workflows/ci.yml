@@ -24,10 +24,10 @@ jobs:
         run: bun install
 
       - name: Format (write)
-        run: bunx biome format . --ext .ts,.js --write
+        run: bunx biome format . --write
 
       - name: Lint (check)
-        run: bunx biome check . --ext .ts,.js --rules
+        run: bunx biome check .
 
       - name: Type check
         run: bunx tsc --noEmit
