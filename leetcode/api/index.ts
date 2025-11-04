@@ -56,8 +56,9 @@ export default async function handler(req: Request): Promise<Response> {
 	>;
 	if (!query.username) {
 		// return simple HTML demo
-		const demo = (await import("../packages/cloudflare-worker/src/demo/index.js"))
-			.default;
+		const demo = (
+			await import("../packages/cloudflare-worker/src/demo/index.js")
+		).default;
 		return new Response(demo, {
 			headers: new Headers({ "Content-Type": "text/html" }),
 		});

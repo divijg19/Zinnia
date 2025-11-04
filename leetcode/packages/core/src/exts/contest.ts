@@ -16,8 +16,8 @@ export async function ContestExtension(
 				try {
 					const history = Array.isArray((data as any).userContestRankingHistory)
 						? (data as any).userContestRankingHistory.filter(
-							(x: any) => x.attended,
-						)
+								(x: any) => x.attended,
+							)
 						: [];
 
 					if (history.length === 0) {

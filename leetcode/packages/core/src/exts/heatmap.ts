@@ -87,8 +87,9 @@ export async function HeatmapExtension(
 						class: `ext-heatmap-${count}`,
 					},
 					style: {
-						transform: `translate(${width - wrap * (Math.floor(i / 7) + 1)}px, ${wrap * (6 - (i % 7))
-							}px)`,
+						transform: `translate(${width - wrap * (Math.floor(i / 7) + 1)}px, ${
+							wrap * (6 - (i % 7))
+						}px)`,
 						fill: `var(--color-1)`,
 						opacity: opacity,
 						width: `${block}px`,
