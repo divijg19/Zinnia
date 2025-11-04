@@ -1,4 +1,4 @@
-import Header from "../packages/cloudflare-worker/src/headers.js";
+import { createHeaders } from "../packages/cloudflare-worker/src/headers.js";
 import { sanitize } from "../packages/cloudflare-worker/src/sanitize.js";
 import { Generator } from "../packages/core/src/card.js";
 import type { Config } from "../packages/core/src/types.js";
@@ -30,7 +30,7 @@ async function generate(
 	);
 	generator.verbose = false;
 
-	const headers = new Header().add("cors", "svg");
+	const headers = createHeaders().add("cors", "svg");
 	headers.set(
 		"cache-control",
 		`public, max-age=${cache_time}, s-maxage=${cache_time}, stale-while-revalidate=86400`,

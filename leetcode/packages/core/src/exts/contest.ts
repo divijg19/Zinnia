@@ -1,25 +1,23 @@
-import {
-	type ContestInfo,
-	type ContestRanking,
-	LeetCode,
-} from "leetcode-query";
 import type { Generator } from "../card";
 import { Item } from "../item";
+import { LeetCode } from "../shims/leetcode-query.js";
 import type { Extension } from "../types";
 
 export async function ContestExtension(
 	generator: Generator,
 ): Promise<Extension> {
 	const pre_result = new Promise<null | {
-		ranking: ContestRanking;
-		history: ContestInfo[];
+		ranking: any;
+		history: any[];
 	}>((resolve) => {
 		const lc = new LeetCode();
 		lc.user_contest_info(generator.config.username)
 			.then((data) => {
 				try {
-					const history = Array.isArray(data.userContestRankingHistory)
-						? data.userContestRankingHistory.filter((x) => x.attended)
+					const history = Array.isArray((data as any).userContestRankingHistory)
+						? (data as any).userContestRankingHistory.filter(
+							(x: any) => x.attended,
+						)
 						: [];
 
 					if (history.length === 0) {
@@ -27,7 +25,7 @@ export async function ContestExtension(
 						return;
 					}
 
-					resolve({ ranking: data.userContestRanking, history });
+					resolve({ ranking: (data as any).userContestRanking, history });
 				} catch (e) {
 					console.error(e);
 					resolve(null);

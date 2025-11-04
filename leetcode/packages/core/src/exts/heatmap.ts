@@ -1,6 +1,6 @@
-import { LeetCode } from "leetcode-query";
 import type { Generator } from "../card";
 import { Item } from "../item";
+import { LeetCode } from "../shims/leetcode-query.js";
 import type { Extension } from "../types";
 
 export async function HeatmapExtension(
@@ -87,9 +87,8 @@ export async function HeatmapExtension(
 						class: `ext-heatmap-${count}`,
 					},
 					style: {
-						transform: `translate(${width - wrap * (Math.floor(i / 7) + 1)}px, ${
-							wrap * (6 - (i % 7))
-						}px)`,
+						transform: `translate(${width - wrap * (Math.floor(i / 7) + 1)}px, ${wrap * (6 - (i % 7))
+							}px)`,
 						fill: `var(--color-1)`,
 						opacity: opacity,
 						width: `${block}px`,

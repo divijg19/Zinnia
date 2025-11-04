@@ -1,9 +1,9 @@
-import Baloo_2 from "nano-font/fonts/Baloo_2";
-import Milonga from "nano-font/fonts/Milonga";
-import Patrick_Hand from "nano-font/fonts/Patrick_Hand";
-import Ruthie from "nano-font/fonts/Ruthie";
-import Source_Code_Pro from "nano-font/fonts/Source_Code_Pro";
 import type { Generator } from "../card";
+import Baloo_2 from "../shims/fonts/Baloo_2.js";
+import Milonga from "../shims/fonts/Milonga.js";
+import Patrick_Hand from "../shims/fonts/Patrick_Hand.js";
+import Ruthie from "../shims/fonts/Ruthie.js";
+import Source_Code_Pro from "../shims/fonts/Source_Code_Pro.js";
 import type { Extension } from "../types";
 
 export const supported: Record<string, { name: string; base64: string }> = {

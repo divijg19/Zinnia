@@ -42,3 +42,7 @@ export default class Header {
 		return { ...this.store };
 	}
 }
+
+export function createHeaders(): Header {
+	return new Header();
+}
