@@ -1,12 +1,1 @@
-[submodule "streak"]
-	path = streak
-	url = https://github.com/DenverCoder1/github-readme-streak-stats
-[submodule "leetcode"]
-	path = leetcode
-	url = https://github.com/JacobLinCool/LeetCode-Stats-Card
-[submodule "stats"]
-	path = stats
-	url = https://github.com/anuraghazra/github-readme-stats
-[submodule "trophy"]
-	path = trophy
-	url = https://github.com/ryo-ma/github-profile-trophy
+;

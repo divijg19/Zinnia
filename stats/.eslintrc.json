@@ -1,0 +1,27 @@
+// {
+{
+	"root": true,
+	"extends": ["prettier"],
+	"env": {
+		"node": true,
+		"browser": true,
+		"es2021": true
+	},
+	"parserOptions": {
+		"sourceType": "module",
+		"ecmaVersion": 2022
+	},
+	"rules": {
+		"no-unused-vars": "warn",
+		"no-undef": "error"
+	}
+}
+//         // "space-before-function-paren": [ "warn", "never" ],
+//         // "space-in-parens": [ "warn", "never" ],
+//         // "space-infix-ops": [ "warn", { "int32Hint": true } ],
+//         // "space-return-throw-case": "error",
+//         // "space-unary-ops": "error",
+//         // "spaced-comment": [ "warn", "always" ],
+//         // "wrap-regex": "warn"
+//     }
+// }
