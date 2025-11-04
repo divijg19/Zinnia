@@ -1,0 +1,10 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "./dist",
+		"sourceMap": true,
+		"esModuleInterop": true
+	},
+	"include": ["src", "packages/**/src", "test", "__fixtures__"],
+	"exclude": ["node_modules", "dist", "tsup.config.ts"]
+}
