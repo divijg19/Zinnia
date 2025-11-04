@@ -32,6 +32,10 @@
 			"dest": "trophy/api/index.ts"
 		},
 		{
+			"src": "/trophy$",
+			"dest": "trophy/api/index.ts"
+		},
+		{
 			"src": "/stats$",
 			"dest": "stats/api/index.ts"
 		},
@@ -44,7 +48,15 @@
 			"dest": "streak/api/index.ts"
 		},
 		{
+			"src": "/streak$",
+			"dest": "streak/api/index.ts"
+		},
+		{
 			"src": "/leetcode/(.*)",
+			"dest": "leetcode/api/index.ts"
+		},
+		{
+			"src": "/leetcode$",
 			"dest": "leetcode/api/index.ts"
 		},
 		{
@@ -53,6 +65,10 @@
 		},
 		{
 			"src": "/api/trophy/(.*)",
+			"dest": "trophy/api/index.ts"
+		},
+		{
+			"src": "/api/trophy$",
 			"dest": "trophy/api/index.ts"
 		},
 		{
@@ -68,7 +84,15 @@
 			"dest": "streak/api/index.ts"
 		},
 		{
+			"src": "/api/streak$",
+			"dest": "streak/api/index.ts"
+		},
+		{
 			"src": "/api/leetcode/(.*)",
+			"dest": "leetcode/api/index.ts"
+		},
+		{
+			"src": "/api/leetcode$",
 			"dest": "leetcode/api/index.ts"
 		},
 		{

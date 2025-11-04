@@ -63,6 +63,9 @@ export default async function handler(req: Request): Promise<Response> {
 		},
 	} as ResShim;
 
+	// Ensure SVG content-type by default so successful renders embed properly
+	resShim.setHeader("Content-Type", "image/svg+xml");
+
 	if (!username) {
 		return new Response(
 			renderError({ message: "Missing required parameter: username" }),
@@ -105,7 +108,7 @@ export default async function handler(req: Request): Promise<Response> {
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-				showStats.includes("prs_merged_percentage"),
+			showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(String(commits_year || "0"), 10),
