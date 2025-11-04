@@ -141,3 +141,7 @@ vite.config.ts.timestamp-*
 .vite/
 
 .vercel
+
+# Vendor backups and large archives
+_vendor_backup/
+_vendor_backup/**
