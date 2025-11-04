@@ -96,7 +96,7 @@ See `DEV_NOTES.md` for implementation details, service-specific notes, and porti
 
 ### Maintainer Notes
 - All configs are now centralized. Add new packages by extending root configs.
-- Use a single lockfile (`bun.lockb`, `package-lock.json`, or `pnpm-lock.yaml`) for deterministic installs.
+- Use a single lockfile (`bun.lockb`) for deterministic installs.
 - For CI caching, see Vercel and GitHub Actions docs for best practices.
 
 ---
