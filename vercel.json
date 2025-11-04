@@ -10,6 +10,10 @@
 			"use": "@vercel/node"
 		},
 		{
+			"src": "stats/api/**/*.js",
+			"use": "@vercel/node"
+		},
+		{
 			"src": "streak/api/**/*.ts",
 			"use": "@vercel/node"
 		},
@@ -28,8 +32,32 @@
 			"dest": "trophy/api/index.ts"
 		},
 		{
-			"src": "/stats/(.*)",
+			"src": "/stats$",
 			"dest": "stats/api/index.ts"
+		},
+		{
+			"src": "/stats/top-langs$",
+			"dest": "stats/api/top-langs.js"
+		},
+		{
+			"src": "/stats/pin$",
+			"dest": "stats/api/pin.js"
+		},
+		{
+			"src": "/stats/gist$",
+			"dest": "stats/api/gist.js"
+		},
+		{
+			"src": "/stats/wakatime$",
+			"dest": "stats/api/wakatime.js"
+		},
+		{
+			"src": "/stats/status/up$",
+			"dest": "stats/api/status/up.js"
+		},
+		{
+			"src": "/stats/status/pat-info$",
+			"dest": "stats/api/status/pat-info.js"
 		},
 		{
 			"src": "/streak/(.*)",
@@ -48,8 +76,32 @@
 			"dest": "trophy/api/index.ts"
 		},
 		{
-			"src": "/api/stats/(.*)",
+			"src": "/api/stats$",
 			"dest": "stats/api/index.ts"
+		},
+		{
+			"src": "/api/stats/top-langs$",
+			"dest": "stats/api/top-langs.js"
+		},
+		{
+			"src": "/api/stats/pin$",
+			"dest": "stats/api/pin.js"
+		},
+		{
+			"src": "/api/stats/gist$",
+			"dest": "stats/api/gist.js"
+		},
+		{
+			"src": "/api/stats/wakatime$",
+			"dest": "stats/api/wakatime.js"
+		},
+		{
+			"src": "/api/stats/status/up$",
+			"dest": "stats/api/status/up.js"
+		},
+		{
+			"src": "/api/stats/status/pat-info$",
+			"dest": "stats/api/status/pat-info.js"
 		},
 		{
 			"src": "/api/streak/(.*)",
