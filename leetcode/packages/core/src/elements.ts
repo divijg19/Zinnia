@@ -86,14 +86,14 @@ export function Icon() {
 	return item;
 }
 
-export function Username(username: string, site: string) {
+export function Username(username: string) {
 	const item = new Item("a", {
 		id: "username",
 		attr: {
 			href:
 				username === "User Not Found"
 					? "https://github.com/JacobLinCool/LeetCode-Stats-Card"
-					: `https://leetcode.${site === "us" ? "com" : "cn"}/${username}/`,
+					: `https://leetcode.com/${username}/`,
 			target: "_blank",
 		},
 		style: {

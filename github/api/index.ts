@@ -13,12 +13,16 @@ export default async function handler(req: Request): Promise<Response> {
 	}
 
 	// Placeholder SVG response — replace with actual implementation if needed
+	const cacheSeconds =
+		parseInt(
+			process.env.GITHUB_CACHE_SECONDS || process.env.CACHE_SECONDS || "300",
+			10,
+		) || 300;
 	const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='80'><rect width='100%' height='100%' fill='#111'/><text x='20' y='45' fill='#fff'>GitHub for ${q.username}</text></svg>`;
 	return new Response(svg, {
 		headers: new Headers({
 			"Content-Type": "image/svg+xml",
-			"Cache-Control":
-				"public, max-age=300, s-maxage=300, stale-while-revalidate=86400",
+			"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
 		}),
 	});
 }

@@ -50,14 +50,27 @@ Replace YOUR-DOMAIN with your deployed Vercel domain. Both direct and /api paths
 		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=darkhub&cache_seconds=86400" />`
 	- Local Node/TS (experimental):
 		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&mode=local&theme=dark&columns=4&cache_seconds=86400" />`
-- LeetCode
-	- `<img src="https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&site=us&cache=3600" />`
+- LeetCode (US-only)
+	- `<img src="https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&cache=3600" />`
 - GitHub (placeholder)
 	- `<img src="https://zinnia-rho.vercel.app/api/github?username=divijg19&cache_seconds=86400" />`
 
 Tips
 - Prefer `cache_seconds` (or `cache`) to reduce upstream load and speed up render.
 - If any embed fails to render on GitHub, open the image URL in a browser and confirm it returns `Content-Type: image/svg+xml` and HTTP 200.
+
+### Cache tuning
+
+You can tune CDN cache defaults via environment variables (explicit query params always win):
+
+- Global default TTL: `CACHE_SECONDS` (e.g., 300)
+- Service-specific overrides:
+	- `LEETCODE_CACHE_SECONDS`
+	- `TROPHY_CACHE_SECONDS`
+	- `STREAK_CACHE_SECONDS`
+	- `GITHUB_CACHE_SECONDS`
+
+Example precedence for LeetCode: `?cache=...` > `LEETCODE_CACHE_SECONDS` > `CACHE_SECONDS` > 300.
 
 ## Developer Notes
 

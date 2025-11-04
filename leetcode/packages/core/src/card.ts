@@ -24,7 +24,7 @@ export class Generator {
 
 	async generate(config: Config): Promise<string> {
 		const start_time = Date.now();
-		this.log("generating card for", config.username, config.site);
+		this.log("generating card for", config.username);
 
 		this.config = config;
 
@@ -39,7 +39,7 @@ export class Generator {
 			}) ?? [];
 		const data = (async () => {
 			const start = Date.now();
-			const data = await this.fetch(config.username, config.site, this.headers);
+			const data = await this.fetch(config.username, this.headers);
 			this.log(`user data fetched in ${Date.now() - start} ms`, data.profile);
 			return data;
 		})();
@@ -56,17 +56,16 @@ export class Generator {
 
 	protected async fetch(
 		username: string,
-		site: "us" | "cn",
 		headers: Record<string, string>,
 	): Promise<FetchedData> {
-		this.log("fetching", username, site);
-		const cache_key = `https://leetcode-stats-card.local/data-${username.toLowerCase()}-${site}`;
+		this.log("fetching", username);
+		const cache_key = `https://leetcode-stats-card.local/data-${username.toLowerCase()}-us`;
 		console.log("cache_key", cache_key);
 
 		if (cache_key in this.fetches) {
 			return this.fetches[cache_key];
 		}
-		this.fetches[cache_key] = this._fetch(username, site, headers, cache_key);
+		this.fetches[cache_key] = this._fetch(username, headers, cache_key);
 		this.fetches[cache_key].finally(() => {
 			delete this.fetches[cache_key];
 		});
@@ -75,11 +74,10 @@ export class Generator {
 
 	protected async _fetch(
 		username: string,
-		site: "us" | "cn",
 		headers: Record<string, string>,
 		cache_key: string,
 	): Promise<FetchedData> {
-		this.log("fetching", username, site);
+		this.log("fetching", username);
 		const cached = await this.cache?.match(cache_key);
 		if (cached) {
 			this.log("fetch cache hit");
@@ -89,29 +87,16 @@ export class Generator {
 		}
 
 		try {
-			if (site === "us") {
-				const data = await query.us(username, headers);
-				await this.cache
-					?.put(
-						cache_key,
-						new Response(JSON.stringify(data), {
-							headers: { "cache-control": "max-age=300" },
-						}),
-					)
-					.catch(console.error);
-				return data;
-			} else {
-				const data = await query.cn(username, headers);
-				await this.cache
-					?.put(
-						cache_key,
-						new Response(JSON.stringify(data), {
-							headers: { "cache-control": "max-age=300" },
-						}),
-					)
-					.catch(console.error);
-				return data;
-			}
+			const data = await query.us(username, headers);
+			await this.cache
+				?.put(
+					cache_key,
+					new Response(JSON.stringify(data), {
+						headers: { "cache-control": "max-age=300" },
+					}),
+				)
+				.catch(console.error);
+			return data;
 		} catch (err) {
 			console.error(err);
 			const message = (err as Error).message;
@@ -155,8 +140,7 @@ export class Generator {
 
 	protected body(): Record<string, (...args: unknown[]) => Item> {
 		const icon = () => Icon();
-		const username = (...args: unknown[]) =>
-			Username(args[0] as string, args[1] as string);
+		const username = (...args: unknown[]) => Username(args[0] as string);
 		const ranking = (...args: unknown[]) => Ranking(args[0] as number);
 		const total_solved = (...args: unknown[]) =>
 			TotalSolved(args[0] as number, args[1] as number);
@@ -199,7 +183,7 @@ export class Generator {
 		}
 		root.children.push(body.icon());
 		delete body.icon;
-		root.children.push(body.username(data.profile.username, this.config.site));
+		root.children.push(body.username(data.profile.username));
 		delete body.username;
 		root.children.push(body.ranking(data.problem.ranking));
 		delete body.ranking;

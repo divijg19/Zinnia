@@ -4,7 +4,7 @@
 
 Show your dynamically generated LeetCode stats on your GitHub profile or your website!
 
-LeetCode and LeetCode CN are both supported.
+Note: This fork is US-only. LeetCode CN is not supported, and any `site` parameter is ignored.
 
 [Playground: Try It Now](https://leetcard.jacoblin.cool/)
 
@@ -12,7 +12,7 @@ LeetCode and LeetCode CN are both supported.
 
 ## Features
 
-- 📈 Clean and simple LeetCode stats, for both `us` and `cn` sites
+- 📈 Clean and simple LeetCode stats (US site only)
 - 🎨 Multiple themes and 1,300+ fonts - [Theme](#theme-default-lightdark), [Font](#font-default-baloo_2)
 - 🪄 Fully customizable using CSS - [Custom Stylesheets](#sheets-default-)
 - ⚡️ Fast and global edge network - [Cloudflare Workers](https://workers.cloudflare.com/)
@@ -62,13 +62,7 @@ There are many options, you can configure them by passing a query string to the 
 
 #### `site` (default: `us`)
 
-Data source, can be `us` or `cn`.
-
-```md
-![](https://leetcard.jacoblin.cool/leetcode?site=cn)
-```
-
-[![](https://leetcard.jacoblin.cool/leetcode?site=cn)](https://leetcard.jacoblin.cool/leetcode?site=cn)
+US-only. The `site` parameter is ignored in this fork and always treated as `us`.
 
 #### `theme` (default: `light,dark`)
 
@@ -175,7 +169,7 @@ Note: it will not be a good idea to set it to a long time because GitHub will fe
 ![](https://leetcard.jacoblin.cool/jacoblincool?cache=0)
 ```
 
-> You can make `DELETE` request to `/:site/:username` to delete the cache.
+> Cache purge endpoints from upstream are not available in this fork.
 
 #### `sheets` (default: `""`)
 
