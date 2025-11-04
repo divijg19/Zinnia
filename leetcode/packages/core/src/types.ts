@@ -2,7 +2,7 @@ import type { Generator } from "./card";
 
 export interface Config {
 	username: string;
-	site: "us" | "cn";
+	site: "us";
 
 	width: number;
 	height: number;

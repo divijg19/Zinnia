@@ -9,12 +9,6 @@ const usFixture = JSON.parse(
 		"utf-8",
 	),
 );
-const cnFixture = JSON.parse(
-	readFileSync(
-		join(__dirname, "../__fixtures__/leetcode_cn_graphql.json"),
-		"utf-8",
-	),
-);
 
 // Mock the leetcode-query package so `new LeetCode().graphql()` returns the fixture object
 vi.mock("leetcode-query", () => {
@@ -22,11 +16,6 @@ vi.mock("leetcode-query", () => {
 		LeetCode: class {
 			graphql() {
 				return Promise.resolve(usFixture);
-			}
-		},
-		LeetCodeCN: class {
-			graphql() {
-				return Promise.resolve(cnFixture);
 			}
 		},
 	};

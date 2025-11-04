@@ -6,10 +6,15 @@
   - Trophy
   - Stats
   - Streak
-  - LeetCode
+  - LeetCode (US-only)
 - Single Vercel app with route rewrites
 - Daily GitHub Action refresh
 - Clean SVG endpoints for README embeds
+
+### Vercel runtime
+
+- Current functions runtime: Node.js 18.x (see `vercel.json`).
+- Optional: Bump to `nodejs22.x` when ready; the codebase is Node-only and should be compatible. Validate on a preview deploy first.
 
 ## Trophy Service (TS Port Roadmap)
 
@@ -50,6 +55,16 @@ Env variables
 
 - Stats uses Jest; LeetCode uses Vitest with fixtures/mocks to avoid live network.
 - Windows-safe globs are quoted in scripts to prevent PowerShell expansion.
+
+Note: LeetCode CN was removed. Any previous CN-specific tests, constants, or fixtures have been neutralized. The `site` option is ignored and always treated as `us`.
+
+### Cache TTL defaults
+
+- Global: `CACHE_SECONDS`
+- LeetCode: `LEETCODE_CACHE_SECONDS` (fallback to global)
+- Trophy: `TROPHY_CACHE_SECONDS` (fallback to global)
+- Streak: `STREAK_CACHE_SECONDS` (fallback to global)
+- GitHub: `GITHUB_CACHE_SECONDS` (fallback to global)
 
 ## Vercel Routing
 

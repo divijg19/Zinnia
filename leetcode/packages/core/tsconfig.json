@@ -3,7 +3,7 @@
 		"outDir": "./dist",
 		"module": "esnext",
 		"target": "esnext",
-		"lib": ["esnext"],
+		"lib": ["esnext", "dom"],
 		"alwaysStrict": true,
 		"strict": true,
 		"preserveConstEnums": true,
@@ -11,8 +11,9 @@
 		"ignoreDeprecations": "6.0",
 		"sourceMap": true,
 		"esModuleInterop": true,
-		"types": ["@cloudflare/workers-types"]
+		"types": [],
+		"typeRoots": ["../../../types", "./node_modules/@types"]
 	},
-	"include": ["src"],
+	"include": ["src", "../../../types/**/*.d.ts"],
 	"exclude": ["node_modules", "dist", "tsup.config.ts"]
 }
