@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 # Vendor backups and large archives
 _vendor_backup/
 _vendor_backup/**
+
+scripts/
