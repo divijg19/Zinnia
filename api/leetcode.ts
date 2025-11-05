@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
         if (!username) {
             // defer to underlying module for demo HTML if available
             try {
-                const mod = await import("../leetcode/api/index.ts");
+                const mod = await import(new URL("../leetcode/api/index.ts", import.meta.url).href);
                 const h = (mod.default || mod) as any;
                 return h(req, res);
             } catch {
@@ -22,7 +22,7 @@ export default async function handler(req: any, res: any) {
         }
         // Try to call the existing generator; if it fails, return a fallback SVG
         try {
-            const mod = await import("../leetcode/api/index.ts");
+            const mod = await import(new URL("../leetcode/api/index.ts", import.meta.url).href);
             const h = (mod.default || mod) as any;
             return h(req, res);
         } catch (_err) {

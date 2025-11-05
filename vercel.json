@@ -50,6 +50,18 @@
 		{
 			"src": "/api/leetcode$",
 			"dest": "api/leetcode.ts"
+		},
+		{
+			"src": "/stats$",
+			"dest": "api/stats.ts"
+		},
+		{
+			"src": "/stats/top-langs$",
+			"dest": "api/top-langs.ts"
+		},
+		{
+			"src": "/api/stats/top-langs$",
+			"dest": "api/top-langs.ts"
 		}
 	]
 }

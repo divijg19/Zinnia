@@ -1,6 +1,6 @@
 export default async function handler(req: any, res: any) {
     try {
-        const mod = await import("../stats/api/top-langs.js");
+        const mod = await import(new URL("../stats/api/top-langs.js", import.meta.url).href);
         const h = (mod.default || mod) as any;
         return h(req, res);
     } catch (_err) {
