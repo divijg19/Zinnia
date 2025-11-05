@@ -92,15 +92,15 @@ export default async function handler(req: any, res: any) {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers["host"] || "localhost").toString();
 		const url = new URL(req.url, `${proto}://${host}`);
-			const nodeHeaders = new Headers();
-			for (const [k, v] of Object.entries(req.headers || {})) {
-				if (Array.isArray(v)) nodeHeaders.set(k, v.join(", "));
-				else if (typeof v === "string") nodeHeaders.set(k, v);
-			}
-			const webReq = new Request(url.toString(), {
-				method: req.method,
-				headers: nodeHeaders,
-			});
+		const nodeHeaders = new Headers();
+		for (const [k, v] of Object.entries(req.headers || {})) {
+			if (Array.isArray(v)) nodeHeaders.set(k, v.join(", "));
+			else if (typeof v === "string") nodeHeaders.set(k, v);
+		}
+		const webReq = new Request(url.toString(), {
+			method: req.method,
+			headers: nodeHeaders,
+		});
 		const webResp = await handleWeb(webReq);
 		res.status(webResp.status);
 		webResp.headers.forEach((value, key) => {
