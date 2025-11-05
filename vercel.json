@@ -2,6 +2,10 @@
 	"version": 2,
 	"builds": [
 		{
+			"src": "api/health.ts",
+			"use": "@vercel/node"
+		},
+		{
 			"src": "api/stats.ts",
 			"use": "@vercel/node"
 		},
@@ -20,6 +24,32 @@
 		{
 			"src": "api/leetcode.ts",
 			"use": "@vercel/node"
+		}
+	],
+	"routes": [
+		{
+			"src": "/api/health$",
+			"dest": "api/health.ts"
+		},
+		{
+			"src": "/api/stats$",
+			"dest": "api/stats.ts"
+		},
+		{
+			"src": "/api/top-langs$",
+			"dest": "api/top-langs.ts"
+		},
+		{
+			"src": "/api/streak$",
+			"dest": "api/streak.ts"
+		},
+		{
+			"src": "/api/trophy$",
+			"dest": "api/trophy.ts"
+		},
+		{
+			"src": "/api/leetcode$",
+			"dest": "api/leetcode.ts"
 		}
 	]
 }
