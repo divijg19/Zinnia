@@ -13,7 +13,7 @@ function sendSvgError(res: any, message: string, cacheSeconds = 60) {
 
 export default async function handler(req: any, res: any) {
 	const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-	const host = (req.headers["host"] || "localhost").toString();
+	const host = (req.headers.host || "localhost").toString();
 	const url = new URL(req.url, `${proto}://${host}`);
 	const user = url.searchParams.get("user") ?? url.searchParams.get("username");
 	if (!user) return sendSvgError(res, "Missing ?user= or ?username=...");

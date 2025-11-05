@@ -83,7 +83,7 @@ async function handleWeb(req: Request): Promise<Response> {
 export default async function handler(req: any, res: any) {
 	try {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers["host"] || "localhost").toString();
+		const host = (req.headers.host || "localhost").toString();
 		const url = new URL(req.url, `${proto}://${host}`);
 		const nodeHeaders = new Headers();
 		for (const [k, v] of Object.entries(req.headers || {})) {
