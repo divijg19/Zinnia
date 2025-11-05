@@ -58,7 +58,7 @@ async function generate(
 	}
 }
 
-export default async function handler(req: Request): Promise<Response> {
+async function handleWeb(req: Request): Promise<Response> {
 	const url = new URL(req.url);
 
 	// path param support: /leetcode/username -> username as first segment
@@ -84,4 +84,35 @@ export default async function handler(req: Request): Promise<Response> {
 	return await generate(query, {
 		"user-agent": req.headers.get("user-agent") || "Unknown",
 	});
+}
+
+// Bridge for @vercel/node (Node.js Serverless) -> Web Response
+export default async function handler(req: any, res: any) {
+	try {
+		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
+		const host = (req.headers["host"] || "localhost").toString();
+		const url = new URL(req.url, `${proto}://${host}`);
+			const nodeHeaders = new Headers();
+			for (const [k, v] of Object.entries(req.headers || {})) {
+				if (Array.isArray(v)) nodeHeaders.set(k, v.join(", "));
+				else if (typeof v === "string") nodeHeaders.set(k, v);
+			}
+			const webReq = new Request(url.toString(), {
+				method: req.method,
+				headers: nodeHeaders,
+			});
+		const webResp = await handleWeb(webReq);
+		res.status(webResp.status);
+		webResp.headers.forEach((value, key) => {
+			res.setHeader(key, value);
+		});
+		const text = await webResp.text();
+		return res.send(text);
+	} catch (_err) {
+		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		res.status(200);
+		return res.send(
+			`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="leetcode: internal error"><title>leetcode: internal error</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">leetcode: internal error</text></svg>`,
+		);
+	}
 }
