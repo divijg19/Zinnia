@@ -1,25 +1,31 @@
 {
 	"version": 2,
-	"functions": {
-		"trophy/api/index.ts": {
-			"runtime": "nodejs20.x"
+	"builds": [
+		{
+			"src": "trophy/api/index.ts",
+			"use": "@vercel/node"
 		},
-		"stats/api/index.js": {
-			"runtime": "nodejs20.x"
+		{
+			"src": "stats/api/index.js",
+			"use": "@vercel/node"
 		},
-		"stats/api/top-langs.js": {
-			"runtime": "nodejs20.x"
+		{
+			"src": "stats/api/top-langs.js",
+			"use": "@vercel/node"
 		},
-		"streak/api/index.ts": {
-			"runtime": "nodejs20.x"
+		{
+			"src": "streak/api/index.ts",
+			"use": "@vercel/node"
 		},
-		"leetcode/api/index.ts": {
-			"runtime": "nodejs20.x"
+		{
+			"src": "leetcode/api/index.ts",
+			"use": "@vercel/node"
 		},
-		"github/api/index.ts": {
-			"runtime": "nodejs20.x"
+		{
+			"src": "github/api/index.ts",
+			"use": "@vercel/node"
 		}
-	},
+	],
 	"routes": [
 		{
 			"src": "/trophy/(.*)",
