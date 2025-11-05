@@ -1,19 +1,22 @@
 {
 	"version": 2,
 	"functions": {
-		"trophy/api/**": {
+		"trophy/api/index.ts": {
 			"runtime": "nodejs20.x"
 		},
-		"stats/api/**": {
+		"stats/api/index.js": {
 			"runtime": "nodejs20.x"
 		},
-		"streak/api/**": {
+		"stats/api/top-langs.js": {
 			"runtime": "nodejs20.x"
 		},
-		"leetcode/api/**": {
+		"streak/api/index.ts": {
 			"runtime": "nodejs20.x"
 		},
-		"github/api/**": {
+		"leetcode/api/index.ts": {
+			"runtime": "nodejs20.x"
+		},
+		"github/api/index.ts": {
 			"runtime": "nodejs20.x"
 		}
 	},
