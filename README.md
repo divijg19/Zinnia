@@ -90,6 +90,27 @@ Recommended non-secret variables you can set in Vercel Project Settings:
 
 You can also define per-Environment values (Production/Preview/Development) as needed.
 
+### Auth tokens (GitHub PAT) and upstream tokens
+
+Some endpoints require higher GitHub API limits to avoid rate limiting:
+
+- PATs (required for real data on stats/top-langs)
+	- PAT_1: GitHub Personal Access Token (classic) with public_repo scope is sufficient
+	- Optional rotation: PAT_2, PAT_3, ... (the stats service will pick among available tokens)
+	- Without a PAT, the endpoints still return a valid SVG with guidance text so GitHub embeds don’t break.
+
+- Optional upstream tokens
+	- TOKEN: passed through to streak-stats.demolab.com if not provided in query
+	- TROPHY_TOKEN: passed through to github-profile-trophy.vercel.app if not provided in query
+
+### Cache-busting when updating embeds
+
+GitHub caches images aggressively. If you’ve just deployed changes, add a dummy query param like `&v=1730850000` to the image URL to force a fresh fetch:
+
+```markdown
+![stats](https://zinnia-rho.vercel.app/api/stats?username=divijg19&v=1730850000)
+```
+
 ## Developer Notes
 
 See `DEV_NOTES.md` for implementation details, service-specific notes, and porting roadmaps (e.g., the Trophy TS port plan).

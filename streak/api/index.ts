@@ -16,7 +16,8 @@ export default async function handler(req: any, res: any) {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
 		const url = new URL(req.url, `${proto}://${host}`);
-		const user = url.searchParams.get("user") ?? url.searchParams.get("username");
+		const user =
+			url.searchParams.get("user") ?? url.searchParams.get("username");
 		if (!user) return sendSvgError(res, "Missing ?user= or ?username=...");
 
 		const upstream = new URL("https://streak-stats.demolab.com/");

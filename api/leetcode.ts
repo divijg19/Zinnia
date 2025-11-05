@@ -1,59 +1,71 @@
+import { sanitize } from "../leetcode/packages/cloudflare-worker/src/sanitize.ts";
+import { Generator } from "../leetcode/packages/core/src/card.ts";
+
 function svg(body: string) {
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
 }
 
 export default async function handler(req: any, res: any) {
-    try {
-        const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-        const host = (req.headers.host || "localhost").toString();
-        const url = new URL(req.url, `${proto}://${host}`);
-        // path param support: /api/leetcode/<username>
-        const path = url.pathname.replace(/^\//, "").split("/");
-        if (path[0] === "api" && path[1] === "leetcode" && path[2]) {
-            url.searchParams.set("username", path[2]);
-        }
-        const username = url.searchParams.get("username");
-        if (!username) {
-            res.setHeader("Content-Type", "text/html; charset=utf-8");
-            res.status(200);
-            return res.send("<h1>LeetCode Service</h1><p>Add ?username=...</p>");
-        }
+	try {
+		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
+		const host = (req.headers.host || "localhost").toString();
+		const url = new URL(req.url, `${proto}://${host}`);
+		// path param support: /api/leetcode/<username>
+		const path = url.pathname.replace(/^\//, "").split("/");
+		if (path[0] === "api" && path[1] === "leetcode" && path[2]) {
+			url.searchParams.set("username", path[2]);
+		}
+		const username = url.searchParams.get("username");
+		if (!username) {
+			res.setHeader("Content-Type", "text/html; charset=utf-8");
+			res.status(200);
+			return res.send("<h1>LeetCode Service</h1><p>Add ?username=...</p>");
+		}
 
-        // Pull in generator pieces directly (Node-compatible)
-        const modSan = await import(new URL("../leetcode/packages/cloudflare-worker/src/sanitize.js", import.meta.url).href);
-        const modCore = await import(new URL("../leetcode/packages/core/src/card.js", import.meta.url).href);
+		// Pull in generator pieces directly (Node-compatible, statically imported so bundler includes them)
 
-        const sanitize = (modSan.sanitize || modSan.default) as (cfg: Record<string, string>) => unknown;
-        const Generator = (modCore.Generator || modCore.default) as any;
+		const config = Object.fromEntries(url.searchParams.entries()) as Record<
+			string,
+			string
+		>;
+		let sanitized: any;
+		try {
+			sanitized = sanitize(config);
+		} catch (_e) {
+			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			res.status(200);
+			return res.send(svg("Invalid parameters"));
+		}
 
-        const config = Object.fromEntries(url.searchParams.entries()) as Record<string, string>;
-        let sanitized: any;
-        try {
-            sanitized = sanitize(config);
-        } catch (_e) {
-            res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-            res.status(200);
-            return res.send(svg("Invalid parameters"));
-        }
+		const envDefault =
+			parseInt(
+				process.env.LEETCODE_CACHE_SECONDS ||
+					process.env.CACHE_SECONDS ||
+					"300",
+				10,
+			) || 300;
+		const cacheSeconds = config.cache
+			? parseInt(config.cache, 10) || envDefault
+			: envDefault;
 
-        const envDefault = parseInt(process.env.LEETCODE_CACHE_SECONDS || process.env.CACHE_SECONDS || "300", 10) || 300;
-        const cacheSeconds = config.cache ? (parseInt(config.cache, 10) || envDefault) : envDefault;
-
-        const generator = new Generator(null as unknown as Cache, {});
-        generator.verbose = false;
-        try {
-            const svgOut = await generator.generate(sanitized);
-            res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-            res.setHeader("Cache-Control", `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`);
-            return res.send(svgOut);
-        } catch (_e) {
-            res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-            res.status(200);
-            return res.send(svg("LeetCode generation failed"));
-        }
-    } catch (_err) {
-        res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-        res.status(200);
-        return res.send(svg("leetcode: internal error"));
-    }
+		const generator = new Generator(null as unknown as Cache, {});
+		generator.verbose = false;
+		try {
+			const svgOut = await generator.generate(sanitized);
+			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			res.setHeader(
+				"Cache-Control",
+				`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+			);
+			return res.send(svgOut);
+		} catch (_e) {
+			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			res.status(200);
+			return res.send(svg("LeetCode generation failed"));
+		}
+	} catch (_err) {
+		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		res.status(200);
+		return res.send(svg("leetcode: internal error"));
+	}
 }
