@@ -1,14 +1,20 @@
 // Streak proxy: fetch SVG from upstream service so we stay Node-only in this monorepo
 // and keep embeds compatible. Supports both ?user= and ?username=.
+function svgError(message: string, cacheSeconds = 60) {
+	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
+	return new Response(body, {
+		status: 200,
+		headers: new Headers({
+			"Content-Type": "image/svg+xml; charset=utf-8",
+			"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=300`,
+		}),
+	});
+}
+
 export default async function handler(req: Request): Promise<Response> {
 	const url = new URL(req.url);
 	const user = url.searchParams.get("user") ?? url.searchParams.get("username");
-	if (!user) {
-		return new Response("Missing ?user= or ?username=...", {
-			status: 400,
-			headers: new Headers({ "Content-Type": "text/plain; charset=utf-8" }),
-		});
-	}
+	if (!user) return svgError("Missing ?user= or ?username=...");
 
 	const upstream = new URL("https://streak-stats.demolab.com/");
 	for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
@@ -37,13 +43,7 @@ export default async function handler(req: Request): Promise<Response> {
 		});
 	} catch (_e) {
 		clearTimeout(timeout);
-		return new Response("Upstream streak fetch failed", {
-			status: 502,
-			headers: new Headers({
-				"Content-Type": "text/plain; charset=utf-8",
-				"Cache-Control": `public, max-age=60, s-maxage=60, stale-while-revalidate=300`,
-			}),
-		});
+		return svgError("Upstream streak fetch failed");
 	} finally {
 		clearTimeout(timeout);
 	}

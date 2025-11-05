@@ -1,5 +1,16 @@
 import { renderTrophySVG } from "../src/renderer";
 
+function svgError(message: string, cacheSeconds = 60) {
+	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
+	return new Response(body, {
+		status: 200,
+		headers: new Headers({
+			"Content-Type": "image/svg+xml; charset=utf-8",
+			"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=300`,
+		}),
+	});
+}
+
 // Trophy handler supports two modes:
 // - Local (Node/TS SVG renderer): TROPHY_MODE=local or ?mode=local
 // - Proxy (default): fetches upstream SVG and returns it for full feature coverage
@@ -7,10 +18,7 @@ export default async function handler(req: Request): Promise<Response> {
 	const url = new URL(req.url);
 	const username = url.searchParams.get("username");
 	if (!username) {
-		return new Response("Missing ?username=...", {
-			status: 400,
-			headers: new Headers({ "Content-Type": "text/plain; charset=utf-8" }),
-		});
+		return svgError("Missing ?username=...");
 	}
 
 	const mode = (
@@ -55,13 +63,7 @@ export default async function handler(req: Request): Promise<Response> {
 		});
 	} catch (_e) {
 		clearTimeout(timeout);
-		return new Response("Upstream trophy fetch failed", {
-			status: 502,
-			headers: new Headers({
-				"Content-Type": "text/plain; charset=utf-8",
-				"Cache-Control": `public, max-age=60, s-maxage=60, stale-while-revalidate=300`,
-			}),
-		});
+		return svgError("Upstream trophy fetch failed");
 	} finally {
 		clearTimeout(timeout);
 	}
