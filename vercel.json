@@ -14,15 +14,15 @@
 			"use": "@vercel/node"
 		},
 		{
-			"src": "api/streak.ts",
+			"src": "streak/api/index.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "api/trophy.ts",
+			"src": "trophy/api/index.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "api/leetcode.ts",
+			"src": "leetcode/api/index.ts",
 			"use": "@vercel/node"
 		}
 	],
@@ -41,15 +41,15 @@
 		},
 		{
 			"src": "/api/streak$",
-			"dest": "api/streak.ts"
+			"dest": "streak/api/index.ts"
 		},
 		{
 			"src": "/api/trophy$",
-			"dest": "api/trophy.ts"
+			"dest": "trophy/api/index.ts"
 		},
 		{
 			"src": "/api/leetcode$",
-			"dest": "api/leetcode.ts"
+			"dest": "leetcode/api/index.ts"
 		}
 	]
 }
