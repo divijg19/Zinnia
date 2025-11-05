@@ -2,102 +2,24 @@
 	"version": 2,
 	"builds": [
 		{
-			"src": "trophy/api/index.ts",
+			"src": "api/stats.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "stats/api/index.js",
+			"src": "api/top-langs.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "stats/api/top-langs.js",
+			"src": "api/streak.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "streak/api/index.ts",
+			"src": "api/trophy.ts",
 			"use": "@vercel/node"
 		},
 		{
-			"src": "leetcode/api/index.ts",
+			"src": "api/leetcode.ts",
 			"use": "@vercel/node"
-		},
-		{
-			"src": "github/api/index.ts",
-			"use": "@vercel/node"
-		}
-	],
-	"routes": [
-		{
-			"src": "/trophy/(.*)",
-			"dest": "trophy/api/index.ts"
-		},
-		{
-			"src": "/trophy$",
-			"dest": "trophy/api/index.ts"
-		},
-		{
-			"src": "/stats$",
-			"dest": "stats/api/index.js"
-		},
-		{
-			"src": "/stats/top-langs$",
-			"dest": "stats/api/top-langs.js"
-		},
-		{
-			"src": "/streak/(.*)",
-			"dest": "streak/api/index.ts"
-		},
-		{
-			"src": "/streak$",
-			"dest": "streak/api/index.ts"
-		},
-		{
-			"src": "/leetcode/(.*)",
-			"dest": "leetcode/api/index.ts"
-		},
-		{
-			"src": "/leetcode$",
-			"dest": "leetcode/api/index.ts"
-		},
-		{
-			"src": "/github/(.*)",
-			"dest": "github/api/index.ts"
-		},
-		{
-			"src": "/api/trophy/(.*)",
-			"dest": "trophy/api/index.ts"
-		},
-		{
-			"src": "/api/trophy$",
-			"dest": "trophy/api/index.ts"
-		},
-		{
-			"src": "/api/stats$",
-			"dest": "stats/api/index.js"
-		},
-		{
-			"src": "/api/stats/top-langs$",
-			"dest": "stats/api/top-langs.js"
-		},
-		{
-			"src": "/api/streak/(.*)",
-			"dest": "streak/api/index.ts"
-		},
-		{
-			"src": "/api/streak$",
-			"dest": "streak/api/index.ts"
-		},
-		{
-			"src": "/api/leetcode/(.*)",
-			"dest": "leetcode/api/index.ts"
-		},
-		{
-			"src": "/api/leetcode$",
-			"dest": "leetcode/api/index.ts"
-		},
-		{
-			"src": "/api/github/(.*)",
-			"dest": "github/api/index.ts"
 		}
 	]
 }
