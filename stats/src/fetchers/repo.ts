@@ -41,7 +41,7 @@ const fetcher = (variables: Variables, token?: string) => {
     `,
 			variables,
 		},
-		token ? { Authorization: `token ${token}` } : undefined,
+		token ? { Authorization: `token ${token}` } : {},
 	);
 };
 

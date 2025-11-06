@@ -74,11 +74,14 @@ const GRAPHQL_STATS_QUERY = `
   }
 `;
 
-const fetcher = (variables: Record<string, unknown>, token: string) => {
+const fetcher = (variables: Record<string, unknown>, token?: string) => {
 	const query = (variables as any).after
 		? GRAPHQL_REPOS_QUERY
 		: GRAPHQL_STATS_QUERY;
-	return request({ query, variables }, { Authorization: `bearer ${token}` });
+	const headers: Record<string, string> = token
+		? { Authorization: `bearer ${token}` }
+		: {};
+	return request({ query, variables }, headers);
 };
 
 const statsFetcher = async ({
@@ -138,15 +141,16 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 		throw new Error("Invalid username provided.");
 	}
 
-	const fetchTotalCommits = (variables: any, token: string) => {
+	const fetchTotalCommits = (variables: any, token?: string) => {
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+			Accept: "application/vnd.github.cloak-preview",
+		};
+		if (token) headers.Authorization = `token ${token}`;
 		return axios({
 			method: "get",
 			url: `https://api.github.com/search/commits?q=author:${variables.login}`,
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/vnd.github.cloak-preview",
-				Authorization: `token ${token}`,
-			},
+			headers,
 		});
 	};
 

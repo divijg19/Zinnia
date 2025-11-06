@@ -32,7 +32,7 @@ const fetcher = (variables: Variables, token?: string) => {
       `,
 			variables,
 		},
-		token ? { Authorization: `token ${token}` } : undefined,
+		token ? { Authorization: `token ${token}` } : {},
 	);
 };
 
@@ -79,8 +79,9 @@ export const fetchTopLanguages = async (
 	}
 
 	repoNodes = repoNodes
-		.sort((a, b) => b.size - a.size)
-		.filter((name) => !repoToHide[name.name]);
+		// sort by a synthetic size if present; default 0 to be safe in strict mode
+		.sort((a: any, b: any) => (b?.size ?? 0) - (a?.size ?? 0))
+		.filter((name: any) => !repoToHide[name.name]);
 
 	let repoCount = 0;
 
@@ -91,9 +92,9 @@ export const fetchTopLanguages = async (
 	>;
 
 	const flattened: Edge[] = repoNodes
-		.filter((node) => node.languages.edges.length > 0)
+		.filter((node: any) => node.languages.edges.length > 0)
 		.reduce(
-			(acc: Edge[], curr) => acc.concat(curr.languages.edges as Edge[]),
+			(acc: Edge[], curr: any) => acc.concat(curr.languages.edges as Edge[]),
 			[],
 		);
 

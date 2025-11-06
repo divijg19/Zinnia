@@ -26,11 +26,11 @@ query gistInfo($gistName: String!) {
 }
 `;
 
-const fetcher = async (variables: unknown, token: string) => {
-	return await request(
-		{ query: QUERY, variables },
-		{ Authorization: `token ${token}` },
-	);
+const fetcher = async (variables: unknown, token?: string) => {
+	const headers: Record<string, string> = token
+		? { Authorization: `token ${token}` }
+		: {};
+	return await request({ query: QUERY, variables }, headers);
 };
 
 type GistFile = { name: string; language?: { name: string }; size: number };

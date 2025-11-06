@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { renderTrophySVG } from "../src/renderer";
 
 function svgError(message: string, cacheSeconds = 60) {
@@ -14,7 +15,7 @@ function svgError(message: string, cacheSeconds = 60) {
 // Trophy handler supports two modes:
 // - Local (Node/TS SVG renderer): TROPHY_MODE=local or ?mode=local
 // - Proxy (default): fetches upstream SVG and returns it for full feature coverage
-async function handleWeb(req: Request): Promise<Response> {
+export async function handleWeb(req: Request): Promise<Response> {
 	const url = new URL(req.url);
 	const username = url.searchParams.get("username");
 	if (!username) {
@@ -80,7 +81,7 @@ async function handleWeb(req: Request): Promise<Response> {
 }
 
 // Bridge for @vercel/node (Node.js Serverless) -> Web Response
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();

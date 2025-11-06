@@ -89,7 +89,12 @@ export default async (req, res) => {
 	try {
 		let PATsValid = true;
 		try {
-			await retryer(uptimeFetcher, {});
+			const response = await retryer(uptimeFetcher, {});
+			// Treat falsy/undefined responses as failure (e.g., network errors without a response object).
+			// On success, GitHub returns: { data: { rateLimit: { remaining: number } } }
+			PATsValid = Boolean(
+				typeof response?.data?.rateLimit?.remaining === "number",
+			);
 		} catch (_err) {
 			// Resolve eslint no-unused-vars
 			_err;
@@ -121,6 +126,7 @@ export default async (req, res) => {
 		// Return fail boolean if something went wrong.
 		logger.error(err);
 		res.setHeader("Cache-Control", "no-store");
-		res.send(`Something went wrong: ${err.message}`);
+		// Align with tests: send a boolean false on unexpected errors.
+		res.send(false);
 	}
 };

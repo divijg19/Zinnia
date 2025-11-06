@@ -1,4 +1,5 @@
 import { renderStatsCard } from "../src/cards/stats.js";
+import type { StatCardOptions } from "../src/cards/types.d.ts";
 import { guardAccess } from "../src/common/access.ts";
 import {
 	CACHE_TTL,
@@ -142,14 +143,14 @@ export default async function handler(req: Request): Promise<Response> {
 				bg_color,
 				theme: theme as unknown as string | undefined,
 				custom_title,
-				border_radius,
+				border_radius: parseInt(String(border_radius || "0"), 10) || undefined,
 				border_color,
 				number_format,
 				locale: locale ? locale.toLowerCase() : undefined,
 				disable_animations: parseBoolean(disable_animations),
 				rank_icon,
 				show: showStats,
-			} as unknown),
+			} as Partial<StatCardOptions>),
 		);
 	} catch (err: unknown) {
 		setErrorCacheHeaders(resShim);

@@ -1,4 +1,14 @@
-const enableLogging = Deno.env.get("ENV_TYPE") !== "test";
+// Cross-runtime env getter: prefers Node's process.env, falls back to Deno.env.get
+export function getEnv(key: string): string | undefined {
+	// deno-lint-ignore no-explicit-any
+	const g: any = globalThis as any;
+	if (typeof process !== "undefined" && process?.env) return process.env[key];
+	const denoGet = g?.Deno?.env?.get?.bind?.(g.Deno?.env);
+	if (denoGet) return denoGet(key);
+	return undefined;
+}
+
+const enableLogging = getEnv("ENV_TYPE") !== "test";
 
 export const Logger = {
 	log(message: unknown): void {

@@ -9,7 +9,7 @@ export default {
 			console.error(err);
 			return new Response((err as Error).message, {
 				status: 500,
-				headers: new Header().add("cors", "text"),
+				headers: new Header().add("cors", "text").toObject(),
 			});
 		}
 	},

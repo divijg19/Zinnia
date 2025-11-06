@@ -2,42 +2,33 @@
 
 ## Environment
 
-- Deno >= v1.36.1
-- [Vercel](https://vercel.com/)
-- GitHub API v4
-- Docker and Docker compose (optional)
+- Node.js 20.x
+- [Vercel](https://vercel.com/) (local dev and deploy)
+- GitHub API v4 (used by upstream service; optional proxy token)
 
 ## Local Run
 
-Create `.env` file to project root directory, and write your GitHub token to the
-`.env` file. Please select the authority of `repo` when creating token.
+Create a `.env` file at the repo root (optional) to pass a token to the upstream
+proxy (improves rate limits when using the default proxy mode):
 
 ```properties
-GITHUB_TOKEN1=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-GITHUB_TOKEN2=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-# if using GitHub Enterprise:
-# (this env var defaults to https://api.github.com/graphql)
-GITHUB_API=https://github.example.com/api/graphql
+TROPHY_TOKEN=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+TROPHY_CACHE_SECONDS=300
+CACHE_SECONDS=300
 ```
 
-Run local server.
+Run locally with Vercel:
 
 ```sh
-deno task start
+# from repo root
+pnpm dlx vercel dev
+# or
+bunx vercel dev
 ```
 
-You can enable the Redis if you want, but it's not mandatory.
+Then open:
 
-```sh
-docker compose up -d
-```
-
-Rename `env-example` to `.env`, and change ENABLE_REDIS to true
-
-Open localhost from your browser.
-
-http://localhost:8080/?username=ryo-ma
+http://localhost:3000/api/trophy?username=ryo-ma
 
 ## Editor config
 
@@ -50,24 +41,23 @@ the least number of changed lines as possible. For changes that address core
 functionality, it is best to open an issue to discuss your proposal first. I
 look forward to seeing what you come up with!
 
-## Run deno lint
-
 ## What to do before contributing
 
-### 1. Run deno lint
+1) Lint & format (Biome):
 
 ```sh
-deno task lint
+bun run lint
+bun run format
 ```
 
-### 2. Run deno format
+2) Type-check (TS):
 
 ```sh
-deno task format
+bun run type-check
 ```
 
-### 3. Run deno test
+3) Tests (repo-wide):
 
 ```sh
-deno task test
+bun run test
 ```

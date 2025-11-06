@@ -33,5 +33,12 @@
 		"leetcode/api/**/*.ts",
 		"github/api/**/*.ts",
 		"types/**/*.d.ts"
+	],
+	"exclude": [
+		// Quarantine Deno-specific files and folders (not part of Node/Vercel build)
+		"trophy/main.ts",
+		"trophy/deps.ts",
+		"trophy/src/StaticRenderRegeneration/**",
+		"trophy/src/Types/deno.d.ts"
 	]
 }

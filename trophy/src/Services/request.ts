@@ -11,16 +11,17 @@ export async function requestGithubData<T = unknown>(
 	query: string,
 	variables: { [key: string]: string },
 	token = "",
-) {
+): Promise<T> {
+	// Build headers only when a token is provided.
+	const headers: Record<string, string> = token
+		? { Authorization: `bearer ${token}` }
+		: {};
+
+	// Send GraphQL query in the request body (second arg), not via config.data.
 	const response = (await soxa.post(
 		"",
-		{},
-		{
-			data: { query, variables },
-			headers: {
-				Authorization: `bearer ${token}`,
-			},
-		},
+		{ query, variables },
+		{ headers },
 	)) as QueryDefaultResponse<{ user: T }>;
 	const responseData = response.data;
 

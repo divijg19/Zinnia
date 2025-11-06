@@ -1,5 +1,8 @@
 {
 	"name": "cloudflare-worker",
 	"private": true,
-	"packageManager": "^bun@1.3.0"
+	"packageManager": "^bun@1.3.0",
+	"dependencies": {
+		"hono": "^4.6.10"
+	}
 }

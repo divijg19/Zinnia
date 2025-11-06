@@ -37,7 +37,9 @@ async function generate(
 	const headers = new Header().add("cors", "svg");
 	headers.set("cache-control", `public, max-age=${cache_time}`);
 
-	return new Response(await generator.generate(sanitized), { headers });
+	return new Response(await generator.generate(sanitized), {
+		headers: headers.toObject(),
+	});
 }
 
 // handle path variable
@@ -56,7 +58,7 @@ app.get("*", async (c) => {
 
 	if (!query.username) {
 		return new Response(demo, {
-			headers: new Header().add("cors", "html"),
+			headers: new Header().add("cors", "html").toObject(),
 		});
 	}
 

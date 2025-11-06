@@ -12,15 +12,16 @@ const PATs = Object.keys(process.env).filter((key) =>
 const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
 
 /**
- * @typedef {any} AxiosResponse Axios response.
- * @typedef {(variables: object, token: string, retriesForTests?: number) => Promise<AxiosResponse>} FetcherFunction Fetcher function.
+ * @template V
+ * @typedef {(variables: V, token: string | undefined, retriesForTests?: number) => Promise<any>} FetcherFunction Fetcher function.
  */
 
 /**
  * Try to execute the fetcher function until it succeeds or the max number of retries is reached.
  *
- * @param {FetcherFunction} fetcher The fetcher function.
- * @param {object} variables Object with arguments to pass to the fetcher function.
+ * @template V
+ * @param {FetcherFunction<V>} fetcher The fetcher function.
+ * @param {V} variables Object with arguments to pass to the fetcher function.
  * @param {number} retries How many times to retry.
  * @returns {Promise<any>} The response from the fetcher function.
  */
@@ -40,7 +41,7 @@ const retryer = async (fetcher, variables, retries = 0) => {
 		// try to fetch with the first token since RETRIES is 0 index i'm adding +1
 		const response = await fetcher(
 			variables,
-			process.env[`PAT_${retries + 1}`],
+			process.env[`PAT_${retries + 1}`] || "",
 			// used in tests for faking rate limit
 			retries,
 		);
@@ -64,13 +65,13 @@ const retryer = async (fetcher, variables, retries = 0) => {
 
 		// finally return the response
 		return response;
-	} catch (err) {
+	} catch (/** @type {any} */ err) {
 		// prettier-ignore
 		// also checking for bad credentials if any tokens gets invalidated
 		const isBadCredential =
-			err.response.data && err.response.data.message === "Bad credentials";
+			err.response?.data && err.response.data.message === "Bad credentials";
 		const isAccountSuspended =
-			err.response.data &&
+			err.response?.data &&
 			err.response.data.message === "Sorry. Your account was suspended.";
 
 		if (isBadCredential || isAccountSuspended) {

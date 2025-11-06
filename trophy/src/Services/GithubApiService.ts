@@ -1,4 +1,4 @@
-import { Logger } from "../Helpers/Logger.ts";
+import { getEnv, Logger } from "../Helpers/Logger.ts";
 import { Retry } from "../Helpers/Retry.ts";
 import { GithubRepository } from "../Repository/GithubRepository.ts";
 import {
@@ -19,10 +19,10 @@ import { CONSTANTS } from "../utils.ts";
 import { requestGithubData } from "./request.ts";
 
 // Need to be here - Exporting from another file makes array of null
-export const TOKENS = [
-	Deno.env.get("GITHUB_TOKEN1"),
-	Deno.env.get("GITHUB_TOKEN2"),
-];
+// Only keep non-empty tokens to avoid wasted retries.
+export const TOKENS = [getEnv("GITHUB_TOKEN1"), getEnv("GITHUB_TOKEN2")].filter(
+	(t): t is string => Boolean(t && t.trim().length > 0),
+);
 
 export class GithubApiService extends GithubRepository {
 	async requestUserRepository(
@@ -96,7 +96,7 @@ export class GithubApiService extends GithubRepository {
 			return await retry.fetch<Promise<T>>(async ({ attempt }) => {
 				return await requestGithubData(query, variables, TOKENS[attempt]);
 			});
-		} catch (error) {
+		} catch (error: any) {
 			if (error.cause instanceof ServiceError) {
 				Logger.error(error.cause.message);
 				return error.cause;
