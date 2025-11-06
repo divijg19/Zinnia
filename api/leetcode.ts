@@ -1,8 +1,15 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { setCacheHeaders, setSvgHeaders } from "./_utils";
+import {
+	filterThemeParam,
+	isValidUsername,
+	setCacheHeaders,
+	setEtagAndMaybeSend304,
+	setSvgHeaders,
+} from "./_utils";
 
-function svg(body: string) {
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
+function svg(body: string, errCode?: string) {
+	const comment = errCode ? `\n<!-- ZINNIA_ERR:${errCode} -->` : "";
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>${comment}`;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -19,10 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			url.searchParams.set("username", path[2]);
 		}
 		const username = url.searchParams.get("username");
-		if (!username) {
+		if (!isValidUsername(username)) {
 			setSvgHeaders(res);
 			res.status(200);
-			return res.send(svg("Missing ?username=..."));
+			const body = svg("Missing or invalid ?username=...", "E_BAD_INPUT");
+			if (setEtagAndMaybeSend304(req.headers as any, res, body))
+				return res.send("");
+			return res.send(body);
 		}
 
 		const config = Object.fromEntries(url.searchParams.entries()) as Record<
@@ -31,10 +41,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		>;
 		// Minimal Node-safe sanitization to avoid importing worker-only code.
 		// Ensure required fields and set safe defaults. Extensions are optional.
-		if (!config.username || !config.username.trim()) {
+		if (
+			!config.username ||
+			!config.username.trim() ||
+			!isValidUsername(config.username)
+		) {
 			setSvgHeaders(res);
 			res.status(200);
-			return res.send(svg("Missing ?username=..."));
+			const body = svg("Missing or invalid ?username=...", "E_BAD_INPUT");
+			if (setEtagAndMaybeSend304(req.headers as any, res, body))
+				return res.send("");
+			return res.send(body);
 		}
 		const sanitized: any = {
 			username: config.username.trim(),
@@ -52,8 +69,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			cache: 60,
 		};
 
-		// Parse theme= param (supports "name" or "light,dark")
+		// Parse theme= param (supports "name" or "light,dark"); filter unsupported single names
 		if (config.theme?.trim()) {
+			filterThemeParam(url);
 			const themes = config.theme.trim().split(",");
 			sanitized.theme =
 				themes.length === 1 || themes[1] === ""
@@ -64,8 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
-				process.env.CACHE_SECONDS ||
-				"86400",
+					process.env.CACHE_SECONDS ||
+					"86400",
 				10,
 			) || 86400;
 		const cacheSeconds = config.cache
@@ -79,15 +97,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const svgOut = await generate(sanitized);
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
+			if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
+				return res.send("");
 			return res.send(svgOut);
 		} catch (_e) {
 			setSvgHeaders(res);
 			res.status(200);
-			return res.send(svg("LeetCode generation failed"));
+			const body = svg("LeetCode generation failed", "E_INTERNAL");
+			if (setEtagAndMaybeSend304(req.headers as any, res, body))
+				return res.send("");
+			return res.send(body);
 		}
 	} catch (_err) {
 		setSvgHeaders(res);
 		res.status(200);
-		return res.send(svg("leetcode: internal error"));
+		const body = svg("leetcode: internal error", "E_INTERNAL");
+		if (setEtagAndMaybeSend304(req.headers as any, res, body))
+			return res.send("");
+		return res.send(body);
 	}
 }

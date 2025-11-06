@@ -1,34 +1,44 @@
-name: Refresh Zinnia Stats
+name: Refresh and Warm Zinnia Endpoints
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    - cron: "0 5 * * *" # daily at 05:00 UTC
+  workflow_dispatch: {}
 
 concurrency:
   group: refresh-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DOMAIN: ${{ secrets.PROD_DOMAIN || 'zinnia-rho.vercel.app' }}
-  USERNAME: divijg19
-
 jobs:
-  refresh:
+  warm:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
+    env:
+      USERNAME: divijg19
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
+      - name: Resolve domain
+        id: domain
+        run: |
+          if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
+            echo "domain=${{ secrets.PROD_DOMAIN }}" >> $GITHUB_OUTPUT
+          else
+            echo "domain=zinnia-rho.vercel.app" >> $GITHUB_OUTPUT
+          fi
       - name: Warm endpoints (cache=0)
         run: |
-          set -e
-          BASE="https://${DOMAIN}"
-          curl -fsS "${BASE}/api/stats?username=${USERNAME}&cache=0" -o /dev/null || true
-          curl -fsS "${BASE}/api/trophy?username=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
-          curl -fsS "${BASE}/api/streak?user=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
-          curl -fsS "${BASE}/api/leetcode?username=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
-
-      - name: Confirm refresh completed
-        run: echo "Zinnia stats endpoints refreshed successfully ✅"
+          set -euo pipefail
+          D=${{ steps.domain.outputs.domain }}
+          curl -sSIL "https://$D/api/health?text=OK&cache=0" | tail -n +1
+          curl -sSIL "https://$D/api/stats?username=${USERNAME}&cache=0" | tail -n +1
+          curl -sSIL "https://$D/api/top-langs?username=${USERNAME}&layout=compact&cache=0" | tail -n +1
+          curl -sSIL "https://$D/api/streak?user=${USERNAME}&cache=0" | tail -n +1
+          curl -sSIL "https://$D/api/trophy?username=${USERNAME}&cache=0" | tail -n +1
+          curl -sSIL "https://$D/api/leetcode?username=${USERNAME}&cache=0" | tail -n +1
+      - name: Smoke check /api/health
+        run: |
+          D=${{ steps.domain.outputs.domain }}
+          code=$(curl -sS -o /dev/null -w "%{http_code}" "https://$D/api/health?text=OK")
+          if [ "$code" != "200" ]; then
+            echo "Health endpoint returned $code" >&2
+            exit 1
+          fi
