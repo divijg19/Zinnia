@@ -15,10 +15,10 @@
 			"!**/dist",
 			"!**/stats/coverage",
 			"!**/leetcode/packages/**/dist",
-			"!**/leetcode/packages/**/dist",
 			"!**/streak/src/demo",
 			"!**/leetcode/packages/**/src/demo",
-			"!**/leetcode/packages/**/src/**/demo"
+			"!**/leetcode/packages/**/src/**/demo",
+			"!**/.vercel"
 		]
 	},
 	"formatter": {

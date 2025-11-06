@@ -90,7 +90,8 @@ export function filterThemeParam(url: URL, key = "theme") {
 /** Compute a stable SHA1-based ETag for a response body. */
 export function computeEtag(body: string): string {
 	const hash = crypto.createHash("sha1").update(body, "utf8").digest("hex");
-	return `"sha1-${hash}"`;
+	// Use first 16 hex chars per spec and return without quotes
+	return hash.slice(0, 16);
 }
 
 /**

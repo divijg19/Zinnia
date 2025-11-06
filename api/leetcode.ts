@@ -1,16 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { sendErrorSvg } from "../lib/errors.ts";
+import { filterThemeParam, isValidUsername } from "../lib/params.ts";
 import {
-	filterThemeParam,
-	isValidUsername,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils";
-
-function svg(body: string, errCode?: string) {
-	const comment = errCode ? `\n<!-- ZINNIA_ERR:${errCode} -->` : "";
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>${comment}`;
-}
+} from "./_utils.ts";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -27,12 +22,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const username = url.searchParams.get("username");
 		if (!isValidUsername(username)) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Missing or invalid ?username=...", "E_BAD_INPUT");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"Missing or invalid ?username=...",
+				"LEETCODE_INVALID",
+			);
 		}
 
 		const config = Object.fromEntries(url.searchParams.entries()) as Record<
@@ -46,12 +41,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			!config.username.trim() ||
 			!isValidUsername(config.username)
 		) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Missing or invalid ?username=...", "E_BAD_INPUT");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"Missing or invalid ?username=...",
+				"LEETCODE_INVALID",
+			);
 		}
 		const sanitized: any = {
 			username: config.username.trim(),
@@ -101,19 +96,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				return res.send("");
 			return res.send(svgOut);
 		} catch (_e) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("LeetCode generation failed", "E_INTERNAL");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"LeetCode generation failed",
+				"LEETCODE_INTERNAL",
+			);
 		}
 	} catch (_err) {
-		setSvgHeaders(res);
-		res.status(200);
-		const body = svg("leetcode: internal error", "E_INTERNAL");
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
-			return res.send("");
-		return res.send(body);
+		return sendErrorSvg(
+			req,
+			res,
+			"leetcode: internal error",
+			"LEETCODE_INTERNAL",
+		);
 	}
 }

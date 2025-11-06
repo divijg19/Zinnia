@@ -1,33 +1,23 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { sendErrorSvg } from "../lib/errors.ts";
+import { filterThemeParam, getUsername } from "../lib/params.ts";
+import { getGithubPAT } from "../lib/tokens.ts";
 import {
-	filterThemeParam,
-	getUsername,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils";
-
-function svg(body: string, errCode?: string) {
-	const comment = errCode ? `\n<!-- ZINNIA_ERR:${errCode} -->` : "";
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>${comment}`;
-}
+} from "./_utils.ts";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		if (
-			!process.env.PAT_1 &&
-			!process.env.PAT_2 &&
-			!process.env.PAT_3 &&
-			!process.env.PAT_4 &&
-			!process.env.PAT_5
-		) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Set PAT_1 in Vercel for top-langs", "E_NO_PAT");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+		if (!getGithubPAT()) {
+			return sendErrorSvg(
+				req,
+				res,
+				"Set PAT_1 in Vercel for top-langs",
+				"STATS_RATE_LIMIT",
+			);
 		}
 		// Import the JS handler to avoid runtime .ts resolution issues on serverless
 		const { default: topLangsRequestHandler } = (await import(
@@ -41,12 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		);
 		const uname = getUsername(url, ["username"]);
 		if (!uname) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Missing or invalid ?username=", "E_BAD_INPUT");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
 		}
 		filterThemeParam(url);
 		const fullUrl = url.toString();
@@ -76,11 +61,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			return res.send("");
 		return res.send(body);
 	} catch (_err) {
-		setSvgHeaders(res);
-		res.status(200);
-		const body = svg("top-langs: internal error", "E_INTERNAL");
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
-			return res.send("");
-		return res.send(body);
+		return sendErrorSvg(
+			req,
+			res,
+			"top-langs: internal error",
+			"TOP_LANGS_INTERNAL",
+		);
 	}
 }

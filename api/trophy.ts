@@ -1,18 +1,13 @@
-function svg(body: string, errCode?: string) {
-	const comment = errCode ? `\n<!-- ZINNIA_ERR:${errCode} -->` : "";
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>${comment}`;
-}
-
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { renderTrophySVG } from "../trophy/src/renderer";
+import { sendErrorSvg } from "../lib/errors.ts";
+import { filterThemeParam, getUsername } from "../lib/params.ts";
+import { renderTrophySVG } from "../trophy/src/renderer.ts";
 import {
-	filterThemeParam,
-	getUsername,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils";
+} from "./_utils.ts";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -21,12 +16,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const url = new URL(req.url as string, `${proto}://${host}`);
 		const username = getUsername(url, ["username"]);
 		if (!username) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Missing or invalid ?username=...", "E_BAD_INPUT");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"Missing or invalid ?username=...",
+				"UNKNOWN",
+			);
 		}
 		const upstream = new URL("https://github-profile-trophy.vercel.app/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
@@ -62,12 +57,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		} catch (_e) {
 			clearTimeout(timeout);
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Upstream trophy fetch failed", "E_UPSTREAM_FETCH");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"Upstream trophy fetch failed",
+				"TROPHY_UPSTREAM_FETCH",
+			);
 		} finally {
 			clearTimeout(timeout);
 		}
@@ -80,21 +75,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				return res.send("");
 			return res.send(body);
 		}
-		{
-			const errBody = svg(
-				`Upstream trophy returned ${resp.status}`,
-				"E_UPSTREAM_STATUS",
-			);
-			if (setEtagAndMaybeSend304(req.headers as any, res, errBody))
-				return res.send("");
-			return res.send(errBody);
-		}
+		return sendErrorSvg(
+			req,
+			res,
+			`Upstream trophy returned ${resp.status}`,
+			"TROPHY_UPSTREAM_STATUS",
+		);
 	} catch (_err) {
-		setSvgHeaders(res);
-		res.status(200);
-		const body = svg("trophy: internal error", "E_INTERNAL");
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
-			return res.send("");
-		return res.send(body);
+		return sendErrorSvg(req, res, "trophy: internal error", "TROPHY_INTERNAL");
 	}
 }

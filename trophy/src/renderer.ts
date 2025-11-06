@@ -60,7 +60,8 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
   </defs>
   <rect width="100%" height="100%" fill="url(#bgGrad)" />
 	<g transform="translate(16, 16)">
-		<text x="0" y="24" fill="${fg}" font-size="18" font-family="ui-sans-serif, system-ui" font-weight="600">${title ?? `GitHub Profile Trophies`
+		<text x="0" y="24" fill="${fg}" font-size="18" font-family="ui-sans-serif, system-ui" font-weight="600">${
+			title ?? `GitHub Profile Trophies`
 		}</text>
     <text x="0" y="44" fill="${fg}" font-size="12" font-family="ui-sans-serif, system-ui" opacity="0.8">${username}</text>
   </g>

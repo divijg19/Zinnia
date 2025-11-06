@@ -1,17 +1,15 @@
-function svg(body: string, errCode?: string) {
-	const comment = errCode ? `\n<!-- ZINNIA_ERR:${errCode} -->` : "";
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>${comment}`;
-}
+//
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { sendErrorSvg } from "../lib/errors.ts";
+import { filterThemeParam, getUsername } from "../lib/params.ts";
+import { WATCHDOG } from "../lib/themes.ts";
 import {
-	filterThemeParam,
-	getUsername,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils";
+} from "./_utils.ts";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -20,15 +18,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const url = new URL(req.url as string, `${proto}://${host}`);
 		const user = getUsername(url, ["user", "username"]);
 		if (!user) {
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg(
+			return sendErrorSvg(
+				req,
+				res,
 				"Missing or invalid ?user= or ?username=...",
-				"E_BAD_INPUT",
+				"UNKNOWN",
 			);
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
 		}
 		const upstream = new URL("https://streak-stats.demolab.com/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
@@ -39,20 +34,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (theme === "watchdog") {
 			// Remove theme to avoid overriding our colors upstream
 			upstream.searchParams.delete("theme");
-			const wd: Record<string, string> = {
-				background: "45,520806,021D4A",
-				border: "#E4E2E2",
-				stroke: "#E4E2E2",
-				ring: "#FE428E",
-				fire: "#EB8C30",
-				currStreakNum: "#F8D847",
-				sideNums: "#FE428E",
-				currStreakLabel: "#F8D847",
-				sideLabels: "#FE428E",
-				dates: "#A9FEF7",
-				excludeDaysLabel: "#A9FEF7",
-			};
-			for (const [k, v] of Object.entries(wd)) {
+			const wd = WATCHDOG as Record<string, string>;
+			for (const [k, v] of Object.entries({
+				background: wd.background,
+				border: wd.border,
+				stroke: wd.stroke,
+				ring: wd.ring,
+				fire: wd.fire,
+				currStreakNum: wd.currStreakNum,
+				sideNums: wd.sideNums,
+				currStreakLabel: wd.currStreakLabel,
+				sideLabels: wd.sideLabels,
+				dates: wd.dates,
+				excludeDaysLabel: wd.excludeDaysLabel,
+			})) {
 				if (!upstream.searchParams.has(k)) upstream.searchParams.set(k, v);
 			}
 		}
@@ -74,12 +69,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		} catch (_e) {
 			clearTimeout(timeout);
-			setSvgHeaders(res);
-			res.status(200);
-			const body = svg("Upstream streak fetch failed", "E_UPSTREAM_FETCH");
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
-				return res.send("");
-			return res.send(body);
+			return sendErrorSvg(
+				req,
+				res,
+				"Upstream streak fetch failed",
+				"STREAK_UPSTREAM_FETCH",
+			);
 		} finally {
 			clearTimeout(timeout);
 		}
@@ -92,21 +87,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				return res.send("");
 			return res.send(body);
 		}
-		{
-			const errBody = svg(
-				`Upstream streak returned ${resp.status}`,
-				"E_UPSTREAM_STATUS",
-			);
-			if (setEtagAndMaybeSend304(req.headers as any, res, errBody))
-				return res.send("");
-			return res.send(errBody);
-		}
+		return sendErrorSvg(
+			req,
+			res,
+			`Upstream streak returned ${resp.status}`,
+			"STREAK_UPSTREAM_STATUS",
+		);
 	} catch (_err) {
-		setSvgHeaders(res);
-		res.status(200);
-		const body = svg("streak: internal error", "E_INTERNAL");
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
-			return res.send("");
-		return res.send(body);
+		return sendErrorSvg(req, res, "streak: internal error", "STREAK_INTERNAL");
 	}
 }
