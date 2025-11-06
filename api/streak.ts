@@ -3,6 +3,7 @@ function svg(body: string) {
 }
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { resolveCacheSeconds, setCacheHeaders } from "./_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -19,14 +20,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const upstream = new URL("https://streak-stats.demolab.com/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 		upstream.searchParams.set("user", user);
+		// Map theme=watchdog to explicit color params supported by upstream
+		const theme = (url.searchParams.get("theme") || "").toLowerCase();
+		if (theme === "watchdog") {
+			// Remove theme to avoid overriding our colors upstream
+			upstream.searchParams.delete("theme");
+			const wd: Record<string, string> = {
+				background: "45,520806,021D4A",
+				border: "#E4E2E2",
+				stroke: "#E4E2E2",
+				ring: "#FE428E",
+				fire: "#EB8C30",
+				currStreakNum: "#F8D847",
+				sideNums: "#FE428E",
+				currStreakLabel: "#F8D847",
+				sideLabels: "#FE428E",
+				dates: "#A9FEF7",
+				excludeDaysLabel: "#A9FEF7",
+			};
+			for (const [k, v] of Object.entries(wd)) {
+				if (!upstream.searchParams.has(k)) upstream.searchParams.set(k, v);
+			}
+		}
 		const token = process.env.TOKEN;
 		if (token && !upstream.searchParams.has("token"))
 			upstream.searchParams.set("token", token);
-		const cacheSeconds =
-			parseInt(
-				process.env.STREAK_CACHE_SECONDS || process.env.CACHE_SECONDS || "300",
-				10,
-			) || 300;
+		const cacheSeconds = resolveCacheSeconds(url, [
+			"STREAK_CACHE_SECONDS",
+			"CACHE_SECONDS",
+		], 86400);
 		const ctrl = new AbortController();
 		const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
 		let resp: Response;
@@ -46,10 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const ct = resp.headers.get("content-type") || "";
 		const body = await resp.text();
 		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-		res.setHeader(
-			"Cache-Control",
-			`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-		);
+		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			return res.send(body);
 		}

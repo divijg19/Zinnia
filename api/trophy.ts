@@ -3,6 +3,8 @@ function svg(body: string) {
 }
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { renderTrophySVG } from "../trophy/src/renderer";
+import { resolveCacheSeconds, setCacheHeaders } from "./_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -20,11 +22,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const token = process.env.TROPHY_TOKEN;
 		if (token && !upstream.searchParams.has("token"))
 			upstream.searchParams.set("token", token);
-		const cacheSeconds =
-			parseInt(
-				process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "300",
-				10,
-			) || 300;
+		const cacheSeconds = resolveCacheSeconds(url, [
+			"TROPHY_CACHE_SECONDS",
+			"CACHE_SECONDS",
+		], 86400);
+
+		// If theme=watchdog, render locally to support our custom theme
+		const theme = (url.searchParams.get("theme") || "").toLowerCase();
+		if (theme === "watchdog") {
+			const title = url.searchParams.get("title") || undefined;
+			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
+			const svgOut = renderTrophySVG({ username, theme, title, columns });
+			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setCacheHeaders(res, cacheSeconds);
+			return res.send(svgOut);
+		}
 		const ctrl = new AbortController();
 		const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
 		let resp: Response;
@@ -44,10 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const ct = resp.headers.get("content-type") || "";
 		const body = await resp.text();
 		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-		res.setHeader(
-			"Cache-Control",
-			`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-		);
+		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			return res.send(body);
 		}

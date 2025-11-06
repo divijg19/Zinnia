@@ -1,24 +1,34 @@
 name: Refresh Zinnia Stats
 
 on:
-    schedule:
-        - cron: "0 0 * * *" # Runs daily at 00:00 UTC
-    workflow_dispatch: # Allows manual trigger from GitHub UI
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at 00:00 UTC
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+concurrency:
+  group: refresh-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOMAIN: ${{ secrets.PROD_DOMAIN || 'zinnia-rho.vercel.app' }}
+  USERNAME: divijg19
 
 jobs:
-    refresh:
-        runs-on: ubuntu-latest
+  refresh:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-            - name: Refresh GitHub Stats
-              run: |
-                  curl -s "https://zinnia.vercel.app/api/stats?username=divijg19" > /dev/null
-                  curl -s "https://zinnia.vercel.app/api/trophy?username=divijg19" > /dev/null
-                  curl -s "https://zinnia.vercel.app/api/streak?user=divijg19" > /dev/null
-                  curl -s "https://zinnia.vercel.app/api/leetcode?username=divijg19" > /dev/null
+      - name: Warm endpoints (cache=0)
+        run: |
+          set -e
+          BASE="https://${DOMAIN}"
+          curl -fsS "${BASE}/api/stats?username=${USERNAME}&cache=0" -o /dev/null || true
+          curl -fsS "${BASE}/api/trophy?username=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
+          curl -fsS "${BASE}/api/streak?user=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
+          curl -fsS "${BASE}/api/leetcode?username=${USERNAME}&theme=watchdog&cache=0" -o /dev/null || true
 
-            - name: Confirm refresh completed
-              run: echo "Zinnia stats endpoints refreshed successfully ✅"
+      - name: Confirm refresh completed
+        run: echo "Zinnia stats endpoints refreshed successfully ✅"

@@ -5,11 +5,14 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  schedule:
-    - cron: "0 2 * * *" # daily at 02:00 UTC - refresh/cache
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  check:
+    name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,78 +26,21 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Format (write)
-        run: bunx biome format . --write
-
-      - name: Lint (check)
+      - name: Lint (biome)
         run: bunx biome check .
 
-      - name: Type check
+      - name: Type check (tsc)
         run: bunx tsc --noEmit
 
-      - name: Run stats tests (Jest)
+      - name: Tests - stats (Jest)
         env:
           CI: true
-        run: bunx npm run test:stats
+        run: bun run test:stats
 
-      - name: Run leetcode tests (Vitest)
+      - name: Tests - leetcode (Vitest)
         env:
           CI: true
-        run: bunx npm run test:leetcode
+        run: bun run test:leetcode
 
       - name: Build
         run: bun build index.ts --outdir=dist
-
-  refresh:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Warm prod cache (optional)
-        env:
-          PROD_DOMAIN: ${{ secrets.PROD_DOMAIN }}
-        run: |
-          if [ -z "${PROD_DOMAIN}" ]; then
-            echo "No PROD_DOMAIN set, skipping warmup."
-            exit 0
-          fi
-          set -e
-          for path in \\
-            "/stats?username=divijg19" \\
-            "/streak?user=divijg19" \\
-            "/leetcode?username=divijg19&site=us" \\
-            "/trophy?username=divijg19" \\
-            "/github?username=divijg19" \\
-          ; do
-            curl -fsS "https://${PROD_DOMAIN}${path}" -o /dev/null || true
-          done
-
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: "1.3.0"
-      - name: Install
-        run: bun install
-      - name: Deploy to Vercel
-        run: |
-          # Populate VERCEL_TOKEN at runtime from secrets; avoid YAML-level `secrets` mappings to please static checkers
-          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
-          if [ -z "$VERCEL_TOKEN" ]; then
-            echo "VERCEL_TOKEN not set; skipping deploy"
-            exit 0
-          fi
-          if bunx --version >/dev/null 2>&1; then
-            echo "Running vercel via bunx"
-            bunx vercel --prod --token "$VERCEL_TOKEN" --yes
-          else
-            echo "bunx not available in PATH; please ensure vercel is installed in CI's dependencies"
-            exit 1
-          fi

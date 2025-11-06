@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { setCacheHeaders } from "./_utils";
 
 function svg(body: string) {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
@@ -35,49 +36,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			res.status(200);
 			return res.send(svg("Missing ?username=..."));
 		}
-		const sanitized = {
+		const sanitized: any = {
 			username: config.username.trim(),
 			site: (config.site || "us").toLowerCase(),
 			width: parseInt(config.width || "500", 10) || 500,
 			height: parseInt(config.height || "200", 10) || 200,
 			css: [] as string[],
 			extensions: [] as any[],
-			font: undefined,
-			animation: undefined,
-			theme: undefined,
+			font: (config.font?.trim() || "baloo_2") as any,
+			animation:
+				config.animation !== undefined
+					? !/^false|0|no$/i.test((config.animation || "").trim())
+					: true,
+			theme: { light: "light", dark: "dark" } as any,
 			cache: 60,
-		} as any;
+		};
+
+		// Parse theme= param (supports "name" or "light,dark")
+		if (config.theme?.trim()) {
+			const themes = config.theme.trim().split(",");
+			sanitized.theme =
+				themes.length === 1 || themes[1] === ""
+					? themes[0].trim()
+					: { light: themes[0].trim(), dark: themes[1].trim() };
+		}
 
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
 				process.env.CACHE_SECONDS ||
-				"300",
+				"86400",
 				10,
-			) || 300;
+			) || 86400;
 		const cacheSeconds = config.cache
 			? parseInt(config.cache, 10) || envDefault
 			: envDefault;
 
-		let generator: any;
 		try {
-			const { Generator } = (await import(
-				"../leetcode/packages/core/src/card.ts"
-			)) as { Generator: new (...args: any[]) => any };
-			generator = new Generator(null as unknown as Cache, {});
-		} catch (_e) {
+			const { generate } = (await import(
+				"../leetcode/packages/core/src/index.ts"
+			)) as { generate: (config: any) => Promise<string> };
+			const svgOut = await generate(sanitized);
 			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-			res.status(200);
-			return res.send(svg("leetcode: internal error"));
-		}
-		generator.verbose = false;
-		try {
-			const svgOut = await generator.generate(sanitized);
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-			res.setHeader(
-				"Cache-Control",
-				`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-			);
+			setCacheHeaders(res, cacheSeconds);
 			return res.send(svgOut);
 		} catch (_e) {
 			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
