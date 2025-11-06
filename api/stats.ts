@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )) as { default: (req: Request) => Promise<Response> };
         const proto = (req.headers["x-forwarded-proto"] || "https").toString();
         const host = (req.headers.host || "localhost").toString();
-        const fullUrl = new URL(req.url as string, `${proto}://${host}`).toString();
+        const fullUrl = new URL((req.url as string) || "/api/stats", `${proto}://${host}`).toString();
         const headers = new Headers();
         for (const [k, v] of Object.entries(
             req.headers as Record<string, string>,
@@ -28,6 +28,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const webRes = await statsRequestHandler(webReq as unknown as Request);
         const body = await webRes.text();
         res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+        const cacheSeconds =
+            parseInt(process.env.STATS_CACHE_SECONDS || process.env.CACHE_SECONDS || "300", 10) || 300;
+        const cacheHeader = webRes.headers.get("cache-control");
+        res.setHeader(
+            "Cache-Control",
+            cacheHeader || `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+        );
         res.status(200);
         return res.send(body);
     } catch (_err) {
