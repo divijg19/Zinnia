@@ -28,24 +28,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			string,
 			string
 		>;
-		let sanitized: any;
-		try {
-			// Lazy import to avoid cold-start or bundling failures from crashing the function
-			const { sanitize } = (await import(
-				"../leetcode/packages/cloudflare-worker/src/sanitize.ts"
-			)) as { sanitize: (cfg: Record<string, string>) => unknown };
-			sanitized = sanitize(config);
-		} catch (_e) {
+		// Minimal Node-safe sanitization to avoid importing worker-only code.
+		// Ensure required fields and set safe defaults. Extensions are optional.
+		if (!config.username || !config.username.trim()) {
 			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 			res.status(200);
-			return res.send(svg("Invalid parameters"));
+			return res.send(svg("Missing ?username=..."));
 		}
+		const sanitized = {
+			username: config.username.trim(),
+			site: (config.site || "us").toLowerCase(),
+			width: parseInt(config.width || "500", 10) || 500,
+			height: parseInt(config.height || "200", 10) || 200,
+			css: [] as string[],
+			extensions: [] as any[],
+			font: undefined,
+			animation: undefined,
+			theme: undefined,
+			cache: 60,
+		} as any;
 
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
-					process.env.CACHE_SECONDS ||
-					"300",
+				process.env.CACHE_SECONDS ||
+				"300",
 				10,
 			) || 300;
 		const cacheSeconds = config.cache

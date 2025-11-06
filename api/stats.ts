@@ -12,8 +12,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			return res.send(svg("Set PAT_1 in Vercel for stats"));
 		}
 		// Use the Request-based TS handler to avoid Express coupling and bundling surprises.
+		// Import the JS handler to avoid runtime .ts resolution issues on serverless
 		const { default: statsRequestHandler } = (await import(
-			"../stats/api/index.ts"
+			"../stats/api/index.js"
 		)) as { default: (req: Request) => Promise<Response> };
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
@@ -40,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		res.setHeader(
 			"Cache-Control",
 			cacheHeader ||
-				`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+			`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
 		);
 		res.status(200);
 		return res.send(body);

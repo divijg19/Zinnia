@@ -11,8 +11,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			res.status(200);
 			return res.send(svg("Set PAT_1 in Vercel for top-langs"));
 		}
+		// Import the JS handler to avoid runtime .ts resolution issues on serverless
 		const { default: topLangsRequestHandler } = (await import(
-			"../stats/api/top-langs.ts"
+			"../stats/api/top-langs.js"
 		)) as { default: (req: Request) => Promise<Response> };
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
@@ -33,15 +34,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const cacheSeconds =
 			parseInt(
 				process.env.TOP_LANGS_CACHE_SECONDS ||
-					process.env.CACHE_SECONDS ||
-					"300",
+				process.env.CACHE_SECONDS ||
+				"300",
 				10,
 			) || 300;
 		const cacheHeader = webRes.headers.get("cache-control");
 		res.setHeader(
 			"Cache-Control",
 			cacheHeader ||
-				`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+			`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
 		);
 		res.status(200);
 		return res.send(body);
