@@ -4,7 +4,7 @@ function svg(body: string) {
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { renderTrophySVG } from "../trophy/src/renderer";
-import { resolveCacheSeconds, setCacheHeaders } from "./_utils";
+import { resolveCacheSeconds, setCacheHeaders, setSvgHeaders } from "./_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const url = new URL(req.url as string, `${proto}://${host}`);
 		const username = url.searchParams.get("username");
 		if (!username) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Missing ?username=..."));
 		}
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const title = url.searchParams.get("title") || undefined;
 			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
 			const svgOut = renderTrophySVG({ username, theme, title, columns });
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
 			return res.send(svgOut);
 		}
@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		} catch (_e) {
 			clearTimeout(timeout);
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Upstream trophy fetch failed"));
 		} finally {
@@ -55,14 +55,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const ct = resp.headers.get("content-type") || "";
 		const body = await resp.text();
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			return res.send(body);
 		}
 		return res.send(svg(`Upstream trophy returned ${resp.status}`));
 	} catch (_err) {
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		res.status(200);
 		return res.send(svg("trophy: internal error"));
 	}

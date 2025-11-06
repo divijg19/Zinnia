@@ -60,9 +60,13 @@ Replace YOUR-DOMAIN with your deployed Vercel domain. Both direct and /api paths
 - GitHub (placeholder)
 	- `<img src="https://zinnia-rho.vercel.app/api/github?username=divijg19&cache_seconds=86400" />`
 
+- Health (diagnostic)
+	- `<img src="https://zinnia-rho.vercel.app/api/health?text=OK&cache=60" />`
+
 Tips
 - Prefer `cache` to reduce upstream load and speed up render.
 - If any embed fails to render on GitHub, open the image URL in a browser and confirm it returns `Content-Type: image/svg+xml` and HTTP 200.
+- Use `/api/health` for a quick sanity check. It always returns an SVG with HTTP 200, proper headers, and short cache.
 
 ### Cache tuning
 

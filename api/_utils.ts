@@ -35,3 +35,11 @@ export function setCacheHeaders(res: VercelResponse, seconds: number) {
         `public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
     );
 }
+
+/**
+ * Ensure SVG response headers are correct for GitHub embeds and proxies.
+ */
+export function setSvgHeaders(res: VercelResponse) {
+    res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+}

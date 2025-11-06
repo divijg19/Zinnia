@@ -3,7 +3,7 @@ function svg(body: string) {
 }
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { resolveCacheSeconds, setCacheHeaders } from "./_utils";
+import { resolveCacheSeconds, setCacheHeaders, setSvgHeaders } from "./_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const user =
 			url.searchParams.get("user") ?? url.searchParams.get("username");
 		if (!user) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Missing ?user= or ?username=..."));
 		}
@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		} catch (_e) {
 			clearTimeout(timeout);
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Upstream streak fetch failed"));
 		} finally {
@@ -67,14 +67,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const ct = resp.headers.get("content-type") || "";
 		const body = await resp.text();
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			return res.send(body);
 		}
 		return res.send(svg(`Upstream streak returned ${resp.status}`));
 	} catch (_err) {
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		res.status(200);
 		return res.send(svg("streak: internal error"));
 	}

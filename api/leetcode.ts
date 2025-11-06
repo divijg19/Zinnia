@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { setCacheHeaders } from "./_utils";
+import { setCacheHeaders, setSvgHeaders } from "./_utils";
 
 function svg(body: string) {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const username = url.searchParams.get("username");
 		if (!username) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Missing ?username=..."));
 		}
@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Minimal Node-safe sanitization to avoid importing worker-only code.
 		// Ensure required fields and set safe defaults. Extensions are optional.
 		if (!config.username || !config.username.trim()) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Missing ?username=..."));
 		}
@@ -77,16 +77,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"../leetcode/packages/core/src/index.ts"
 			)) as { generate: (config: any) => Promise<string> };
 			const svgOut = await generate(sanitized);
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
 			return res.send(svgOut);
 		} catch (_e) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("LeetCode generation failed"));
 		}
 	} catch (_err) {
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		res.status(200);
 		return res.send(svg("leetcode: internal error"));
 	}

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { resolveCacheSeconds, setCacheHeaders } from "./_utils";
+import { resolveCacheSeconds, setCacheHeaders, setSvgHeaders } from "./_utils";
 
 function svg(body: string) {
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${body}"><title>${body}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${body}</text></svg>`;
@@ -8,7 +8,7 @@ function svg(body: string) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		if (!process.env.PAT_1 && !process.env.PAT_2 && !process.env.PAT_3) {
-			res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+			setSvgHeaders(res);
 			res.status(200);
 			return res.send(svg("Set PAT_1 in Vercel for top-langs"));
 		}
@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const webReq = new Request(fullUrl, { method: req.method, headers });
 		const webRes = await topLangsRequestHandler(webReq as unknown as Request);
 		const body = await webRes.text();
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		const cacheSeconds = resolveCacheSeconds(url, [
 			"TOP_LANGS_CACHE_SECONDS",
 			"CACHE_SECONDS",
@@ -43,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		res.status(200);
 		return res.send(body);
 	} catch (_err) {
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		res.status(200);
 		return res.send(
 			`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="top-langs: internal error"><title>top-langs: internal error</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">top-langs: internal error</text></svg>`,
