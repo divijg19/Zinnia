@@ -10,7 +10,7 @@ import {
 	measureText,
 } from "../common/utils.ts";
 import type { StatsData } from "../fetchers/types";
-import { statCardLocales, wakatimeCardLocales } from "../translations.js";
+import { statCardLocales } from "../translations.js";
 import type { StatCardOptions } from "./types";
 
 const CARD_MIN_WIDTH = 287;
@@ -66,9 +66,8 @@ const createTextNode = ({
 	return `
         <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
             ${iconSvg}
-            <text class="stat ${
-							bold ? " bold" : "not_bold"
-						}" ${labelOffset} y="12.5">${label}:</text>
+            <text class="stat ${bold ? " bold" : "not_bold"
+		}" ${labelOffset} y="12.5">${label}:</text>
             <text
                 class="stat ${bold ? " bold" : "not_bold"}"
                 x="${(showIcons ? 140 : 120) + shiftValuePos}"
@@ -144,7 +143,7 @@ const getTotalCommitsYearLabel = (
 		? ""
 		: commits_year
 			? ` (${commits_year})`
-			: ` (${i18n.t("wakatimecard.lastyear")})`;
+			: ` (${i18n.t("statcard.lastyear")})`;
 
 export function renderStatsCard(
 	stats: StatsData,
@@ -213,10 +212,7 @@ export function renderStatsCard(
 	const apostrophe = /s$/i.test(name.trim()) ? "" : "'s";
 	const i18n = new I18n({
 		locale,
-		translations: {
-			...statCardLocales({ name, apostrophe }),
-			...wakatimeCardLocales,
-		},
+		translations: statCardLocales({ name, apostrophe }),
 	});
 
 	const STATS: Record<string, StatItem> = {};

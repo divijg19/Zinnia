@@ -1,6 +1,6 @@
 // @ts-check
 
-import { renderTopLanguages } from "../src/cards/top-languages.js";
+import { renderTopLanguagesCard as renderTopLanguages } from "../src/cards/top-languages.js";
 import { guardAccess } from "../src/common/access.js";
 import {
 	CACHE_TTL,
@@ -12,6 +12,65 @@ import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
 import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
+/**
+ * @typedef {"compact" | "normal" | "donut" | "donut-vertical" | "pie"} TopLangsLayout
+ */
+
+/**
+ * @typedef {"bytes" | "percentages"} StatsFormat
+ */
+
+/**
+ * @typedef {Object} TopLangsQuery
+ * @property {string} username
+ * @property {string=} hide
+ * @property {string=} hide_title
+ * @property {string=} hide_border
+ * @property {string=} card_width
+ * @property {string=} title_color
+ * @property {string=} text_color
+ * @property {string=} bg_color
+ * @property {string=} theme
+ * @property {string=} cache_seconds
+ * @property {TopLangsLayout | string=} layout
+ * @property {string=} langs_count
+ * @property {string=} exclude_repo
+ * @property {string=} size_weight
+ * @property {string=} count_weight
+ * @property {string=} custom_title
+ * @property {string=} locale
+ * @property {string=} border_radius
+ * @property {string=} border_color
+ * @property {string=} disable_animations
+ * @property {string=} hide_progress
+ * @property {StatsFormat | string=} stats_format
+ */
+
+/**
+ * @template T
+ * @typedef {Object} Request
+ * @property {T} query
+ */
+
+/**
+ * @typedef {Object} Response
+ * @property {(name: string, value: string) => void} setHeader
+ * @property {(body: string) => any} send
+ */
+
+/**
+ * @typedef {Object} AccessResult
+ * @property {boolean} isPassed
+ */
+
+/**
+ * @typedef {Error & { secondaryMessage?: string }} ErrorWithSecondary
+ */
+
+/**
+ * @param {Request<TopLangsQuery>} req
+ * @param {Response} res
+ */
 export default async (req, res) => {
 	const {
 		username,
@@ -39,6 +98,7 @@ export default async (req, res) => {
 	} = req.query;
 	res.setHeader("Content-Type", "image/svg+xml");
 
+	/** @type {AccessResult} */
 	const access = guardAccess({
 		res,
 		id: username,
@@ -52,7 +112,8 @@ export default async (req, res) => {
 		},
 	});
 	if (!access.isPassed) {
-		return access.result;
+		// guardAccess already sent the response; just stop further processing.
+		return;
 	}
 
 	if (locale && !isLocaleAvailable(locale)) {
@@ -112,14 +173,28 @@ export default async (req, res) => {
 	}
 
 	try {
+		const sizeWeightNum =
+			typeof size_weight === "string" && size_weight.trim() !== ""
+				? parseFloat(size_weight)
+				: undefined;
+		const countWeightNum =
+			typeof count_weight === "string" && count_weight.trim() !== ""
+				? parseFloat(count_weight)
+				: undefined;
 		const topLangs = await fetchTopLanguages(
 			username,
 			parseArray(exclude_repo),
-			size_weight,
-			count_weight,
+			sizeWeightNum,
+			countWeightNum,
 		);
+		// Resolve cache seconds: if parameter missing or not a positive number, use default.
+		const requestedCacheSeconds =
+			cache_seconds !== undefined && cache_seconds !== ""
+				? parseInt(String(cache_seconds), 10)
+				: NaN;
+		/** @type {number} */
 		const cacheSeconds = resolveCacheSeconds({
-			requested: parseInt(cache_seconds, 10),
+			requested: requestedCacheSeconds <= 0 ? NaN : requestedCacheSeconds,
 			def: CACHE_TTL.TOP_LANGS_CARD.DEFAULT,
 			min: CACHE_TTL.TOP_LANGS_CARD.MIN,
 			max: CACHE_TTL.TOP_LANGS_CARD.MAX,
@@ -127,33 +202,61 @@ export default async (req, res) => {
 
 		setCacheHeaders(res, cacheSeconds);
 
+		/**
+		 * @param {string|number|undefined|null} v
+		 * @returns {number|undefined}
+		 */
+		const toNum = (v) => {
+			if (v === undefined || v === null || v === "") return undefined;
+			const n = typeof v === "number" ? v : parseInt(String(v), 10);
+			return Number.isNaN(n) ? undefined : n;
+		};
+		const langsCountNum = toNum(langs_count);
+		const borderRadiusNum = toNum(border_radius);
+		const cardWidthNum = toNum(card_width);
+		/** @type {TopLangsLayout|undefined} */
+		const layoutOpt = /** @type {any} */ (layout);
+		/** @type {StatsFormat|undefined} */
+		const statsFormatOpt = /** @type {any} */ (stats_format);
 		return res.send(
 			renderTopLanguages(topLangs, {
 				custom_title,
 				hide_title: parseBoolean(hide_title),
 				hide_border: parseBoolean(hide_border),
-				card_width: parseInt(card_width, 10),
+				card_width: cardWidthNum,
 				hide: parseArray(hide),
 				title_color,
 				text_color,
 				bg_color,
-				theme,
-				layout,
-				langs_count,
-				border_radius,
+				// theme union from upstream; treat as any string here
+				/** @type {any} */ theme,
+				layout: layoutOpt,
+				langs_count: langsCountNum,
+				border_radius: borderRadiusNum,
 				border_color,
-				locale: locale ? locale.toLowerCase() : null,
+				locale: locale ? locale.toLowerCase() : undefined,
 				disable_animations: parseBoolean(disable_animations),
 				hide_progress: parseBoolean(hide_progress),
-				stats_format,
+				stats_format: statsFormatOpt,
 			}),
 		);
 	} catch (err) {
 		setErrorCacheHeaders(res);
+		const hasMessage =
+			err && typeof err === "object" && "message" in err && err.message;
+		const hasSecondary =
+			err &&
+			typeof err === "object" &&
+			"secondaryMessage" in err &&
+			err.secondaryMessage;
+		const message = hasMessage ? String(err.message) : "Something went wrong";
+		const secondaryMessage = hasSecondary
+			? String(err.secondaryMessage)
+			: undefined;
 		return res.send(
 			renderError({
-				message: err.message,
-				secondaryMessage: err.secondaryMessage,
+				message,
+				secondaryMessage,
 				renderOptions: {
 					title_color,
 					text_color,

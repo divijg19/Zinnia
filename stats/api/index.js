@@ -12,6 +12,10 @@ import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
 import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
+/**
+ * @param {any} req
+ * @param {any} res
+ */
 export default async (req, res) => {
 	const {
 		username,
@@ -57,7 +61,8 @@ export default async (req, res) => {
 		},
 	});
 	if (!access.isPassed) {
-		return access.result;
+		// guardAccess already wrote the response
+		return;
 	}
 
 	if (locale && !isLocaleAvailable(locale)) {
@@ -127,10 +132,21 @@ export default async (req, res) => {
 		);
 	} catch (err) {
 		setErrorCacheHeaders(res);
+		const hasMessage =
+			err && typeof err === "object" && "message" in err && err.message;
+		const hasSecondary =
+			err &&
+			typeof err === "object" &&
+			"secondaryMessage" in err &&
+			err.secondaryMessage;
+		const message = hasMessage ? String(err.message) : "Something went wrong";
+		const secondaryMessage = hasSecondary
+			? String(err.secondaryMessage)
+			: undefined;
 		return res.send(
 			renderError({
-				message: err.message,
-				secondaryMessage: err.secondaryMessage,
+				message,
+				secondaryMessage,
 				renderOptions: {
 					title_color,
 					text_color,

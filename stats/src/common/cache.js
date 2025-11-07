@@ -52,11 +52,6 @@ const CACHE_TTL = {
 		MIN: DURATIONS.ONE_DAY,
 		MAX: DURATIONS.TEN_DAY,
 	},
-	WAKATIME_CARD: {
-		DEFAULT: DURATIONS.ONE_DAY,
-		MIN: DURATIONS.TWELVE_HOURS,
-		MAX: DURATIONS.TWO_DAY,
-	},
 	ERROR: DURATIONS.TEN_MINUTES,
 };
 
@@ -89,8 +84,7 @@ const resolveCacheSeconds = ({ requested, def, min, max }) => {
 
 /**
  * Disables caching by setting appropriate headers on the response object.
- *
- * @param {Object} res The response object.
+ * @param {{ setHeader: (name:string, value:string) => void }} res The response object.
  */
 const disableCaching = (res) => {
 	// Disable caching for browsers, shared caches/CDNs, and GitHub Camo.
@@ -104,8 +98,7 @@ const disableCaching = (res) => {
 
 /**
  * Sets the Cache-Control headers on the response object.
- *
- * @param {Object} res The response object.
+ * @param {{ setHeader: (name:string, value:string) => void }} res The response object.
  * @param {number} cacheSeconds The cache seconds to set in the headers.
  */
 const setCacheHeaders = (res, cacheSeconds) => {
@@ -117,15 +110,14 @@ const setCacheHeaders = (res, cacheSeconds) => {
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${cacheSeconds}, ` +
-			`s-maxage=${cacheSeconds}, ` +
-			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+		`s-maxage=${cacheSeconds}, ` +
+		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
 };
 
 /**
  * Sets the Cache-Control headers for error responses on the response object.
- *
- * @param {Object} res The response object.
+ * @param {{ setHeader: (name:string, value:string) => void }} res The response object.
  */
 const setErrorCacheHeaders = (res) => {
 	const envCacheSeconds = process.env.CACHE_SECONDS
@@ -143,8 +135,8 @@ const setErrorCacheHeaders = (res) => {
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${CACHE_TTL.ERROR}, ` +
-			`s-maxage=${CACHE_TTL.ERROR}, ` +
-			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+		`s-maxage=${CACHE_TTL.ERROR}, ` +
+		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
 };
 

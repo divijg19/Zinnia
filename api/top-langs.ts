@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Import the JS handler to avoid runtime .ts resolution issues on serverless
 		const { default: topLangsRequestHandler } = (await import(
 			"../stats/api/top-langs.js"
-		)) as { default: (req: Request) => Promise<Response> };
+		)) as unknown as { default: (req: Request) => Promise<Response> };
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
 		const url = new URL(

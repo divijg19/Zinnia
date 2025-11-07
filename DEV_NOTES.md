@@ -58,6 +58,10 @@ Env variables
 
 Note: LeetCode CN was removed. Any previous CN-specific tests, constants, or fixtures have been neutralized. The `site` option is ignored and always treated as `us`.
 
+## Removed / Deprecated Features
+
+- WakaTime integration (API, card, fetcher, tests) removed to reduce maintenance surface and focus on core GitHub/LeetCode endpoints (Nov 2025). All related files (stats/api/wakatime.js, card & fetcher modules, tests, fixtures) and cache constants were deleted. If re-introduction is desired later, retrieve them from git history and add back a cache TTL entry plus tests.
+
 ### Cache TTL defaults
 
 - Global: `CACHE_SECONDS`

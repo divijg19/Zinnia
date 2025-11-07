@@ -11,7 +11,7 @@ import {
 	kFormatter,
 	measureText,
 } from "../common/utils.ts";
-import { statCardLocales, wakatimeCardLocales } from "../translations.js";
+import { statCardLocales } from "../translations.js";
 
 const CARD_MIN_WIDTH = 287;
 const CARD_DEFAULT_WIDTH = 287;
@@ -63,9 +63,8 @@ const createTextNode = ({
 	return `
     <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
       ${iconSvg}
-      <text class="stat ${
-				bold ? " bold" : "not_bold"
-			}" ${labelOffset} y="12.5">${label}:</text>
+      <text class="stat ${bold ? " bold" : "not_bold"
+		}" ${labelOffset} y="12.5">${label}:</text>
       <text
         class="stat ${bold ? " bold" : "not_bold"}"
         x="${(showIcons ? 140 : 120) + shiftValuePos}"
@@ -206,7 +205,7 @@ const getTotalCommitsYearLabel = (include_all_commits, commits_year, i18n) =>
 		? ""
 		: commits_year
 			? ` (${commits_year})`
-			: ` (${i18n.t("wakatimecard.lastyear")})`;
+			: ` (${i18n.t("statcard.lastyear")})`;
 
 /**
  * @typedef {import('../fetchers/types').StatsData} StatsData
@@ -279,10 +278,7 @@ const renderStatsCard = (stats, options = {}) => {
 	const apostrophe = /s$/i.test(name.trim()) ? "" : "s";
 	const i18n = new I18n({
 		locale,
-		translations: {
-			...statCardLocales({ name, apostrophe }),
-			...wakatimeCardLocales,
-		},
+		translations: statCardLocales({ name, apostrophe }),
 	});
 
 	// Meta data for creating text nodes with createTextNode function
@@ -451,18 +447,18 @@ const renderStatsCard = (stats, options = {}) => {
 	};
 
 	/*
-    When hide_rank=true, the minimum card width is 270 px + the title length and padding.
-    When hide_rank=false, the minimum card_width is 340 px + the icon width (if show_icons=true).
-    Numbers are picked by looking at existing dimensions on production.
+	When hide_rank=true, the minimum card width is 270 px + the title length and padding.
+	When hide_rank=false, the minimum card_width is 340 px + the icon width (if show_icons=true).
+	Numbers are picked by looking at existing dimensions on production.
   */
 	const iconWidth = show_icons && statItems.length ? 16 + /* padding */ 1 : 0;
 	const minCardWidth =
 		(hide_rank
 			? clampValue(
-					50 /* padding */ + calculateTextWidth() * 2,
-					CARD_MIN_WIDTH,
-					Infinity,
-				)
+				50 /* padding */ + calculateTextWidth() * 2,
+				CARD_MIN_WIDTH,
+				Infinity,
+			)
 			: statItems.length
 				? RANK_CARD_MIN_WIDTH
 				: RANK_ONLY_CARD_MIN_WIDTH) + iconWidth;
@@ -534,9 +530,8 @@ const renderStatsCard = (stats, options = {}) => {
 	const rankCircle = hide_rank
 		? ""
 		: `<g data-testid="rank-circle"
-          transform="translate(${calculateRankXTranslation()}, ${
-						height / 2 - 50
-					})">
+          transform="translate(${calculateRankXTranslation()}, ${height / 2 - 50
+		})">
         <circle class="rank-circle-rim" cx="-10" cy="8" r="40" />
         <circle class="rank-circle" cx="-10" cy="8" r="40" />
         <g class="rank-text">
@@ -568,10 +563,10 @@ const renderStatsCard = (stats, options = {}) => {
     ${rankCircle}
     <svg x="0" y="0">
       ${flexLayout({
-				items: statItems,
-				gap: lheight,
-				direction: "column",
-			}).join("")}
+		items: statItems,
+		gap: lheight,
+		direction: "column",
+	}).join("")}
     </svg>
   `);
 };

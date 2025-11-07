@@ -13,7 +13,7 @@
 		"vercel": "vercel dev",
 		"verify:local": "node scripts/verify-local.mjs",
 		"vercel:deploy": "bunx vercel --prod --token $VERCEL_TOKEN --yes",
-		"lint": "biome check .",
+		"lint": "biome check . && tsc --noEmit",
 		"format": "biome format . --write",
 		"type-check": "tsc --noEmit",
 		"test:stats": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./stats/jest.config.js --runInBand -u",

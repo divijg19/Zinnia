@@ -11,7 +11,6 @@ import { renderGistCard } from "../../src/cards/gist.js";
 import { renderRepoCard } from "../../src/cards/repo.js";
 import { renderStatsCard } from "../../src/cards/stats.js";
 import { renderTopLanguages } from "../../src/cards/top-languages.js";
-import { renderWakatimeCard } from "../../src/cards/wakatime.js";
 
 const REPO = "curly-fiesta";
 const USER = "catelinemnemosyne";
@@ -50,22 +49,6 @@ const LANGS_DATA = {
 	},
 };
 
-const WAKATIME_DATA = {
-	human_readable_range: "last week",
-	is_already_updating: false,
-	is_coding_activity_visible: true,
-	is_including_today: false,
-	is_other_usage_visible: false,
-	is_stuck: false,
-	is_up_to_date: false,
-	is_up_to_date_pending_future: false,
-	percent_calculated: 0,
-	range: "all_time",
-	status: "pending_update",
-	timeout: 15,
-	username: USER,
-	writes_only: false,
-};
 
 const REPOSITORY_DATA = {
 	name: REPO,
@@ -158,26 +141,6 @@ describe("Fetch Cards", () => {
 
 		// Check if language card from deployment matches the local language card.
 		expect(severLanguageSVG.data).toEqual(localLanguageCardSVG);
-	}, 15000);
-
-	test("retrieve WakaTime card", async () => {
-		expect(VERCEL_PREVIEW_URL).toBeDefined();
-
-		// Check if the Vercel preview instance WakaTime function is up and running.
-		await expect(
-			axios.get(`${VERCEL_PREVIEW_URL}/api/wakatime?username=${USER}`),
-		).resolves.not.toThrow();
-
-		// Get local WakaTime card.
-		const localWakaCardSVG = renderWakatimeCard(WAKATIME_DATA);
-
-		// Get the Vercel preview WakaTime card response.
-		const serverWakaTimeSvg = await axios.get(
-			`${VERCEL_PREVIEW_URL}/api/wakatime?username=${USER}&${CACHE_BURST_STRING}`,
-		);
-
-		// Check if WakaTime card from deployment matches the local WakaTime card.
-		expect(serverWakaTimeSvg.data).toEqual(localWakaCardSVG);
 	}, 15000);
 
 	test("retrieve repo card", async () => {
