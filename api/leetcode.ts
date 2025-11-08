@@ -67,18 +67,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Parse theme= param (supports "name" or "light,dark"); filter unsupported single names
 		if (config.theme?.trim()) {
 			filterThemeParam(url);
-			const themes = config.theme.trim().split(",");
+			const themeValue = config.theme.trim();
+			const themes = themeValue.split(",");
 			sanitized.theme =
 				themes.length === 1 || themes[1] === ""
-					? themes[0].trim()
-					: { light: themes[0].trim(), dark: themes[1].trim() };
+					? themes[0]?.trim() || "light"
+					: { light: themes[0]?.trim() || "light", dark: themes[1]?.trim() || "dark" };
 		}
 
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
-					process.env.CACHE_SECONDS ||
-					"86400",
+				process.env.CACHE_SECONDS ||
+				"86400",
 				10,
 			) || 86400;
 		const cacheSeconds = config.cache
