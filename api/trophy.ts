@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.ts";
-import { filterThemeParam, getUsername } from "../lib/params.ts";
-import { renderTrophySVG } from "../trophy/src/renderer.ts";
+import { sendErrorSvg } from "../lib/errors.js";
+import { filterThemeParam, getUsername } from "../lib/params.js";
+import { renderTrophySVG } from "../trophy/src/renderer.js";
 import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils.ts";
+} from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {

@@ -1,5 +1,7 @@
 # My GitHub Visuals
 
+> **🚀 Quick Start:** Run `pwsh scripts/setup.ps1` for guided setup, or see [FIX_SUMMARY.md](FIX_SUMMARY.md) for deployment steps.
+
 ## Monorepo Configuration & Deployment
 
 This repository is a monorepo for GitHub profile visualizations, stats, streaks, trophies, and LeetCode cards. It is ready for deployment on Vercel and CI/CD via GitHub Actions.

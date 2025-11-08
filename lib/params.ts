@@ -4,7 +4,7 @@ import {
 	getUsername as _getUsername,
 	isValidUsername as _isValidUsername,
 	resolveCacheSeconds as _resolveCacheSeconds,
-} from "../api/_utils.ts";
+} from "../api/_utils.js";
 
 export const isValidUsername = _isValidUsername;
 export const getUsername = _getUsername;

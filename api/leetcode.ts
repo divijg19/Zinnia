@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.ts";
-import { filterThemeParam, isValidUsername } from "../lib/params.ts";
+import { sendErrorSvg } from "../lib/errors.js";
+import { filterThemeParam, isValidUsername } from "../lib/params.js";
 import {
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils.ts";
+} from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -87,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		try {
 			const { generate } = (await import(
-				"../leetcode/packages/core/src/index.ts"
+				"../leetcode/packages/core/src/index.js"
 			)) as { generate: (config: any) => Promise<string> };
 			const svgOut = await generate(sanitized);
 			setSvgHeaders(res);

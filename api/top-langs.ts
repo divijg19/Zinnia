@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.ts";
-import { filterThemeParam, getUsername } from "../lib/params.ts";
-import { getGithubPAT } from "../lib/tokens.ts";
+import { sendErrorSvg } from "../lib/errors.js";
+import { filterThemeParam, getUsername } from "../lib/params.js";
+import { getGithubPAT } from "../lib/tokens.js";
 import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "./_utils.ts";
+} from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {

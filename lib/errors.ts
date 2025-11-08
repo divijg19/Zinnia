@@ -4,7 +4,7 @@ import {
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-} from "../api/_utils.ts";
+} from "../api/_utils.js";
 
 export type ErrorCode =
 	| "STATS_RATE_LIMIT"
