@@ -87,20 +87,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			: envDefault;
 
 		try {
-			const { generate } = (await import(
-				"../leetcode/packages/core/src/index.js"
-			)) as { generate: (config: any) => Promise<string> };
-			const svgOut = await generate(sanitized);
+			const { Generator } = (await import(
+				"../leetcode/packages/core/src/card.js"
+			)) as { Generator: any };
+			const generator = new Generator(
+				null as unknown as Cache,
+				{} as Record<string, string>,
+			);
+			generator.verbose = false;
+			const svgOut = await generator.generate(sanitized);
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
 			if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
 				return res.send("");
 			return res.send(svgOut);
-		} catch (_e) {
+		} catch (e) {
+			const error = e as Error;
+			console.error("LeetCode generation error:", error.message);
 			return sendErrorSvg(
 				req,
 				res,
-				"LeetCode generation failed",
+				error.message || "LeetCode generation failed",
 				"LEETCODE_INTERNAL",
 			);
 		}

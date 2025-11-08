@@ -1,7 +1,7 @@
 // TypeScript type checking disabled - Vercel query params are string | string[] but functions expect string
 // @ts-nocheck
 
-import { renderTopLanguagesCard as renderTopLanguages } from "../src/cards/top-languages.ts";
+import { renderTopLanguagesCard as renderTopLanguages } from "../src/cards/top-languages.js";
 import { guardAccess } from "../src/common/access.js";
 import {
 	handleApiError,
@@ -14,8 +14,8 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 } from "../src/common/cache.js";
-import { parseArray, parseBoolean, renderError } from "../src/common/utils.ts";
-import { fetchTopLanguages } from "../src/fetchers/top-languages.ts";
+import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
+import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
 
 /**
  * @typedef {import('@vercel/node').VercelRequest} VercelRequest

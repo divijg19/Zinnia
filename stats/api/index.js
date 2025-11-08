@@ -1,7 +1,7 @@
 // TypeScript type checking disabled - Vercel query params are string | string[] but functions expect string
 // @ts-nocheck
 
-import { renderStatsCard } from "../src/cards/stats.ts";
+import { renderStatsCard } from "../src/cards/stats.js";
 import { guardAccess } from "../src/common/access.js";
 import {
 	handleApiError,
@@ -13,8 +13,8 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 } from "../src/common/cache.js";
-import { parseArray, parseBoolean } from "../src/common/utils.ts";
-import { fetchStats } from "../src/fetchers/stats.ts";
+import { parseArray, parseBoolean } from "../src/common/utils.js";
+import { fetchStats } from "../src/fetchers/stats.js";
 
 /**
  * @typedef {import('@vercel/node').VercelRequest} VercelRequest
@@ -95,7 +95,7 @@ export default async (req, res) => {
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-				showStats.includes("prs_merged_percentage"),
+			showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(commits_year, 10),
