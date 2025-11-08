@@ -1,4 +1,4 @@
-import type { Generator } from "./card";
+import type { Generator } from "./card.js";
 
 export interface Config {
 	username: string;

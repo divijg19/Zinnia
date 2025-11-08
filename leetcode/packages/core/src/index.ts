@@ -1,12 +1,12 @@
-import { Generator } from "./card";
-import { ActivityExtension } from "./exts/activity";
-import { AnimationExtension } from "./exts/animation";
-import { ContestExtension } from "./exts/contest";
-import { FontExtension } from "./exts/font";
-import { HeatmapExtension } from "./exts/heatmap";
-import { RemoteStyleExtension } from "./exts/remote-style";
-import { supported, ThemeExtension } from "./exts/theme";
-import { Config } from "./types";
+import { Generator } from "./card.js";
+import { ActivityExtension } from "./exts/activity.js";
+import { AnimationExtension } from "./exts/animation.js";
+import { ContestExtension } from "./exts/contest.js";
+import { FontExtension } from "./exts/font.js";
+import { HeatmapExtension } from "./exts/heatmap.js";
+import { RemoteStyleExtension } from "./exts/remote-style.js";
+import { supported, ThemeExtension } from "./exts/theme.js";
+import { Config } from "./types.js";
 
 /**
  * Generate a card.

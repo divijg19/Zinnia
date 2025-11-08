@@ -1,4 +1,4 @@
-import { Theme } from "./_theme";
+import { Theme } from "./_theme.js";
 
 const nord = [
 	"#2e3440",

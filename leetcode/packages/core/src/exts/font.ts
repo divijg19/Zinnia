@@ -1,11 +1,11 @@
 // @ts-nocheck
-import type { Generator } from "../card";
+import type { Generator } from "../card.js";
 import Baloo_2 from "../shims/fonts/Baloo_2.js";
 import Milonga from "../shims/fonts/Milonga.js";
 import Patrick_Hand from "../shims/fonts/Patrick_Hand.js";
 import Ruthie from "../shims/fonts/Ruthie.js";
 import Source_Code_Pro from "../shims/fonts/Source_Code_Pro.js";
-import type { Extension } from "../types";
+import type { Extension } from "../types.js";
 
 export const supported: Record<string, { name: string; base64: string }> = {
 	baloo_2: Baloo_2,

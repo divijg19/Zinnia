@@ -1,6 +1,6 @@
-import { Gradient } from "../elements";
-import { Item } from "../item";
-import { Theme } from "./_theme";
+import { Gradient } from "../elements.js";
+import { Item } from "../item.js";
+import { Theme } from "./_theme.js";
 
 export default Theme({
 	palette: {

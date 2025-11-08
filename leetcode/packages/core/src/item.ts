@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { Item as Base } from "./types";
+import type { Item as Base } from "./types.js";
 
 let counter = 0;
 

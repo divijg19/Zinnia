@@ -1,5 +1,5 @@
-import type { Generator } from "../card";
-import type { Extension } from "../types";
+import type { Generator } from "../card.js";
+import type { Extension } from "../types.js";
 
 export async function RemoteStyleExtension(
 	generator: Generator,

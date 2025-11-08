@@ -1,3 +1,3 @@
-import { Theme } from "./_theme";
+import { Theme } from "./_theme.js";
 
 export default Theme({});

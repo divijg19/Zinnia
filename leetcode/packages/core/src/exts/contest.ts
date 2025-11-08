@@ -1,7 +1,7 @@
-import type { Generator } from "../card";
-import { Item } from "../item";
+import type { Generator } from "../card.js";
+import { Item } from "../item.js";
 import { LeetCode } from "../shims/leetcode-query.js";
-import type { Extension } from "../types";
+import type { Extension } from "../types.js";
 
 export async function ContestExtension(
 	generator: Generator,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LeetCode } from "./shims/leetcode-query.js";
-import type { FetchedData } from "./types";
+import type { FetchedData } from "./types.js";
 
 interface ProblemCount {
 	difficulty: string;

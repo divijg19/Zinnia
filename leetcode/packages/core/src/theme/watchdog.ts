@@ -1,4 +1,4 @@
-import { Theme } from "./_theme";
+import { Theme } from "./_theme.js";
 
 // Mapping of the provided 'watchdog' colors into the LeetCode Theme shape.
 // Assumptions:

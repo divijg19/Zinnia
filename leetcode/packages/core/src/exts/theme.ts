@@ -1,17 +1,17 @@
 // @ts-nocheck
-import type { Theme } from "../theme/_theme";
-import catppuccinMocha from "../theme/catppuccin-mocha";
-import chartreuse from "../theme/chartreuse";
-import dark from "../theme/dark";
-import forest from "../theme/forest";
-import light from "../theme/light";
-import nord from "../theme/nord";
-import radical from "../theme/radical";
-import transparent from "../theme/transparent";
-import unicorn from "../theme/unicorn";
-import watchdog from "../theme/watchdog";
-import wtf from "../theme/wtf";
-import type { Extension, Item } from "../types";
+import type { Theme } from "../theme/_theme.js";
+import catppuccinMocha from "../theme/catppuccin-mocha.js";
+import chartreuse from "../theme/chartreuse.js";
+import dark from "../theme/dark.js";
+import forest from "../theme/forest.js";
+import light from "../theme/light.js";
+import nord from "../theme/nord.js";
+import radical from "../theme/radical.js";
+import transparent from "../theme/transparent.js";
+import unicorn from "../theme/unicorn.js";
+import watchdog from "../theme/watchdog.js";
+import wtf from "../theme/wtf.js";
+import type { Extension, Item } from "../types.js";
 
 export const supported: Record<string, Theme> = {
 	dark,
