@@ -1,6 +1,6 @@
 // @ts-check
 
-import { clampValue } from "./utils.js";
+import { clampValue } from "./utils.ts";
 
 const MIN = 60;
 const HOUR = 60 * MIN;
@@ -110,8 +110,8 @@ const setCacheHeaders = (res, cacheSeconds) => {
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${cacheSeconds}, ` +
-		`s-maxage=${cacheSeconds}, ` +
-		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+			`s-maxage=${cacheSeconds}, ` +
+			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
 };
 
@@ -135,8 +135,8 @@ const setErrorCacheHeaders = (res) => {
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${CACHE_TTL.ERROR}, ` +
-		`s-maxage=${CACHE_TTL.ERROR}, ` +
-		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+			`s-maxage=${CACHE_TTL.ERROR}, ` +
+			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
 };
 

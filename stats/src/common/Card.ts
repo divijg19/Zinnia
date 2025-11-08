@@ -1,24 +1,44 @@
-import { encodeHTML, flexLayout } from "./utils.js";
+import { encodeHTML, flexLayout } from "./utils.ts";
 
-class Card {
-	/**
-	 * Creates a new card instance.
-	 *
-	 * @param {object} args Card arguments.
-	 * @param {number?=} args.width Card width.
-	 * @param {number?=} args.height Card height.
-	 * @param {number?=} args.border_radius Card border radius.
-	 * @param {string?=} args.customTitle Card custom title.
-	 * @param {string?=} args.defaultTitle Card default title.
-	 * @param {string?=} args.titlePrefixIcon Card title prefix icon.
-	 * @param {object?=} args.colors Card colors arguments.
-	 * @param {string} args.colors.titleColor Card title color.
-	 * @param {string} args.colors.textColor Card text color.
-	 * @param {string} args.colors.iconColor Card icon color.
-	 * @param {string|Array} args.colors.bgColor Card background color.
-	 * @param {string} args.colors.borderColor Card border color.
-	 * @returns {Card} Card instance.
-	 */
+export interface CardColors {
+	titleColor: string;
+	textColor: string;
+	iconColor: string;
+	bgColor: string | string[]; // solid color or gradient colors
+	borderColor: string;
+}
+
+export interface CardOptions {
+	width?: number;
+	height?: number;
+	border_radius?: number;
+	colors?: Partial<CardColors>;
+	customTitle?: string;
+	defaultTitle?: string;
+	titlePrefixIcon?: string;
+}
+
+export interface AccessibilityLabel {
+	title: string;
+	desc: string;
+}
+
+export class Card {
+	width: number;
+	height: number;
+	hideBorder: boolean;
+	hideTitle: boolean;
+	border_radius: number;
+	colors: Partial<CardColors>;
+	title: string;
+	css: string;
+	paddingX: number;
+	paddingY: number;
+	titlePrefixIcon?: string;
+	animations: boolean;
+	a11yTitle: string;
+	a11yDesc: string;
+
 	constructor({
 		width = 100,
 		height = 100,
@@ -27,24 +47,18 @@ class Card {
 		customTitle,
 		defaultTitle = "",
 		titlePrefixIcon,
-	}) {
+	}: CardOptions) {
 		this.width = width;
 		this.height = height;
-
 		this.hideBorder = false;
 		this.hideTitle = false;
-
 		this.border_radius = border_radius;
-
-		// returns theme based colors with proper overrides and defaults
 		this.colors = colors;
 		this.title =
 			customTitle === undefined
 				? encodeHTML(defaultTitle)
 				: encodeHTML(customTitle);
-
 		this.css = "";
-
 		this.paddingX = 25;
 		this.paddingY = 35;
 		this.titlePrefixIcon = titlePrefixIcon;
@@ -53,63 +67,35 @@ class Card {
 		this.a11yDesc = "";
 	}
 
-	/**
-	 * @returns {void}
-	 */
-	disableAnimations() {
+	disableAnimations(): void {
 		this.animations = false;
 	}
 
-	/**
-	 * @param {Object} props The props object.
-	 * @param {string} props.title Accessibility title.
-	 * @param {string} props.desc Accessibility description.
-	 * @returns {void}
-	 */
-	setAccessibilityLabel({ title, desc }) {
+	setAccessibilityLabel({ title, desc }: AccessibilityLabel): void {
 		this.a11yTitle = title;
 		this.a11yDesc = desc;
 	}
 
-	/**
-	 * @param {string} value The CSS to add to the card.
-	 * @returns {void}
-	 */
-	setCSS(value) {
+	setCSS(value: string): void {
 		this.css = value;
 	}
 
-	/**
-	 * @param {boolean} value Whether to hide the border or not.
-	 * @returns {void}
-	 */
-	setHideBorder(value) {
+	setHideBorder(value: boolean): void {
 		this.hideBorder = value;
 	}
 
-	/**
-	 * @param {boolean} value Whether to hide the title or not.
-	 * @returns {void}
-	 */
-	setHideTitle(value) {
+	setHideTitle(value: boolean): void {
 		this.hideTitle = value;
 		if (value) {
 			this.height -= 30;
 		}
 	}
 
-	/**
-	 * @param {string} text The title to set.
-	 * @returns {void}
-	 */
-	setTitle(text) {
+	setTitle(text: string): void {
 		this.title = text;
 	}
 
-	/**
-	 * @returns {string} The rendered card title.
-	 */
-	renderTitle() {
+	renderTitle(): string {
 		const titleText = `
       <text
         x="0"
@@ -138,17 +124,14 @@ class Card {
         transform="translate(${this.paddingX}, ${this.paddingY})"
       >
         ${flexLayout({
-					items: [this.titlePrefixIcon && prefixIcon, titleText],
+					items: [...(this.titlePrefixIcon ? [prefixIcon] : []), titleText],
 					gap: 25,
 				}).join("")}
       </g>
     `;
 	}
 
-	/**
-	 * @returns {string} The rendered card gradient.
-	 */
-	renderGradient() {
+	renderGradient(): string {
 		if (typeof this.colors.bgColor !== "object") {
 			return "";
 		}
@@ -162,22 +145,19 @@ class Card {
             gradientTransform="rotate(${this.colors.bgColor[0]})"
             gradientUnits="userSpaceOnUse"
           >
-            ${gradients.map((grad, index) => {
-							const offset = (index * 100) / (gradients.length - 1);
-							return `<stop offset="${offset}%" stop-color="#${grad}" />`;
-						})}
+            ${gradients
+							.map((grad, index) => {
+								const offset = (index * 100) / (gradients.length - 1);
+								return `<stop offset="${offset}%" stop-color="#${grad}" />`;
+							})
+							.join("")}
           </linearGradient>
         </defs>
         `
 			: "";
 	}
 
-	/**
-	 * Retrieves css animations for a card.
-	 *
-	 * @returns {string} Animation css.
-	 */
-	getAnimations = () => {
+	getAnimations = (): string => {
 		return `
       /* Animations */
       @keyframes scaleInAnimation {
@@ -199,11 +179,7 @@ class Card {
     `;
 	};
 
-	/**
-	 * @param {string} body The inner body of the card.
-	 * @returns {string} The rendered card.
-	 */
-	render(body) {
+	render(body: string): string {
 		return `
       <svg
         width="${this.width}"
@@ -268,6 +244,3 @@ class Card {
     `;
 	}
 }
-
-export { Card };
-export default Card;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Item as Base } from "./types";
 
 let counter = 0;

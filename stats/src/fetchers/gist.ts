@@ -1,5 +1,5 @@
 import { MissingParamError } from "../common/error.ts";
-import { retryer } from "../common/retryer.js";
+import { retryer } from "../common/retryer.ts";
 import { request } from "../common/utils.ts";
 
 const QUERY = `
@@ -46,7 +46,9 @@ const calculatePrimaryLanguage = (files: GistFile[]) => {
 	const keys = Object.keys(languages);
 	let primaryLanguage = keys[0] ?? "";
 	for (const language of keys) {
-		if (languages[language] > (languages[primaryLanguage] || 0)) {
+		const langSize = languages[language];
+		const primaryLangSize = languages[primaryLanguage];
+		if (langSize && primaryLangSize && langSize > primaryLangSize) {
 			primaryLanguage = language;
 		}
 	}
@@ -81,14 +83,18 @@ export const fetchGist = async (id: string): Promise<GistData> => {
 		throw new Error("Gist not found");
 	}
 	const data = viewerGist;
+	const fileKeys = Object.keys(data.files);
+	const firstFileKey = fileKeys[0];
+	if (!firstFileKey) {
+		throw new Error("Gist has no files");
+	}
+	const firstFile = data.files[firstFileKey];
 	return {
-		name: data.files[Object.keys(data.files)[0]].name,
-		nameWithOwner: `${data.owner.login}/${data.files[Object.keys(data.files)[0]].name}`,
+		name: firstFile.name,
+		nameWithOwner: `${data.owner.login}/${firstFile.name}`,
 		description: data.description,
 		language: calculatePrimaryLanguage(data.files),
 		starsCount: data.stargazerCount,
 		forksCount: data.forks.totalCount,
 	};
 };
-
-export default fetchGist;

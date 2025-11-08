@@ -14,10 +14,10 @@
 		"verbatimModuleSyntax": false,
 		"noEmit": true,
 		// Best practices
-		"strict": false,
+		"strict": true,
 		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
-		"noUncheckedIndexedAccess": false,
+		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		// Some stricter flags (disabled by default)
 		"noUnusedLocals": false,
@@ -26,6 +26,8 @@
 	},
 	"include": [
 		"stats/src/**/*.ts",
+		// Note: stats/api contains both .js (Vercel) and .ts (Cloudflare Worker) versions
+		// We exclude the .ts versions via explicit exclude list below
 		"stats/api/**/*.ts",
 		"trophy/src/renderer.ts",
 		"trophy/api/**/*.ts",
@@ -39,6 +41,9 @@
 		"trophy/main.ts",
 		"trophy/deps.ts",
 		"trophy/src/StaticRenderRegeneration/**",
-		"trophy/src/Types/deno.d.ts"
+		"trophy/src/Types/deno.d.ts",
+		// Exclude Cloudflare Worker API files (have .js equivalents for Vercel)
+		"stats/api/index.ts",
+		"stats/api/gist.ts"
 	]
 }

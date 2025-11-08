@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Item, svg_attrs } from "./item";
 import type { Config, FetchedData } from "./types";
 

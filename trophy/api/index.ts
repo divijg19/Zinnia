@@ -85,7 +85,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
-		const url = new URL(req.url, `${proto}://${host}`);
+		const fullUrl = req.url || "/";
+		const url = new URL(fullUrl, `${proto}://${host}`);
 		const nodeHeaders = new Headers();
 		for (const [k, v] of Object.entries(req.headers || {})) {
 			if (Array.isArray(v)) nodeHeaders.set(k, v.join(", "));

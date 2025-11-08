@@ -2,7 +2,7 @@
 
 import { blacklist } from "./blacklist.js";
 import { gistWhitelist, whitelist } from "./envs.js";
-import { renderError } from "./utils.js";
+import { renderError } from "./utils.ts";
 
 const NOT_WHITELISTED_USERNAME_MESSAGE = "This username is not whitelisted";
 const NOT_WHITELISTED_GIST_MESSAGE = "This gist ID is not whitelisted";
@@ -12,17 +12,15 @@ const BLACKLISTED_MESSAGE = "This username is blacklisted";
  * Guards access using whitelist/blacklist.
  *
  * @param {Object} args The parameters object.
- * @param {Object} args.res The response object.
+ * @param {{ send: (body: any) => any }} args.res The response object.
  * @param {string} args.id Resource identifier (username or gist id).
- * @param {"username"|"gist"|"wakatime"} args.type The type of identifier.
+ * @param {"username"|"gist"} args.type The type of identifier.
  * @param {{ title_color?: string, text_color?: string, bg_color?: string, border_color?: string, theme?: string }} args.colors Color options for the error card.
  * @returns {{ isPassed: boolean, result?: any }} The result object indicating success or failure.
  */
 const guardAccess = ({ res, id, type, colors }) => {
-	if (!["username", "gist", "wakatime"].includes(type)) {
-		throw new Error(
-			'Invalid type. Expected "username", "gist", or "wakatime".',
-		);
+	if (!["username", "gist"].includes(type)) {
+		throw new Error('Invalid type. Expected "username" or "gist".');
 	}
 
 	const currentWhitelist = type === "gist" ? gistWhitelist : whitelist;

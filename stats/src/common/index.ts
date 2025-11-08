@@ -1,11 +1,9 @@
-// @ts-check
-
-export { blacklist } from "./blacklist.js";
-export { Card } from "./Card.js";
-export { createProgressNode } from "./createProgressNode.js";
-export { I18n } from "./I18n.js";
-export { icons } from "./icons.js";
-export { retryer } from "./retryer.js";
+export { blacklist } from "./blacklist.ts";
+export { Card } from "./Card.ts";
+export { createProgressNode } from "./createProgressNode.ts";
+export { I18n } from "./I18n.ts";
+export { icons } from "./icons.ts";
+export { retryer } from "./retryer.ts";
 export {
 	chunkArray,
 	clampValue,
@@ -26,4 +24,4 @@ export {
 	renderError,
 	request,
 	wrapTextMultiline,
-} from "./utils.js";
+} from "./utils.ts";

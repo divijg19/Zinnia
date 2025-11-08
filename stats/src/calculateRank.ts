@@ -1,20 +1,30 @@
+export interface RankParams {
+	all_commits: boolean;
+	commits: number;
+	prs: number;
+	issues: number;
+	reviews: number;
+	repos: number;
+	stars: number;
+	followers: number;
+}
+
+export interface RankResult {
+	level: string;
+	percentile: number;
+}
+
 /**
  * Calculates the exponential cdf.
- *
- * @param {number} x The value.
- * @returns {number} The exponential cdf.
  */
-function exponential_cdf(x) {
+function exponential_cdf(x: number): number {
 	return 1 - 2 ** -x;
 }
 
 /**
  * Calculates the log normal cdf.
- *
- * @param {number} x The value.
- * @returns {number} The log normal cdf.
  */
-function log_normal_cdf(x) {
+function log_normal_cdf(x: number): number {
 	// approximation
 	return x / (1 + x);
 }
@@ -22,28 +32,19 @@ function log_normal_cdf(x) {
 /**
  * Calculates the users rank.
  *
- * @param {object} params Parameters on which the user's rank depends.
- * @param {boolean} params.all_commits Whether `include_all_commits` was used.
- * @param {number} params.commits Number of commits.
- * @param {number} params.prs The number of pull requests.
- * @param {number} params.issues The number of issues.
- * @param {number} params.reviews The number of reviews.
- * @param {number} params.repos Total number of repos.
- * @param {number} params.stars The number of stars.
- * @param {number} params.followers The number of followers.
- * @returns {{ level: string, percentile: number }} The users rank.
+ * @param params Parameters on which the user's rank depends.
+ * @returns The users rank.
  */
-function calculateRank({
+export function calculateRank({
 	all_commits,
 	commits,
 	prs,
 	issues,
 	reviews,
-	// eslint-disable-next-line no-unused-vars
-	_repos, // unused
+	repos: _repos, // unused
 	stars,
 	followers,
-}) {
+}: RankParams): RankResult {
 	const COMMITS_MEDIAN = all_commits ? 1000 : 250,
 		COMMITS_WEIGHT = 2;
 	const PRS_MEDIAN = 50,
@@ -80,8 +81,5 @@ function calculateRank({
 
 	const level = LEVELS[THRESHOLDS.findIndex((t) => rank * 100 <= t)];
 
-	return { level, percentile: rank * 100 };
+	return { level: level || "C", percentile: rank * 100 };
 }
-
-export { calculateRank };
-export default calculateRank;

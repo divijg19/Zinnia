@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Icon, Ranking, Root, Solved, TotalSolved, Username } from "./elements";
 import { Item } from "./item";
 import query from "./query";

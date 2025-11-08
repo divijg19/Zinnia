@@ -7,10 +7,10 @@ dotenv.config();
 
 import { beforeAll, describe, expect, test } from "@jest/globals";
 import axios from "axios";
-import { renderGistCard } from "../../src/cards/gist.js";
-import { renderRepoCard } from "../../src/cards/repo.js";
-import { renderStatsCard } from "../../src/cards/stats.js";
-import { renderTopLanguages } from "../../src/cards/top-languages.js";
+import { renderGistCard } from "../../src/cards/gist.ts";
+import { renderRepoCard } from "../../src/cards/repo.ts";
+import { renderStatsCard } from "../../src/cards/stats.ts";
+import { renderTopLanguages } from "../../src/cards/top-languages.ts";
 
 const REPO = "curly-fiesta";
 const USER = "catelinemnemosyne";
@@ -48,7 +48,6 @@ const LANGS_DATA = {
 		size: 1912,
 	},
 };
-
 
 const REPOSITORY_DATA = {
 	name: REPO,

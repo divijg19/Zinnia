@@ -152,6 +152,9 @@ export const getCardColors = ({
 }: CardThemeOptions) => {
 	const themesMap = themes as Record<string, Record<string, string>>;
 	const defaultTheme = themesMap[fallbackTheme];
+	if (!defaultTheme) {
+		throw new Error(`Fallback theme '${fallbackTheme}' not found`);
+	}
 	const selectedTheme = themesMap[theme || ""] || defaultTheme;
 	const defaultBorderColor =
 		selectedTheme.border_color || defaultTheme.border_color;
@@ -190,6 +193,7 @@ export const getCardColors = ({
 			"Unexpected behavior, all colors except background should be string.",
 		);
 	}
+	// Removed verbose test-only logging after debugging theme resolution.
 	return { titleColor, iconColor, textColor, bgColor, borderColor, ringColor };
 };
 
@@ -251,7 +255,7 @@ export const renderError = ({
 };
 
 export const wrapTextMultiline = (text: string, width = 59, maxLines = 3) => {
-	const fullWidthComma = "";
+	const fullWidthComma = "，"; // Chinese full-width comma
 	const encoded = encodeHTML(text);
 	const isChinese = encoded.includes(fullWidthComma);
 	let wrapped: string[] = [];
@@ -294,9 +298,11 @@ export const measureText = (str: string, fontSize = 10) => {
 		str
 			.split("")
 			.map((c) =>
-				c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
+				c.charCodeAt(0) < widths.length
+					? (widths[c.charCodeAt(0)] ?? avg)
+					: avg,
 			)
-			.reduce((cur, acc) => acc + cur) * fontSize
+			.reduce((cur, acc) => (acc ?? 0) + (cur ?? 0), 0) * fontSize
 	);
 };
 
@@ -337,8 +343,4 @@ export const formatBytes = (bytes: number) => {
 	if (i >= sizes.length)
 		throw new Error("Bytes is too large to convert to a human-readable string");
 	return `${(bytes / base ** i).toFixed(1)} ${sizes[i]}`;
-};
-
-export default {
-	ERROR_CARDLength: ERROR_CARD_LENGTH,
 };

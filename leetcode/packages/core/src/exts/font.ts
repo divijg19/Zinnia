@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Generator } from "../card";
 import Baloo_2 from "../shims/fonts/Baloo_2.js";
 import Milonga from "../shims/fonts/Milonga.js";

@@ -15,7 +15,7 @@ type Colors = {
 type GuardArgs = {
 	res: { send: (body: string) => Response } | unknown;
 	id: string;
-	type: "username" | "gist" | "wakatime";
+	type: "username" | "gist";
 	colors?: Colors;
 };
 
@@ -32,10 +32,8 @@ export const guardAccess = ({
 	type,
 	colors,
 }: GuardArgs): { isPassed: true } | { isPassed: false; result: Response } => {
-	if (!["username", "gist", "wakatime"].includes(type)) {
-		throw new Error(
-			'Invalid type. Expected "username", "gist", or "wakatime".',
-		);
+	if (!["username", "gist"].includes(type)) {
+		throw new Error('Invalid type. Expected "username" or "gist".');
 	}
 
 	const currentWhitelist = type === "gist" ? gistWhitelist : whitelist;
@@ -80,5 +78,3 @@ export const guardAccess = ({
 
 	return { isPassed: true };
 };
-
-export default guardAccess;

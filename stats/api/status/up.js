@@ -5,8 +5,8 @@
  * @description This function is currently rate limited to 1 request per 5 minutes.
  */
 
-import retryer from "../../src/common/retryer.js";
-import { logger, request } from "../../src/common/utils.js";
+import { retryer } from "../../src/common/retryer.js";
+import { logger, request } from "../../src/common/utils.ts";
 
 export const RATE_LIMIT_SECONDS = 60 * 5; // 1 request per 5 minutes
 

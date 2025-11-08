@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "@jest/globals";
 import "@testing-library/jest-dom";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { fetchTopLanguages } from "../src/fetchers/top-languages.js";
+import { fetchTopLanguages } from "../src/fetchers/top-languages.ts";
 
 const mock = new MockAdapter(axios);
 

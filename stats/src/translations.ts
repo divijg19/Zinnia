@@ -1,18 +1,26 @@
-// @ts-check
+import { encodeHTML } from "./common/utils.ts";
 
-import { encodeHTML } from "./common/utils.js";
+export type LocaleDict = Record<string, Record<string, string>>;
+
+export interface StatCardProps {
+	name: string;
+	apostrophe: string;
+}
 
 /**
  * Retrieves stat card labels in the available locales.
  *
- * @param {object} props Function arguments.
- * @param {string} props.name The name of the locale.
- * @param {string} props.apostrophe Whether to use apostrophe or not.
- * @returns {object} The locales object.
+ * @param props Function arguments.
+ * @param props.name The name of the locale.
+ * @param props.apostrophe Whether to use apostrophe or not.
+ * @returns The locales object.
  *
  * @see https://www.andiamo.co.uk/resources/iso-language-codes/ for language codes.
  */
-const statCardLocales = ({ name, apostrophe }) => {
+export const statCardLocales = ({
+	name,
+	apostrophe,
+}: StatCardProps): LocaleDict => {
 	const encodedName = encodeHTML(name);
 	return {
 		"statcard.title": {
@@ -640,7 +648,7 @@ const statCardLocales = ({ name, apostrophe }) => {
 	};
 };
 
-const repoCardLocales = {
+export const repoCardLocales: LocaleDict = {
 	"repocard.template": {
 		en: "Template",
 		ar: "قالب",
@@ -739,7 +747,7 @@ const repoCardLocales = {
 	},
 };
 
-const langCardLocales = {
+export const langCardLocales: LocaleDict = {
 	"langcard.title": {
 		en: "Most Used Languages",
 		ar: "أكثر اللغات استخدامًا",
@@ -838,22 +846,16 @@ const langCardLocales = {
 	},
 };
 
-const availableLocales = Object.keys(repoCardLocales["repocard.archived"]);
+export const availableLocales = Object.keys(
+	repoCardLocales["repocard.archived"] || {},
+);
 
 /**
  * Checks whether the locale is available or not.
  *
- * @param {string} locale The locale to check.
- * @returns {boolean} Boolean specifying whether the locale is available or not.
+ * @param locale The locale to check.
+ * @returns Boolean specifying whether the locale is available or not.
  */
-const isLocaleAvailable = (locale) => {
+export const isLocaleAvailable = (locale: string): boolean => {
 	return availableLocales.includes(locale.toLowerCase());
-};
-
-export {
-	availableLocales,
-	isLocaleAvailable,
-	langCardLocales,
-	repoCardLocales,
-	statCardLocales,
 };

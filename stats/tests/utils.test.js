@@ -9,7 +9,7 @@ import {
 	parseBoolean,
 	renderError,
 	wrapTextMultiline,
-} from "../src/common/utils.js";
+} from "../src/common/utils.ts";
 
 describe("Test utils.js", () => {
 	it("should test kFormatter", () => {

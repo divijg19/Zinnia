@@ -1,10 +1,10 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
 import githubUsernameRegex from "github-username-regex";
-import { calculateRank } from "../calculateRank.js";
-import { excludeRepositories } from "../common/envs.js";
+import { calculateRank } from "../calculateRank.ts";
+import { excludeRepositories } from "../common/envs.ts";
 import { CustomError, MissingParamError } from "../common/error.ts";
-import { retryer } from "../common/retryer.js";
+import { retryer } from "../common/retryer.ts";
 import { logger, request, wrapTextMultiline } from "../common/utils.ts";
 import type { StatsData } from "./types";
 
@@ -217,8 +217,12 @@ const fetchStats = async (
 			);
 		}
 		if ((res as any).data.errors[0].message) {
+			const errorMessage = (res as any).data.errors[0].message as
+				| string
+				| undefined;
 			throw new CustomError(
-				wrapTextMultiline((res as any).data.errors[0].message, 90, 1)[0],
+				wrapTextMultiline(errorMessage || "Unknown error", 90, 1)[0] ||
+					"Unknown error",
 				(res as any).statusText,
 			);
 		}
@@ -278,4 +282,3 @@ const fetchStats = async (
 };
 
 export { fetchStats };
-export default fetchStats;

@@ -19,7 +19,7 @@ import {
 	radiansToDegrees,
 	renderTopLanguages,
 	trimTopLanguages,
-} from "../src/cards/top-languages.js";
+} from "../src/cards/top-languages.ts";
 
 import { themes } from "../themes/index.js";
 

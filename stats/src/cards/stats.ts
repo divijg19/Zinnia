@@ -1,5 +1,5 @@
-import { Card } from "../common/Card.js";
-import { CustomError } from "../common/error.js";
+import { Card } from "../common/Card.ts";
+import { CustomError } from "../common/error.ts";
 import { I18n } from "../common/I18n.js";
 import { icons, rankIcon } from "../common/icons.js";
 import {
@@ -66,8 +66,9 @@ const createTextNode = ({
 	return `
         <g class="stagger" style="animation-delay: ${staggerDelay}ms" transform="translate(25, 0)">
             ${iconSvg}
-            <text class="stat ${bold ? " bold" : "not_bold"
-		}" ${labelOffset} y="12.5">${label}:</text>
+            <text class="stat ${
+							bold ? " bold" : "not_bold"
+						}" ${labelOffset} y="12.5">${label}:</text>
             <text
                 class="stat ${bold ? " bold" : "not_bold"}"
                 x="${(showIcons ? 140 : 120) + shiftValuePos}"
@@ -177,7 +178,7 @@ export function renderStatsCard(
 		title_color,
 		ring_color,
 		icon_color,
-		text_color = "#434d58",
+		text_color,
 		text_bold = true,
 		bg_color,
 		theme = "default",
@@ -209,7 +210,7 @@ export function renderStatsCard(
 		ring_color,
 		theme,
 	});
-	const apostrophe = /s$/i.test(name.trim()) ? "" : "'s";
+	const apostrophe = /s$/i.test(name.trim()) ? "" : "s";
 	const i18n = new I18n({
 		locale,
 		translations: statCardLocales({ name, apostrophe }),
@@ -321,20 +322,24 @@ export function renderStatsCard(
 
 	const statItems = Object.keys(STATS)
 		.filter((key) => !hide.includes(key))
-		.map((key, index) =>
-			createTextNode({
-				icon: STATS[key].icon,
-				label: STATS[key].label,
-				value: STATS[key].value,
-				id: STATS[key].id,
-				unitSymbol: STATS[key].unitSymbol,
+		.map((key, index) => {
+			const stat = STATS[key];
+			if (!stat) {
+				throw new Error(`Invalid stat key: ${key}`);
+			}
+			return createTextNode({
+				icon: stat.icon,
+				label: stat.label,
+				value: stat.value,
+				id: stat.id,
+				unitSymbol: stat.unitSymbol,
 				index,
 				showIcons: show_icons,
 				shiftValuePos: 79.01 + (isLongLocale ? 50 : 0),
 				bold: text_bold,
 				number_format,
-			}),
-		);
+			});
+		});
 
 	if (statItems.length === 0 && hide_rank) {
 		throw new CustomError(
@@ -432,10 +437,14 @@ export function renderStatsCard(
 	const labels = Object.keys(STATS)
 		.filter((key) => !hide.includes(key))
 		.map((key) => {
-			if (key === "commits") {
-				return `${i18n.t("statcard.commits")} ${getTotalCommitsYearLabel(include_all_commits, commits_year as number | undefined, i18n)} : ${STATS[key].value}`;
+			const stat = STATS[key];
+			if (!stat) {
+				throw new Error(`Invalid stat key: ${key}`);
 			}
-			return `${STATS[key].label}: ${STATS[key].value}`;
+			if (key === "commits") {
+				return `${i18n.t("statcard.commits")} ${getTotalCommitsYearLabel(include_all_commits, commits_year as number | undefined, i18n)} : ${stat.value}`;
+			}
+			return `${stat.label}: ${stat.value}`;
 		})
 		.join(", ");
 

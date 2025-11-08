@@ -12,8 +12,11 @@ const THEMES: Record<string, { bg: string; fg: string; accent: string }> = {
 	watchdog: { bg: "#021D4A", fg: "#A9FEF7", accent: "#FE428E" },
 };
 
-function getTheme(theme?: string) {
-	return THEMES[theme ?? "dark"] ?? THEMES.dark;
+function getTheme(theme?: string): { bg: string; fg: string; accent: string } {
+	const selected = THEMES[theme ?? "dark"];
+	if (!selected)
+		return THEMES.dark as { bg: string; fg: string; accent: string };
+	return selected;
 }
 
 export function renderTrophySVG(cfg: TrophyConfig): string {

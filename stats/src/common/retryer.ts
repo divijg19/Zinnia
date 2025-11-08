@@ -1,7 +1,5 @@
-// @ts-check
-
-import { CustomError } from "./error.js";
-import { logger } from "./utils.js";
+import { CustomError } from "./error.ts";
+import { logger } from "./utils.ts";
 
 // Script variables.
 
@@ -11,21 +9,53 @@ const PATs = Object.keys(process.env).filter((key) =>
 ).length;
 const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
 
-/**
- * @template V
- * @typedef {(variables: V, token: string | undefined, retriesForTests?: number) => Promise<any>} FetcherFunction Fetcher function.
- */
+export type FetcherFunction<V> = (
+	variables: V,
+	token: string | undefined,
+	retriesForTests?: number,
+) => Promise<{
+	data: {
+		data?: any;
+		errors?: Array<{
+			type?: string;
+			message?: string;
+		}>;
+	};
+	statusText: string;
+	response?: {
+		data?: {
+			message?: string;
+		};
+	};
+}>;
 
 /**
  * Try to execute the fetcher function until it succeeds or the max number of retries is reached.
  *
- * @template V
- * @param {FetcherFunction<V>} fetcher The fetcher function.
- * @param {V} variables Object with arguments to pass to the fetcher function.
- * @param {number} retries How many times to retry.
- * @returns {Promise<any>} The response from the fetcher function.
+ * @param fetcher The fetcher function.
+ * @param variables Object with arguments to pass to the fetcher function.
+ * @param retries How many times to retry.
+ * @returns The response from the fetcher function.
  */
-const retryer = async (fetcher, variables, retries = 0) => {
+export const retryer = async <V>(
+	fetcher: FetcherFunction<V>,
+	variables: V,
+	retries = 0,
+): Promise<{
+	data: {
+		data?: any;
+		errors?: Array<{
+			type?: string;
+			message?: string;
+		}>;
+	};
+	statusText: string;
+	response?: {
+		data?: {
+			message?: string;
+		};
+	};
+}> => {
 	if (!RETRIES) {
 		throw new CustomError("No GitHub API tokens found", CustomError.NO_TOKENS);
 	}
@@ -65,13 +95,30 @@ const retryer = async (fetcher, variables, retries = 0) => {
 
 		// finally return the response
 		return response;
-	} catch (/** @type {any} */ err) {
+	} catch (err: unknown) {
 		// prettier-ignore
 		// also checking for bad credentials if any tokens gets invalidated
 		const isBadCredential =
-			err.response?.data && err.response.data.message === "Bad credentials";
+			err &&
+			typeof err === "object" &&
+			"response" in err &&
+			err.response &&
+			typeof err.response === "object" &&
+			"data" in err.response &&
+			err.response.data &&
+			typeof err.response.data === "object" &&
+			"message" in err.response.data &&
+			err.response.data.message === "Bad credentials";
 		const isAccountSuspended =
-			err.response?.data &&
+			err &&
+			typeof err === "object" &&
+			"response" in err &&
+			err.response &&
+			typeof err.response === "object" &&
+			"data" in err.response &&
+			err.response.data &&
+			typeof err.response.data === "object" &&
+			"message" in err.response.data &&
 			err.response.data.message === "Sorry. Your account was suspended.";
 
 		if (isBadCredential || isAccountSuspended) {
@@ -79,11 +126,10 @@ const retryer = async (fetcher, variables, retries = 0) => {
 			retries++;
 			// directly return from the function
 			return retryer(fetcher, variables, retries);
-		} else {
-			return err.response;
 		}
+
+		throw err;
 	}
 };
 
-export { retryer, RETRIES };
-export default retryer;
+export { RETRIES };

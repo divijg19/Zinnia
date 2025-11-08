@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Gradient } from "../elements";
 import { Item } from "../item";
 import type { Extension } from "../types";

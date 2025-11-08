@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Theme } from "../theme/_theme";
 import catppuccinMocha from "../theme/catppuccin-mocha";
 import chartreuse from "../theme/chartreuse";

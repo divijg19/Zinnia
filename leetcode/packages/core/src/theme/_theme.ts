@@ -22,14 +22,16 @@ export function Theme(theme: Partial<Theme>): Theme {
 	};
 
 	while (completed.palette.bg && completed.palette.bg.length < 4) {
-		completed.palette.bg.push(
-			completed.palette.bg[completed.palette.bg.length - 1],
-		);
+		const lastItem = completed.palette.bg[completed.palette.bg.length - 1];
+		if (lastItem) {
+			completed.palette.bg.push(lastItem);
+		}
 	}
 	while (completed.palette.text && completed.palette.text.length < 4) {
-		completed.palette.text.push(
-			completed.palette.text[completed.palette.text.length - 1],
-		);
+		const lastItem = completed.palette.text[completed.palette.text.length - 1];
+		if (lastItem) {
+			completed.palette.text.push(lastItem);
+		}
 	}
 
 	return completed;

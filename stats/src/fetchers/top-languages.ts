@@ -1,7 +1,7 @@
-import { excludeRepositories } from "../common/envs.js";
-import { CustomError, MissingParamError } from "../common/error.js";
-import { retryer } from "../common/retryer.js";
-import { logger, request, wrapTextMultiline } from "../common/utils.js";
+import { excludeRepositories } from "../common/envs.ts";
+import { CustomError, MissingParamError } from "../common/error.ts";
+import { retryer } from "../common/retryer.ts";
+import { logger, request, wrapTextMultiline } from "../common/utils.ts";
 import type { TopLangData } from "./types";
 
 type Variables = { login: string };
@@ -50,15 +50,18 @@ export const fetchTopLanguages = async (
 
 	if (res.data.errors) {
 		logger.error(res.data.errors);
-		if (res.data.errors[0].type === "NOT_FOUND") {
+		const firstError = res.data.errors[0];
+		if (firstError?.type === "NOT_FOUND") {
 			throw new CustomError(
-				res.data.errors[0].message || "Could not fetch user.",
+				firstError.message || "Could not fetch user.",
 				CustomError.USER_NOT_FOUND,
 			);
 		}
-		if (res.data.errors[0].message) {
+		if (firstError?.message) {
+			const errorMessage = firstError.message;
 			throw new CustomError(
-				wrapTextMultiline(res.data.errors[0].message, 90, 1)[0],
+				wrapTextMultiline(errorMessage || "Unknown error", 90, 1)[0] ||
+					"Unknown error",
 				res.statusText,
 			);
 		}
@@ -101,9 +104,10 @@ export const fetchTopLanguages = async (
 	const acc: LangAccumulator = {};
 	flattened.forEach((prev) => {
 		let langSize = prev.size;
+		const existingLang = acc[prev.node.name];
 
-		if (acc[prev.node.name] && prev.node.name === acc[prev.node.name].name) {
-			langSize = prev.size + acc[prev.node.name].size;
+		if (existingLang && prev.node.name === existingLang.name) {
+			langSize = prev.size + existingLang.size;
 			repoCount += 1;
 		} else {
 			repoCount = 1;
@@ -118,18 +122,26 @@ export const fetchTopLanguages = async (
 	});
 
 	Object.keys(acc).forEach((name) => {
-		acc[name].size =
-			acc[name].size ** size_weight * acc[name].count ** count_weight;
+		const lang = acc[name];
+		if (lang) {
+			lang.size = lang.size ** size_weight * lang.count ** count_weight;
+		}
 	});
 
 	const topLangsObj: LangAccumulator = Object.keys(acc)
-		.sort((a, b) => acc[b].size - acc[a].size)
+		.sort((a, b) => {
+			const langA = acc[a];
+			const langB = acc[b];
+			if (!langA || !langB) return 0;
+			return langB.size - langA.size;
+		})
 		.reduce((result: LangAccumulator, key) => {
-			result[key] = acc[key];
+			const lang = acc[key];
+			if (lang) {
+				result[key] = lang;
+			}
 			return result;
 		}, {} as LangAccumulator);
 
 	return topLangsObj as TopLangData;
 };
-
-export default fetchTopLanguages;

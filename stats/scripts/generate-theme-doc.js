@@ -22,7 +22,7 @@ Use \`?theme=THEME_NAME\` parameter like so:
 
 ## Stats
 
-> These themes work with all five of our cards: Stats Card, Repo Card, Gist Card, Top Languages Card, and WakaTime Card.
+> These themes work with our four cards: Stats Card, Repo Card, Gist Card, and Top Languages Card.
 
 | | | |
 | :--: | :--: | :--: |
@@ -30,7 +30,7 @@ ${STAT_CARD_TABLE_FLAG}
 
 ## Repo Card
 
-> These themes work with all five of our cards: Stats Card, Repo Card, Gist Card, Top Languages Card, and WakaTime Card.
+> These themes work with our four cards: Stats Card, Repo Card, Gist Card, and Top Languages Card.
 
 | | | |
 | :--: | :--: | :--: |

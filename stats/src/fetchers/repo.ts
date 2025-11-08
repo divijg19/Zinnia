@@ -1,6 +1,6 @@
-import { MissingParamError } from "../common/error.js";
-import { retryer } from "../common/retryer.js";
-import { request } from "../common/utils.js";
+import { MissingParamError } from "../common/error.ts";
+import { retryer } from "../common/retryer.ts";
+import { request } from "../common/utils.ts";
 import type { RepositoryData } from "./types";
 
 type Variables = { login: string; repo: string };
@@ -97,5 +97,3 @@ export const fetchRepo = async (
 
 	throw new Error("Unexpected behavior");
 };
-
-export default fetchRepo;

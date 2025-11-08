@@ -27,8 +27,8 @@ lang-card:
   - changed-files:
       - any-glob-to-any-file:
           - api/top-langs.js
-          - src/cards/top-languages.js
-          - src/fetchers/top-languages.js
+          - src/cards/top-languages.ts
+          - src/fetchers/top-languages.ts
           - tests/fetchTopLanguages.test.js
           - tests/renderTopLanguagesCard.test.js
           - tests/top-langs.test.js
@@ -37,8 +37,8 @@ repo-card:
   - changed-files:
       - any-glob-to-any-file:
           - api/pin.js
-          - src/cards/repo.js
-          - src/fetchers/repo.js
+          - src/cards/repo.ts
+          - src/fetchers/repo.ts
           - tests/fetchRepo.test.js
           - tests/renderRepoCard.test.js
           - tests/pin.test.js
@@ -47,28 +47,18 @@ stats-card:
   - changed-files:
       - any-glob-to-any-file:
           - api/index.js
-          - src/cards/stats.js
-          - src/fetchers/stats.js
+          - src/cards/stats.ts
+          - src/fetchers/stats.ts
           - tests/fetchStats.test.js
           - tests/renderStatsCard.test.js
           - tests/api.test.js
-
-wakatime-card:
-  - changed-files:
-      - any-glob-to-any-file:
-          - api/wakatime.js
-          - src/cards/wakatime.js
-          - src/fetchers/wakatime.js
-          - tests/fetchWakatime.test.js
-          - tests/renderWakatimeCard.test.js
-          - tests/wakatime.test.js
 
 gist-card:
   - changed-files:
       - any-glob-to-any-file:
           - api/gist.js
-          - src/cards/gist.js
-          - src/fetchers/gist.js
+          - src/cards/gist.ts
+          - src/fetchers/gist.ts
           - tests/fetchGist.test.js
           - tests/renderGistCard.test.js
           - tests/gist.test.js
@@ -87,4 +77,7 @@ ci:
 infrastructure:
   - changed-files:
       - any-glob-to-any-file:
-          - .eslintrc.json
+          - eslint.config.mjs
+          - jest.config.js
+          - tsconfig.json
+          - vercel.json

@@ -1,4 +1,4 @@
-import { renderStatsCard } from "../src/cards/stats.js";
+import { renderStatsCard } from "../src/cards/stats.ts";
 import type { StatCardOptions } from "../src/cards/types.d.ts";
 import { guardAccess } from "../src/common/access.ts";
 import {

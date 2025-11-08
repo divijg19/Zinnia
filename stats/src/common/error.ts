@@ -8,7 +8,6 @@ export const SECONDARY_ERROR_MESSAGES: Record<string, string> = {
 	USER_NOT_FOUND: "Make sure the provided username is not an organization",
 	GRAPHQL_ERROR: TRY_AGAIN_LATER,
 	GITHUB_REST_API_ERROR: TRY_AGAIN_LATER,
-	WAKATIME_USER_NOT_FOUND: "Make sure you have a public WakaTime profile",
 };
 
 export class CustomError extends Error {
@@ -26,7 +25,6 @@ export class CustomError extends Error {
 	static USER_NOT_FOUND = "USER_NOT_FOUND";
 	static GRAPHQL_ERROR = "GRAPHQL_ERROR";
 	static GITHUB_REST_API_ERROR = "GITHUB_REST_API_ERROR";
-	static WAKATIME_ERROR = "WAKATIME_ERROR";
 }
 
 export class MissingParamError extends Error {

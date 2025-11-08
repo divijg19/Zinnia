@@ -1,21 +1,19 @@
-// @ts-check
+import { clampValue } from "./utils.ts";
 
-import { clampValue } from "./utils.js";
+export interface ProgressNodeOptions {
+	x: number;
+	y: number;
+	width: number;
+	color: string;
+	progress: number;
+	progressBarBackgroundColor: string;
+	delay: number;
+}
 
 /**
  * Create a node to indicate progress in percentage along a horizontal line.
- *
- * @param {Object} params Object that contains the createProgressNode parameters.
- * @param {number} params.x X-axis position.
- * @param {number} params.y Y-axis position.
- * @param {number} params.width Width of progress bar.
- * @param {string} params.color Progress color.
- * @param {number} params.progress Progress value.
- * @param {string} params.progressBarBackgroundColor Progress bar bg color.
- * @param {number} params.delay Delay before animation starts.
- * @returns {string} Progress node.
  */
-const createProgressNode = ({
+export const createProgressNode = ({
 	x,
 	y,
 	width,
@@ -23,7 +21,7 @@ const createProgressNode = ({
 	progress,
 	progressBarBackgroundColor,
 	delay,
-}) => {
+}: ProgressNodeOptions): string => {
 	const progressPercentage = clampValue(progress, 2, 100);
 
 	return `
@@ -41,6 +39,3 @@ const createProgressNode = ({
     </svg>
   `;
 };
-
-export { createProgressNode };
-export default createProgressNode;
