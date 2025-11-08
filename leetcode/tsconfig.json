@@ -7,15 +7,6 @@
 		"strict": false,
 		"skipLibCheck": true
 	},
-	"include": [
-		"src",
-		"packages/**/src",
-		"test",
-		"__fixtures__"
-	],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"tsup.config.ts"
-	]
+	"include": ["src", "packages/**/src", "test", "__fixtures__"],
+	"exclude": ["node_modules", "dist", "tsup.config.ts"]
 }
