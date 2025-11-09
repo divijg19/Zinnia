@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createStatsHandler } from "./_stats-wrapper.js";
 
 export default createStatsHandler({
-	importPath: "../stats/api/index.ts",
+	importPath: "../stats/api/index.js",
 	patErrorMessage: "Set PAT_1 in Vercel for stats",
 	usernameErrorCode: "UNKNOWN",
 	internalErrorMessage: "stats: internal error",
