@@ -119,9 +119,6 @@ export default Theme({
 		}
 		
 		/* Animations - smooth entrance */
-		svg{
-			animation:fadeIn 0.8s cubic-bezier(0.4,0,0.2,1)!important;
-		}
 		@keyframes fadeIn{
 			0%{opacity:0;transform:translateY(-5px)}
 			100%{opacity:1;transform:translateY(0)}
@@ -148,7 +145,7 @@ export default Theme({
 					"0.75": "#1a1a50", // Royal purple-blue
 					"1": "#021D4A", // Navy blue (bottom-right)
 				},
-				0.785, // 45-degree angle
+				0.785, // 45-degree angle (π/4 radians)
 			),
 		],
 	}),

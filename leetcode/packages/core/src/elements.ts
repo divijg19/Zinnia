@@ -302,7 +302,10 @@ export function Gradient(
 		children: Object.entries(colors)
 			.sort((a, b) => a[0].localeCompare(b[0]))
 			.map(([offset, color]) => {
-				return new Item("stop", { attr: { offset, "stop-color": color } });
+				return new Item("stop", {
+					attr: { offset, "stop-color": color },
+					single: true
+				});
 			}),
 	});
 }
