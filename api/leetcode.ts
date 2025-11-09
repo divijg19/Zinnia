@@ -64,6 +64,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			cache: 60,
 		};
 
+		// Add extensions based on ext/extension parameter
+		const { FontExtension, AnimationExtension, ThemeExtension, HeatmapExtension, ActivityExtension, ContestExtension } = await import("../leetcode/packages/core/src/index.js");
+
+		sanitized.extensions = [FontExtension, AnimationExtension, ThemeExtension];
+
+		const extName = config.ext || config.extension;
+		if (extName === "activity") {
+			sanitized.extensions.push(ActivityExtension);
+		} else if (extName === "contest") {
+			sanitized.extensions.push(ContestExtension);
+		} else if (extName === "heatmap") {
+			sanitized.extensions.push(HeatmapExtension);
+		}
+
 		// Parse theme= param (supports "name" or "light,dark"); filter unsupported single names
 		if (config.theme?.trim()) {
 			filterThemeParam(url);
