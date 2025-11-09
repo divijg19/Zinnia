@@ -41,11 +41,11 @@
 		},
 		{
 			"src": "/api/stats$",
-			"dest": "stats/api/index.ts"
+			"dest": "api/stats.ts"
 		},
 		{
 			"src": "/api/top-langs$",
-			"dest": "stats/api/top-langs.js"
+			"dest": "api/top-langs.ts"
 		},
 		{
 			"src": "/api/streak$",
@@ -61,15 +61,15 @@
 		},
 		{
 			"src": "/stats$",
-			"dest": "stats/api/index.ts"
+			"dest": "api/stats.ts"
 		},
 		{
 			"src": "/stats/top-langs$",
-			"dest": "stats/api/top-langs.js"
+			"dest": "api/top-langs.ts"
 		},
 		{
 			"src": "/api/stats/top-langs$",
-			"dest": "stats/api/top-langs.js"
+			"dest": "api/top-langs.ts"
 		}
 	]
 }
