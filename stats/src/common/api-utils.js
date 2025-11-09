@@ -2,7 +2,7 @@
 
 import { isLocaleAvailable } from "../translations.js";
 import { setErrorCacheHeaders } from "./cache.js";
-import { renderError } from "./utils.ts";
+import { renderError } from "./utils.js";
 
 /**
  * Extract error message and secondaryMessage from an error object.
