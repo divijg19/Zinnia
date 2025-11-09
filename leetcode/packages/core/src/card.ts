@@ -182,6 +182,24 @@ export class Generator {
 		if (!root.children) {
 			root.children = [];
 		}
+
+		// CRITICAL: Insert theme <defs> BEFORE background rect for gradient references
+		// SVG requires definitions to appear before elements that use them
+		if (body["theme-ext"]) {
+			const defsIndex = root.children.findIndex(child => child.attr?.id === "default-colors");
+			if (defsIndex !== -1) {
+				// Insert after <style> but before <rect id="background">
+				root.children.splice(defsIndex + 1, 0, body["theme-ext"]());
+			}
+			delete body["theme-ext"];
+		}
+		if (body["theme-ext-light"]) {
+			delete body["theme-ext-light"]; // Media query themes not yet supported in defs
+		}
+		if (body["theme-ext-dark"]) {
+			delete body["theme-ext-dark"]; // Media query themes not yet supported in defs
+		}
+
 		root.children.push(body.icon());
 		delete body.icon;
 		root.children.push(body.username(data.profile.username));
