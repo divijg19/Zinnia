@@ -79,11 +79,11 @@ export default Theme({
 	extends: new Item("defs", {
 		children: [
 			// Enhanced red-to-blue gradient with more depth
-			Gradient("g-watchdog-bg", { 
-				0: "#520806", 
+			Gradient("g-watchdog-bg", {
+				0: "#520806",
 				0.3: "#3d1535",
-				0.6: "#2a1745", 
-				1: "#021D4A" 
+				0.6: "#2a1745",
+				1: "#021D4A"
 			}),
 		],
 	}),
