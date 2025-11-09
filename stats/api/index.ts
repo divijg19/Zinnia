@@ -1,14 +1,14 @@
-import { renderStatsCard } from "../src/cards/stats.ts";
+import { renderStatsCard } from "../src/cards/stats.js";
 import type { StatCardOptions } from "../src/cards/types.d.ts";
-import { guardAccess } from "../src/common/access.ts";
+import { guardAccess } from "../src/common/access.js";
 import {
 	CACHE_TTL,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setErrorCacheHeaders,
-} from "../src/common/cache.ts";
-import { parseArray, parseBoolean, renderError } from "../src/common/utils.ts";
-import { fetchStats } from "../src/fetchers/stats.ts";
+} from "../src/common/cache.js";
+import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
+import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 export default async function handler(req: Request): Promise<Response> {
@@ -109,7 +109,7 @@ export default async function handler(req: Request): Promise<Response> {
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-				showStats.includes("prs_merged_percentage"),
+			showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(String(commits_year || "0"), 10),

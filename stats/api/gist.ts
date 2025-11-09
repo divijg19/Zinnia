@@ -1,4 +1,4 @@
-import { renderGistCard } from "../src/cards/gist.ts";
+import { renderGistCard } from "../src/cards/gist.js";
 import { guardAccess } from "../src/common/access.js";
 import {
 	CACHE_TTL,
@@ -6,8 +6,8 @@ import {
 	setCacheHeaders,
 	setErrorCacheHeaders,
 } from "../src/common/cache.js";
-import { parseBoolean, renderError } from "../src/common/utils.ts";
-import { fetchGist } from "../src/fetchers/gist.ts";
+import { parseBoolean, renderError } from "../src/common/utils.js";
+import { fetchGist } from "../src/fetchers/gist.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 export default async function handler(req: Request): Promise<Response> {
