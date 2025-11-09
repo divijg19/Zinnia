@@ -20,9 +20,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 		}
 		// Use the Request-based TS handler to avoid Express coupling and bundling surprises.
-		// Import the JS handler to avoid runtime .ts resolution issues on serverless
+		// Import the TS handler directly for proper TypeScript transpilation
 		const { default: statsRequestHandler } = (await import(
-			"../stats/api/index.js"
+			"../stats/api/index.ts"
 		)) as { default: (req: Request) => Promise<Response> };
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();

@@ -19,10 +19,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"STATS_RATE_LIMIT",
 			);
 		}
-		// Import the JS handler to avoid runtime .ts resolution issues on serverless
+		// Use the Request-based TS handler to avoid Express coupling and bundling surprises.
 		const { default: topLangsRequestHandler } = (await import(
 			"../stats/api/top-langs.js"
-		)) as unknown as { default: (req: Request) => Promise<Response> };
+		)) as { default: (req: Request) => Promise<Response> };
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
 		const url = new URL(
