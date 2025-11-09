@@ -1,5 +1,5 @@
-import { CustomError } from "./error.ts";
-import { logger } from "./utils.ts";
+import { CustomError } from "./error.js";
+import { logger } from "./utils.js";
 
 // Script variables.
 

@@ -1,8 +1,8 @@
 // Canonical TypeScript implementation of the Top Languages card.
 // Tests previously imported the JS version; a thin JS shim now re-exports this file.
 // This file contains the full logic including all layouts (normal, compact, donut, donut-vertical, pie).
-import { Card } from "../common/Card.ts";
-import { createProgressNode } from "../common/createProgressNode.ts";
+import { Card } from "../common/Card.js";
+import { createProgressNode } from "../common/createProgressNode.js";
 import { I18n } from "../common/I18n.js";
 import {
 	chunkArray,
@@ -12,10 +12,10 @@ import {
 	getCardColors,
 	lowercaseTrim,
 	measureText,
-} from "../common/utils.ts";
-import type { Lang, TopLangData } from "../fetchers/types";
+} from "../common/utils.js";
+import type { Lang, TopLangData } from "../fetchers/types.js";
 import { langCardLocales } from "../translations.js";
-import type { TopLangOptions } from "./types";
+import type { TopLangOptions } from "./types.js";
 
 const DEFAULT_CARD_WIDTH = 300;
 export const MIN_CARD_WIDTH = 280;

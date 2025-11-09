@@ -1,12 +1,12 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
 import githubUsernameRegex from "github-username-regex";
-import { calculateRank } from "../calculateRank.ts";
-import { excludeRepositories } from "../common/envs.ts";
-import { CustomError, MissingParamError } from "../common/error.ts";
-import { retryer } from "../common/retryer.ts";
-import { logger, request, wrapTextMultiline } from "../common/utils.ts";
-import type { StatsData } from "./types";
+import { calculateRank } from "../calculateRank.js";
+import { excludeRepositories } from "../common/envs.js";
+import { CustomError, MissingParamError } from "../common/error.js";
+import { retryer } from "../common/retryer.js";
+import { logger, request, wrapTextMultiline } from "../common/utils.js";
+import type { StatsData } from "./types.js";
 
 dotenv.config();
 

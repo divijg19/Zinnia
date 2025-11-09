@@ -1,4 +1,4 @@
-import { encodeHTML } from "./common/utils.ts";
+import { encodeHTML } from "./common/utils.js";
 
 export type LocaleDict = Record<string, Record<string, string>>;
 

@@ -2,7 +2,7 @@ import axios from "axios";
 import toEmoji from "emoji-name-map";
 import wrap from "word-wrap";
 import { themes } from "../../themes/index.js";
-import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.ts";
+import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 
 export const ERROR_CARD_LENGTH = 576.5;
 

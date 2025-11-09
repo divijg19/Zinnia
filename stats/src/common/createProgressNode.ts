@@ -1,4 +1,4 @@
-import { clampValue } from "./utils.ts";
+import { clampValue } from "./utils.js";
 
 export interface ProgressNodeOptions {
 	x: number;

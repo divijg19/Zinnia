@@ -1,6 +1,6 @@
 // Canonical TypeScript implementation of gist card (JS file is a thin shim).
 import { createRequire } from "node:module";
-import { Card } from "../common/Card.ts";
+import { Card } from "../common/Card.js";
 import { icons } from "../common/icons.js";
 import {
 	createLanguageNode,
@@ -12,9 +12,9 @@ import {
 	measureText,
 	parseEmojis,
 	wrapTextMultiline,
-} from "../common/utils.ts";
-import type { GistData } from "../fetchers/types";
-import type { GistCardOptions } from "./types";
+} from "../common/utils.js";
+import type { GistData } from "../fetchers/types.js";
+import type { GistCardOptions } from "./types.js";
 
 const require = createRequire(import.meta.url);
 // languageColors is a large static JSON map. Use an index signature for loose lookup.

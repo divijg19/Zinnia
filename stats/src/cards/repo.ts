@@ -1,6 +1,6 @@
-import { Card } from "../common/Card.ts";
-import { I18n } from "../common/I18n.ts";
-import { icons } from "../common/icons.ts";
+import { Card } from "../common/Card.js";
+import { I18n } from "../common/I18n.js";
+import { icons } from "../common/icons.js";
 import {
 	clampValue,
 	createLanguageNode,
@@ -12,10 +12,10 @@ import {
 	measureText,
 	parseEmojis,
 	wrapTextMultiline,
-} from "../common/utils.ts";
-import type { RepositoryData } from "../fetchers/types";
+} from "../common/utils.js";
+import type { RepositoryData } from "../fetchers/types.js";
 import { repoCardLocales } from "../translations.js";
-import type { RepoCardOptions } from "./types";
+import type { RepoCardOptions } from "./types.js";
 
 const ICON_SIZE = 16;
 const DESCRIPTION_LINE_WIDTH = 59;

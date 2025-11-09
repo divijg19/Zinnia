@@ -1,8 +1,8 @@
-import { excludeRepositories } from "../common/envs.ts";
-import { CustomError, MissingParamError } from "../common/error.ts";
-import { retryer } from "../common/retryer.ts";
-import { logger, request, wrapTextMultiline } from "../common/utils.ts";
-import type { TopLangData } from "./types";
+import { excludeRepositories } from "../common/envs.js";
+import { CustomError, MissingParamError } from "../common/error.js";
+import { retryer } from "../common/retryer.js";
+import { logger, request, wrapTextMultiline } from "../common/utils.js";
+import type { TopLangData } from "./types.js";
 
 type Variables = { login: string };
 

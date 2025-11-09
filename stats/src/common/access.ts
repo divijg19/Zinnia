@@ -2,7 +2,7 @@
 
 import { blacklist } from "./blacklist.js";
 import { gistWhitelist, whitelist } from "./envs.js";
-import { renderError } from "./utils.ts";
+import { renderError } from "./utils.js";
 
 type Colors = {
 	title_color?: string;

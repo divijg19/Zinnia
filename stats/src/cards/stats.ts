@@ -1,5 +1,5 @@
-import { Card } from "../common/Card.ts";
-import { CustomError } from "../common/error.ts";
+import { Card } from "../common/Card.js";
+import { CustomError } from "../common/error.js";
 import { I18n } from "../common/I18n.js";
 import { icons, rankIcon } from "../common/icons.js";
 import {
@@ -8,10 +8,10 @@ import {
 	getCardColors,
 	kFormatter,
 	measureText,
-} from "../common/utils.ts";
-import type { StatsData } from "../fetchers/types";
+} from "../common/utils.js";
+import type { StatsData } from "../fetchers/types.js";
 import { statCardLocales } from "../translations.js";
-import type { StatCardOptions } from "./types";
+import type { StatCardOptions } from "./types.js";
 
 const CARD_MIN_WIDTH = 287;
 const CARD_DEFAULT_WIDTH = 287;

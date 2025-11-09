@@ -1,4 +1,4 @@
-import { encodeHTML, flexLayout } from "./utils.ts";
+import { encodeHTML, flexLayout } from "./utils.js";
 
 export interface CardColors {
 	titleColor: string;

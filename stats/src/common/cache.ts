@@ -1,4 +1,4 @@
-import { clampValue } from "./utils.ts";
+import { clampValue } from "./utils.js";
 
 const MIN = 60;
 const HOUR = 60 * MIN;

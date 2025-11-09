@@ -1,6 +1,6 @@
-import { MissingParamError } from "../common/error.ts";
-import { retryer } from "../common/retryer.ts";
-import { request } from "../common/utils.ts";
+import { MissingParamError } from "../common/error.js";
+import { retryer } from "../common/retryer.js";
+import { request } from "../common/utils.js";
 
 const QUERY = `
 query gistInfo($gistName: String!) {
