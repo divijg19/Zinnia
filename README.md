@@ -31,16 +31,16 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 
 ### CI/CD Workflows
 - `.github/workflows/ci.yml`: Lint, typecheck, test, build (push/PR). Concurrency-cancel enabled.
-- `.github/workflows/deploy.yml`: Optional deploy to Vercel on main or manual dispatch (requires `VERCEL_TOKEN` secret).
 - `.github/workflows/refresh.yml`: Daily cache bust + warm of endpoints (uses `PROD_DOMAIN` secret or defaults to zinnia-rho.vercel.app).
 
 ### Deployment on Vercel
+- **Automatic deployment**: Vercel is connected to GitHub and auto-deploys on push to `main` branch.
 - Vercel uses `vercel.json` to build and route serverless functions for each API.
-- To deploy manually:
+- **Manual deployment** (if needed):
 	```pwsh
 	npm run vercel:deploy
 	```
-- For GitHub integration, connect your repo in the Vercel dashboard and set any required environment variables.
+- **Setup**: Connect your repo in the Vercel dashboard and set required environment variables (see below).
 
 ## Embeds
 
