@@ -12,8 +12,8 @@ export default Theme({
 	},
 	css: `
 		/* Background with gradient - matches Streak/Trophy */
+		/* CRITICAL: Do NOT set fill here - it comes from palette bg[0] via --bg-0 variable */
 		#background{
-			fill:url(#g-watchdog-bg);
 			rx:12px;
 			stroke:#E4E2E2;
 			stroke-width:1.5px;
