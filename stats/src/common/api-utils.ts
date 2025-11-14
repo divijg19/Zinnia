@@ -15,25 +15,16 @@ type RenderOptions = {
     theme?: string;
 };
 
+// Reuse RenderOptions to avoid duplication and satisfy linter
 type ApiErrorOptions = {
     res: any;
     err: unknown;
-    title_color?: string;
-    text_color?: string;
-    bg_color?: string;
-    border_color?: string;
-    theme?: string;
-};
+} & RenderOptions;
 
 type ValidateLocaleOptions = {
     locale?: string;
     res: any;
-    title_color?: string;
-    text_color?: string;
-    bg_color?: string;
-    border_color?: string;
-    theme?: string;
-};
+} & RenderOptions;
 
 /**
  * Extract error message and secondaryMessage from an error object.
