@@ -4,12 +4,10 @@ import { filterThemeParam, getUsername } from "../lib/params.js";
 import { renderTrophySVG } from "../trophy/src/renderer.js";
 import {
 	readTrophyCache,
-	readTrophyCache,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-	writeTrophyCache,
 	writeTrophyCache,
 } from "./_utils.js";
 

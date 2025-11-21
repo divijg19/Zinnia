@@ -163,38 +163,3 @@ export function setEtagAndMaybeSend304(
 	return false;
 }
 
-// --- Trophy SVG filesystem cache helpers (best-effort) ---
-const TROPHY_CACHE_DIR = path.join(process.cwd(), "cache", "trophy");
-
-function cacheKeyForUrl(url: string): string {
-	const h = crypto.createHash("sha1").update(url, "utf8").digest("hex");
-	return h.slice(0, 16);
-}
-
-async function ensureCacheDir(): Promise<void> {
-	try {
-		await fs.mkdir(TROPHY_CACHE_DIR, { recursive: true });
-	} catch (_e) {
-		// ignore
-	}
-}
-
-export async function writeTrophyCache(url: string, body: string): Promise<void> {
-	try {
-		await ensureCacheDir();
-		const file = path.join(TROPHY_CACHE_DIR, `${cacheKeyForUrl(url)}.svg`);
-		await fs.writeFile(file, body, "utf8");
-	} catch (_e) {
-		// best-effort
-	}
-}
-
-export async function readTrophyCache(url: string): Promise<string | null> {
-	try {
-		const file = path.join(TROPHY_CACHE_DIR, `${cacheKeyForUrl(url)}.svg`);
-		const data = await fs.readFile(file, "utf8");
-		return data;
-	} catch (_e) {
-		return null;
-	}
-}
