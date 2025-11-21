@@ -4,10 +4,12 @@ import { filterThemeParam, getUsername } from "../lib/params.js";
 import { renderTrophySVG } from "../trophy/src/renderer.js";
 import {
 	readTrophyCache,
+	readTrophyCache,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
+	writeTrophyCache,
 	writeTrophyCache,
 } from "./_utils.js";
 
@@ -88,6 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		let resp: Response;
 		try {
 			resp = await fetchWithRetries(upstream.toString(), 3, 200);
+			resp = await fetchWithRetries(upstream.toString(), 3, 200);
 		} catch (_e) {
 			// Network-level failure after retries: try cached SVG before failing
 			try {
@@ -136,6 +139,71 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		// Normal successful SVG passthrough. Persist a copy for later fallbacks.
 		setSvgHeaders(res);
+
+		// If upstream returned a 404 and the body is an SVG, forward it
+		// (preserve the upstream payload to help debugging clients).
+		if (resp.status === 404) {
+			if (ct.includes("image/svg")) {
+				// Keep any caching short for upstream 404s
+				setCacheHeaders(res, Math.min(cacheSeconds, 60));
+				if (setEtagAndMaybeSend304(req.headers as any, res, body))
+					return res.send("");
+				res.status(404);
+				return res.send(body);
+			}
+			return sendErrorSvg(
+				req,
+				res,
+				`Upstream trophy returned 404`,
+				"TROPHY_UPSTREAM_STATUS",
+			);
+		}
+
+		// For upstream 5xx errors prefer the last-successful cached SVG, then
+		// fall back to a local render. Cached SVGs are served longer to reduce
+		// client-visible outages.
+		if (resp.status >= 500) {
+			try {
+				const cached = await readTrophyCache(upstream.toString());
+				if (cached) {
+					setSvgHeaders(res);
+					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
+						return res.send("");
+					return res.send(cached);
+				}
+			} catch (_e) {
+				// ignore and continue to local render
+			}
+
+			// No cached SVG available — try a local render as a last resort.
+			try {
+				const title = url.searchParams.get("title") || undefined;
+				const columns =
+					parseInt(url.searchParams.get("columns") || "4", 10) || 4;
+				const themeParam = (url.searchParams.get("theme") || "").toLowerCase();
+				const svgOut = renderTrophySVG({
+					username,
+					theme: themeParam || undefined,
+					title,
+					columns,
+				});
+				setCacheHeaders(res, 30);
+				if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
+					return res.send("");
+				return res.send(svgOut);
+			} catch (_e) {
+				return sendErrorSvg(
+					req,
+					res,
+					`Upstream trophy returned ${resp.status}`,
+					"TROPHY_UPSTREAM_STATUS",
+					30,
+				);
+			}
+		}
+
+		// Normal successful SVG passthrough. Persist a copy for future fallbacks.
 		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			try {
