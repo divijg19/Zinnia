@@ -33,8 +33,14 @@ export class TrophyList {
 			new TotalReviewsTrophy(userInfo.totalReviews),
 		);
 		// Secret trophies
+		const isAllSRank = this.trophies.every((trophy) =>
+			trophy.rank.slice(0, 1) === RANK.S,
+		)
+			? 1
+			: 0;
+
 		this.trophies.push(
-			new AllSuperRankTrophy(this.isAllSRank),
+			new AllSuperRankTrophy(isAllSRank),
 			new MultipleLangTrophy(userInfo.languageCount),
 			new LongTimeAccountTrophy(userInfo.durationYear),
 			new AncientAccountTrophy(userInfo.ancientAccount),
@@ -50,11 +56,7 @@ export class TrophyList {
 	get getArray() {
 		return this.trophies;
 	}
-	private get isAllSRank() {
-		return this.trophies.every((trophy) => trophy.rank.slice(0, 1) === RANK.S)
-			? 1
-			: 0;
-	}
+
 	filterByHidden() {
 		this.trophies = this.trophies.filter(
 			(trophy) => !trophy.hidden || trophy.rank !== RANK.UNKNOWN,
