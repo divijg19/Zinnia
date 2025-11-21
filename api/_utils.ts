@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
 import type { VercelResponse } from "@vercel/node";
 
 /**
@@ -93,6 +95,48 @@ export function computeEtag(body: string): string {
 	// Use first 16 hex chars per spec and return without quotes
 	return hash.slice(0, 16);
 }
+
+// --- Simple filesystem cache for trophy SVG fallbacks ---
+const TROPHY_CACHE_DIR = path.join(process.cwd(), "cache", "trophy");
+
+function keyFromUrl(url: string): string {
+	const h = crypto.createHash("sha1").update(url, "utf8").digest("hex");
+	return h.slice(0, 16);
+}
+
+async function ensureCacheDir(): Promise<void> {
+	try {
+		await fs.mkdir(TROPHY_CACHE_DIR, { recursive: true });
+	} catch (_e) {
+		// ignore
+	}
+}
+
+/** Write a trophy SVG to the local filesystem cache. */
+export async function writeTrophyCache(url: string, body: string): Promise<void> {
+	try {
+		await ensureCacheDir();
+		const key = keyFromUrl(url);
+		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
+		await fs.writeFile(file, body, "utf8");
+	} catch (_e) {
+		// Best-effort caching: fail silently
+	}
+}
+
+/** Read a cached trophy SVG for the given upstream URL, or null if missing. */
+export async function readTrophyCache(url: string): Promise<string | null> {
+	try {
+		const key = keyFromUrl(url);
+		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
+		const data = await fs.readFile(file, "utf8");
+		return data;
+	} catch (_e) {
+		return null;
+	}
+}
+
+export { keyFromUrl as computeCacheKey };
 
 /**
  * Set ETag and honor If-None-Match. Returns true if a 304 was sent and
