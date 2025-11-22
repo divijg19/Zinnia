@@ -11,7 +11,10 @@ const repoRoot = path.resolve(__dirname);
 // either layout (helps when running `cd leetcode && vitest`).
 const setupFile = "leetcode/test/vitest.setup.ts";
 const rootSetup = "tests/vitest.setup.ts";
-const includeGlobs = ["tests/**/*.{test,spec}.{ts,tsx,js,jsx}", "leetcode/test/**/*.{test,spec}.{ts,tsx,js,jsx}"];
+const includeGlobs = [
+	"tests/**/*.{test,spec}.{ts,tsx,js,jsx}",
+	"leetcode/test/**/*.{test,spec}.{ts,tsx,js,jsx}",
+];
 
 export default defineConfig({
 	resolve: {},

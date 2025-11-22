@@ -10,14 +10,22 @@ import { parseBoolean, renderError } from "../src/common/utils.js";
 import { fetchGist } from "../src/fetchers/gist.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
-export default async function handler(req: Request | any, res?: any): Promise<any> {
+export default async function handler(
+	req: Request | any,
+	res?: any,
+): Promise<any> {
 	const rawUrl = (req as any)?.url;
-	const safeUrl = typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
+	const safeUrl =
+		typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
-	const q = (req && (req as any).query && Object.keys((req as any).query).length > 0)
-		? (req as any).query
-		: (Object.fromEntries(url.searchParams.entries()) as Record<string, string>);
+	const q =
+		req && (req as any).query && Object.keys((req as any).query).length > 0
+			? (req as any).query
+			: (Object.fromEntries(url.searchParams.entries()) as Record<
+					string,
+					string
+				>);
 
 	const {
 		id,
@@ -43,7 +51,10 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 		send(body: string, status?: number): any;
 	};
 
-	const externalRes = res && typeof res.setHeader === "function" && typeof res.send === "function" ? res : null;
+	const externalRes =
+		res && typeof res.setHeader === "function" && typeof res.send === "function"
+			? res
+			: null;
 
 	let resShim: ResShim;
 	if (externalRes) {
@@ -70,9 +81,12 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 			send(body: string, status?: number) {
 				// Prefer global Response when available
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const G = (globalThis as any) as Record<string, any>;
+				const G = globalThis as any as Record<string, any>;
 				if (typeof G.Response === "function") {
-					return new G.Response(body, { headers: Object.fromEntries(this.headers), status });
+					return new G.Response(body, {
+						headers: Object.fromEntries(this.headers),
+						status,
+					});
 				}
 				return { body, headers: Object.fromEntries(this.headers), status };
 			},
@@ -123,9 +137,10 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 
 	try {
 		const gistData = await fetchGist(String(id));
-		const requestedValue = "cache_seconds" in q && (q as any).cache_seconds !== undefined
-			? parseInt(String(cache_seconds), 10)
-			: NaN;
+		const requestedValue =
+			"cache_seconds" in q && (q as any).cache_seconds !== undefined
+				? parseInt(String(cache_seconds), 10)
+				: NaN;
 		const cacheSeconds = resolveCacheSeconds({
 			requested: requestedValue,
 			def: CACHE_TTL.GIST_CARD.DEFAULT,

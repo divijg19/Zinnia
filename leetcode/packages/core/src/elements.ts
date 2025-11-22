@@ -221,8 +221,9 @@ export function Solved(problem: FetchedData["problem"]) {
 							"font-weight": "bold",
 							"text-anchor": "end",
 						},
-						content: `${problem[difficulties[i]].solved} / ${problem[difficulties[i]].total
-							}`,
+						content: `${problem[difficulties[i]].solved} / ${
+							problem[difficulties[i]].total
+						}`,
 					}),
 					new Item("line", {
 						id: `${difficulties[i]}-solved-bg`,
@@ -239,10 +240,11 @@ export function Solved(problem: FetchedData["problem"]) {
 						style: {
 							stroke: colors[i],
 							"stroke-width": "4px",
-							"stroke-dasharray": `${300 *
+							"stroke-dasharray": `${
+								300 *
 								(problem[difficulties[i]].solved /
 									problem[difficulties[i]].total)
-								} 10000`,
+							} 10000`,
 							"stroke-linecap": "round",
 						},
 					}),
@@ -304,7 +306,7 @@ export function Gradient(
 			.map(([offset, color]) => {
 				return new Item("stop", {
 					attr: { offset, "stop-color": color },
-					single: true
+					single: true,
 				});
 			}),
 	});

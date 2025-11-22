@@ -115,7 +115,10 @@ async function ensureCacheDir(): Promise<void> {
 	// per-worker setup file will set `TROPHY_CACHE_DIR` to an isolated path.
 	// If `TROPHY_CACHE_DIR` is not set and we're in a test worker, skip
 	// creating the default cache directory to avoid littering the repo.
-	if (!process.env.TROPHY_CACHE_DIR && (process.env.VITEST_WORKER_ID || process.env.NODE_ENV === "test")) {
+	if (
+		!process.env.TROPHY_CACHE_DIR &&
+		(process.env.VITEST_WORKER_ID || process.env.NODE_ENV === "test")
+	) {
 		return;
 	}
 	try {
@@ -126,7 +129,10 @@ async function ensureCacheDir(): Promise<void> {
 }
 
 /** Write a trophy SVG to the local filesystem cache. */
-export async function writeTrophyCache(url: string, body: string): Promise<void> {
+export async function writeTrophyCache(
+	url: string,
+	body: string,
+): Promise<void> {
 	try {
 		await ensureCacheDir();
 		const key = keyFromUrl(url);
@@ -220,4 +226,3 @@ export function setEtagAndMaybeSend304(
 	}
 	return false;
 }
-

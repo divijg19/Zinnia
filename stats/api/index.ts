@@ -11,14 +11,22 @@ import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
 import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
-export default async function handler(req: Request | any, res?: any): Promise<any> {
+export default async function handler(
+	req: Request | any,
+	res?: any,
+): Promise<any> {
 	const rawUrl = (req as any)?.url;
-	const safeUrl = typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
+	const safeUrl =
+		typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
-	const q = (req && (req as any).query && Object.keys((req as any).query).length > 0)
-		? (req as any).query
-		: (Object.fromEntries(url.searchParams.entries()) as Record<string, string>);
+	const q =
+		req && (req as any).query && Object.keys((req as any).query).length > 0
+			? (req as any).query
+			: (Object.fromEntries(url.searchParams.entries()) as Record<
+					string,
+					string
+				>);
 
 	const {
 		username,
@@ -58,7 +66,10 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 		send: (body: string, status?: number) => any;
 	};
 
-	const externalRes = res && typeof res.setHeader === "function" && typeof res.send === "function" ? res : null;
+	const externalRes =
+		res && typeof res.setHeader === "function" && typeof res.send === "function"
+			? res
+			: null;
 
 	let resShim: ResShim;
 	if (externalRes) {
@@ -85,9 +96,12 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 				// In server runtime global Response should exist; keep behavior.
 				// Use the global Response if available.
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const G = (globalThis as any) as Record<string, any>;
+				const G = globalThis as any as Record<string, any>;
 				if (typeof G.Response === "function") {
-					return new G.Response(body, { headers: Object.fromEntries(this.headers), status });
+					return new G.Response(body, {
+						headers: Object.fromEntries(this.headers),
+						status,
+					});
 				}
 				// If Response is not available (test env), return a plain object.
 				return { body, headers: Object.fromEntries(this.headers), status };
@@ -100,7 +114,10 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 	resShim.setHeader("X-Content-Type-Options", "nosniff");
 
 	if (!username) {
-		return resShim.send(renderError({ message: "Missing required parameter: username" }), 400);
+		return resShim.send(
+			renderError({ message: "Missing required parameter: username" }),
+			400,
+		);
 	}
 
 	const access = guardAccess({
@@ -134,15 +151,16 @@ export default async function handler(req: Request | any, res?: any): Promise<an
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-			showStats.includes("prs_merged_percentage"),
+				showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(String(commits_year || "0"), 10),
 		);
 
-		const requestedValue = "cache_seconds" in q && (q as any).cache_seconds !== undefined
-			? parseInt(String(cache_seconds), 10)
-			: NaN;
+		const requestedValue =
+			"cache_seconds" in q && (q as any).cache_seconds !== undefined
+				? parseInt(String(cache_seconds), 10)
+				: NaN;
 		const cacheSeconds = resolveCacheSeconds({
 			requested: requestedValue,
 			def: CACHE_TTL.STATS_CARD.DEFAULT,

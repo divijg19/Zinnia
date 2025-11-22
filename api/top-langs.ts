@@ -16,7 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Import the Express-style handler and call it directly
 		const { default: topLangsHandler } = (await import(
 			"../stats/api/top-langs.js"
-		)) as { default: (req: VercelRequest, res: VercelResponse) => Promise<void> };
+		)) as {
+			default: (req: VercelRequest, res: VercelResponse) => Promise<void>;
+		};
 
 		// Call the handler directly with req/res
 		return await topLangsHandler(req, res);

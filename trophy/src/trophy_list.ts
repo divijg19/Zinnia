@@ -33,8 +33,8 @@ export class TrophyList {
 			new TotalReviewsTrophy(userInfo.totalReviews),
 		);
 		// Secret trophies
-		const isAllSRank = this.trophies.every((trophy) =>
-			trophy.rank.slice(0, 1) === RANK.S,
+		const isAllSRank = this.trophies.every(
+			(trophy) => trophy.rank.slice(0, 1) === RANK.S,
 		)
 			? 1
 			: 0;

@@ -65,7 +65,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		};
 
 		// Add extensions based on ext/extension parameter
-		const { FontExtension, AnimationExtension, ThemeExtension, HeatmapExtension, ActivityExtension, ContestExtension } = await import("../leetcode/packages/core/src/index.js");
+		const {
+			FontExtension,
+			AnimationExtension,
+			ThemeExtension,
+			HeatmapExtension,
+			ActivityExtension,
+			ContestExtension,
+		} = await import("../leetcode/packages/core/src/index.js");
 
 		sanitized.extensions = [FontExtension, AnimationExtension, ThemeExtension];
 
@@ -86,14 +93,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			sanitized.theme =
 				themes.length === 1 || themes[1] === ""
 					? themes[0]?.trim() || "light"
-					: { light: themes[0]?.trim() || "light", dark: themes[1]?.trim() || "dark" };
+					: {
+							light: themes[0]?.trim() || "light",
+							dark: themes[1]?.trim() || "dark",
+						};
 		}
 
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
-				process.env.CACHE_SECONDS ||
-				"86400",
+					process.env.CACHE_SECONDS ||
+					"86400",
 				10,
 			) || 86400;
 		const cacheSeconds = config.cache

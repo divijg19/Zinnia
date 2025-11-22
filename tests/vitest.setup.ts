@@ -7,19 +7,19 @@ import { afterAll, beforeAll } from "vitest";
 const workerTrophy = path.join(process.cwd(), "cache", `trophy-${process.pid}`);
 
 beforeAll(async () => {
-    try {
-        // Point the runtime to a worker-scoped cache dir
-        process.env.TROPHY_CACHE_DIR = workerTrophy;
-        await fs.rm(workerTrophy, { recursive: true, force: true });
-    } catch (_e) {
-        // ignore
-    }
+	try {
+		// Point the runtime to a worker-scoped cache dir
+		process.env.TROPHY_CACHE_DIR = workerTrophy;
+		await fs.rm(workerTrophy, { recursive: true, force: true });
+	} catch (_e) {
+		// ignore
+	}
 });
 
 afterAll(async () => {
-    try {
-        await fs.rm(workerTrophy, { recursive: true, force: true });
-    } catch (_e) {
-        // ignore
-    }
+	try {
+		await fs.rm(workerTrophy, { recursive: true, force: true });
+	} catch (_e) {
+		// ignore
+	}
 });

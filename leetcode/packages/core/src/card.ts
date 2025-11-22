@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { Icon, Ranking, Root, Solved, TotalSolved, Username } from "./elements.js";
+import {
+	Icon,
+	Ranking,
+	Root,
+	Solved,
+	TotalSolved,
+	Username,
+} from "./elements.js";
 import { Item } from "./item.js";
 import query from "./query.js";
 import type { Config, Extension, FetchedData } from "./types.js";
@@ -186,7 +193,9 @@ export class Generator {
 		// CRITICAL: Insert theme <defs> BEFORE background rect for gradient references
 		// SVG requires definitions to appear before elements that use them
 		if (body["theme-ext"]) {
-			const defsIndex = root.children.findIndex(child => child.attr?.id === "default-colors");
+			const defsIndex = root.children.findIndex(
+				(child) => child.attr?.id === "default-colors",
+			);
 			if (defsIndex !== -1) {
 				// Insert after <style> but before <rect id="background">
 				root.children.splice(defsIndex + 1, 0, body["theme-ext"]());

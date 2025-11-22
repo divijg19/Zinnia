@@ -3,71 +3,71 @@ import { RETRIES, retryer } from "../../stats/src/common/retryer";
 import { logger } from "../../stats/src/common/utils";
 
 const fetcher = vi.fn((variables: any, token: any) => {
-    logger.log(variables, token);
-    return Promise.resolve({ data: "ok" });
+	logger.log(variables, token);
+	return Promise.resolve({ data: "ok" });
 });
 
 const fetcherFail = vi.fn(() => {
-    return Promise.resolve({ data: { errors: [{ type: "RATE_LIMITED" }] } });
+	return Promise.resolve({ data: { errors: [{ type: "RATE_LIMITED" }] } });
 });
 
 const fetcherFailOnSecondTry = vi.fn((_vars: any, _token: any, retries = 0) => {
-    return new Promise((res) => {
-        if (retries < 1) {
-            return res({ data: { errors: [{ type: "RATE_LIMITED" }] } });
-        }
-        return res({ data: "ok" });
-    });
+	return new Promise((res) => {
+		if (retries < 1) {
+			return res({ data: { errors: [{ type: "RATE_LIMITED" }] } });
+		}
+		return res({ data: "ok" });
+	});
 });
 
 const fetcherFailWithMessageBasedRateLimitErr = vi.fn(
-    (_vars: any, _token: any, retries = 0) => {
-        return new Promise((res) => {
-            if (retries < 1) {
-                return res({
-                    data: {
-                        errors: [
-                            {
-                                type: "ASDF",
-                                message: "API rate limit already exceeded for user ID 11111111",
-                            },
-                        ],
-                    },
-                });
-            }
-            return res({ data: "ok" });
-        });
-    },
+	(_vars: any, _token: any, retries = 0) => {
+		return new Promise((res) => {
+			if (retries < 1) {
+				return res({
+					data: {
+						errors: [
+							{
+								type: "ASDF",
+								message: "API rate limit already exceeded for user ID 11111111",
+							},
+						],
+					},
+				});
+			}
+			return res({ data: "ok" });
+		});
+	},
 );
 
 describe("Retryer (vitest)", () => {
-    it("returns value and has zero retries on first try", async () => {
-        const res = await retryer(fetcher as any, {} as any);
-        expect(fetcher).toHaveBeenCalledTimes(1);
-        expect(res).toStrictEqual({ data: "ok" });
-    });
+	it("returns value and has zero retries on first try", async () => {
+		const res = await retryer(fetcher as any, {} as any);
+		expect(fetcher).toHaveBeenCalledTimes(1);
+		expect(res).toStrictEqual({ data: "ok" });
+	});
 
-    it("retries and succeeds on second try", async () => {
-        const res = await retryer(fetcherFailOnSecondTry as any, {} as any);
-        expect(fetcherFailOnSecondTry).toHaveBeenCalledTimes(2);
-        expect(res).toStrictEqual({ data: "ok" });
-    });
+	it("retries and succeeds on second try", async () => {
+		const res = await retryer(fetcherFailOnSecondTry as any, {} as any);
+		expect(fetcherFailOnSecondTry).toHaveBeenCalledTimes(2);
+		expect(res).toStrictEqual({ data: "ok" });
+	});
 
-    it("retries on message-based rate limit and succeeds", async () => {
-        const res = await retryer(
-            fetcherFailWithMessageBasedRateLimitErr as any,
-            {} as any,
-        );
-        expect(fetcherFailWithMessageBasedRateLimitErr).toHaveBeenCalledTimes(2);
-        expect(res).toStrictEqual({ data: "ok" });
-    });
+	it("retries on message-based rate limit and succeeds", async () => {
+		const res = await retryer(
+			fetcherFailWithMessageBasedRateLimitErr as any,
+			{} as any,
+		);
+		expect(fetcherFailWithMessageBasedRateLimitErr).toHaveBeenCalledTimes(2);
+		expect(res).toStrictEqual({ data: "ok" });
+	});
 
-    it("throws when maximum retries reached", async () => {
-        try {
-            await retryer(fetcherFail as any, {} as any);
-        } catch (err: any) {
-            expect(fetcherFail).toHaveBeenCalledTimes(RETRIES + 1);
-            expect(err.message).toBe("Downtime due to GitHub API rate limiting");
-        }
-    });
+	it("throws when maximum retries reached", async () => {
+		try {
+			await retryer(fetcherFail as any, {} as any);
+		} catch (err: any) {
+			expect(fetcherFail).toHaveBeenCalledTimes(RETRIES + 1);
+			expect(err.message).toBe("Downtime due to GitHub API rate limiting");
+		}
+	});
 });

@@ -372,11 +372,13 @@ const renderError = ({
     .small { font: 600 12px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor} }
     .gray { fill: #858585 }
     </style>
-    <rect x="0.5" y="0.5" width="${ERROR_CARD_LENGTH - 1
+    <rect x="0.5" y="0.5" width="${
+			ERROR_CARD_LENGTH - 1
 		}" height="99%" rx="4.5" fill="${bgColor}" stroke="${borderColor}"/>
-    <text x="25" y="45" class="text">Something went wrong!${UPSTREAM_API_ERRORS.includes(secondaryMessage) || !show_repo_link
-			? ""
-			: " file an issue at https://tiny.one/readme-stats"
+    <text x="25" y="45" class="text">Something went wrong!${
+			UPSTREAM_API_ERRORS.includes(secondaryMessage) || !show_repo_link
+				? ""
+				: " file an issue at https://tiny.one/readme-stats"
 		}</text>
     <text data-testid="message" x="25" y="55" class="text small">
       <tspan x="25" dy="18">${encodeHTML(message)}</tspan>
@@ -421,7 +423,7 @@ const wrapTextMultiline = (text, width = 59, maxLines = 3) => {
 	return multiLineText;
 };
 
-const noop = () => { };
+const noop = () => {};
 // return console instance based on the environment
 const logger =
 	process.env.NODE_ENV === "test" ? { log: noop, error: noop } : console;
