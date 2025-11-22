@@ -11,12 +11,14 @@ import { parseArray, parseBoolean, renderError } from "../src/common/utils.js";
 import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
-export default async function handler(req: Request): Promise<Response> {
-	const url = new URL(req.url);
-	const q = Object.fromEntries(url.searchParams.entries()) as Record<
-		string,
-		string
-	>;
+export default async function handler(req: Request | any, res?: any): Promise<any> {
+	const rawUrl = (req as any)?.url;
+	const safeUrl = typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
+	const url = new URL(safeUrl);
+	// Support both Request.url (serverless) and Express-like `req.query` used in tests
+	const q = (req && (req as any).query && Object.keys((req as any).query).length > 0)
+		? (req as any).query
+		: (Object.fromEntries(url.searchParams.entries()) as Record<string, string>);
 
 	const {
 		username,
@@ -48,33 +50,57 @@ export default async function handler(req: Request): Promise<Response> {
 		show,
 	} = q;
 
-	// Minimal res shim used by existing helpers (guardAccess expects res.send)
+	// Use the caller-provided response shim (tests) when available, otherwise
+	// create a local shim that returns a Response (serverless runtime).
 	type ResShim = {
 		headers: Map<string, string>;
 		setHeader: (k: string, v: string) => void;
-		send: (body: string) => Response;
+		send: (body: string, status?: number) => any;
 	};
-	const resShim: ResShim = {
-		headers: new Map<string, string>(),
-		setHeader(k: string, v: string) {
-			this.headers.set(k, v);
-		},
-		send(body: string) {
-			return new Response(body, { headers: Object.fromEntries(this.headers) });
-		},
-	} as ResShim;
+
+	const externalRes = res && typeof res.setHeader === "function" && typeof res.send === "function" ? res : null;
+
+	let resShim: ResShim;
+	if (externalRes) {
+		resShim = {
+			headers: new Map<string, string>(),
+			setHeader(k: string, v: string) {
+				externalRes.setHeader(k, v);
+				this.headers.set(k, v);
+			},
+			send(body: string, status?: number) {
+				if (typeof externalRes.status === "function" && status) {
+					externalRes.status(status);
+				}
+				return externalRes.send(body);
+			},
+		} as ResShim;
+	} else {
+		resShim = {
+			headers: new Map<string, string>(),
+			setHeader(k: string, v: string) {
+				this.headers.set(k, v);
+			},
+			send(body: string, status?: number) {
+				// In server runtime global Response should exist; keep behavior.
+				// Use the global Response if available.
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const G = (globalThis as any) as Record<string, any>;
+				if (typeof G.Response === "function") {
+					return new G.Response(body, { headers: Object.fromEntries(this.headers), status });
+				}
+				// If Response is not available (test env), return a plain object.
+				return { body, headers: Object.fromEntries(this.headers), status };
+			},
+		} as ResShim;
+	}
 
 	// Ensure SVG content-type by default so successful renders embed properly
-	resShim.setHeader("Content-Type", "image/svg+xml");
+	resShim.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+	resShim.setHeader("X-Content-Type-Options", "nosniff");
 
 	if (!username) {
-		return new Response(
-			renderError({ message: "Missing required parameter: username" }),
-			{
-				headers: new Headers({ "Content-Type": "image/svg+xml" }),
-				status: 400,
-			},
-		);
+		return resShim.send(renderError({ message: "Missing required parameter: username" }), 400);
 	}
 
 	const access = guardAccess({
@@ -86,7 +112,7 @@ export default async function handler(req: Request): Promise<Response> {
 	if (access.isPassed === false) return access.result;
 
 	if (locale && !isLocaleAvailable(locale)) {
-		return new Response(
+		return resShim.send(
 			renderError({
 				message: "Something went wrong",
 				secondaryMessage: "Language not found",
@@ -98,7 +124,6 @@ export default async function handler(req: Request): Promise<Response> {
 					theme,
 				},
 			}),
-			{ headers: new Headers({ "Content-Type": "image/svg+xml" }) },
 		);
 	}
 
@@ -115,8 +140,11 @@ export default async function handler(req: Request): Promise<Response> {
 			parseInt(String(commits_year || "0"), 10),
 		);
 
+		const requestedValue = "cache_seconds" in q && (q as any).cache_seconds !== undefined
+			? parseInt(String(cache_seconds), 10)
+			: NaN;
 		const cacheSeconds = resolveCacheSeconds({
-			requested: parseInt(String(cache_seconds || "0"), 10),
+			requested: requestedValue,
 			def: CACHE_TTL.STATS_CARD.DEFAULT,
 			min: CACHE_TTL.STATS_CARD.MIN,
 			max: CACHE_TTL.STATS_CARD.MAX,
@@ -155,7 +183,7 @@ export default async function handler(req: Request): Promise<Response> {
 	} catch (err: unknown) {
 		setErrorCacheHeaders(resShim);
 		const e = err as { message?: string; secondaryMessage?: string };
-		return new Response(
+		return resShim.send(
 			renderError({
 				message: e.message ?? "Something went wrong",
 				secondaryMessage: e.secondaryMessage,
@@ -167,7 +195,6 @@ export default async function handler(req: Request): Promise<Response> {
 					theme: theme as unknown as string | undefined,
 				},
 			}),
-			{ headers: new Headers({ "Content-Type": "image/svg+xml" }) },
 		);
 	}
 }

@@ -8,7 +8,7 @@ The stats service codebase has completed a full migration of core card generator
 2. Added full layout support (normal, compact, donut, donut-vertical, pie) with strongly typed helpers: `createDonutPaths`, `renderDonutLayout`, coordinate math, and progress rendering.
 3. Unified trim routine to accept both object maps and arrays (`trimTopLanguages`) to match existing test usage patterns.
 4. Provided a clean JS shim exporting from the TypeScript file, matching patterns used by `repo.js` and `gist.js`.
-5. Adjusted Jest config (`extensionsToTreatAsEsm` now only `['.ts']`) to resolve prior ESM parsing errors.
+5. Adjusted legacy Jest config (`extensionsToTreatAsEsm` now only `['.ts']`) to resolve prior ESM parsing errors.
 6. Ensured constants (`MIN_CARD_WIDTH`) and helper exports remain stable for tests.
 
 ### Test & Quality Status
@@ -20,7 +20,7 @@ All 20 test suites (216 tests) pass after migration (see latest run). Snapshot i
 | Mixed import surfaces (consumers using `.js`) | Low | JS shim maintained; future deprecation can be versioned. |
 | Type coverage gaps in legacy utilities | Moderate | Incrementally convert remaining `common/*.js` to `.ts` with JSDoc types as interim. |
 | Performance (SVG generation loops) | Low | Functions operate on small sets (<=20 languages); O(n) acceptable. |
-| Formatting / ESM build alignment | Low | Jest & Node ESM config stable; no custom loaders required. |
+| Formatting / ESM build alignment | Low | Node ESM config stable; no custom loaders required. |
 | Future theming changes affecting layout metrics | Low | Layout size helpers exposed & unit tested. |
 
 ### Follow-Up Recommendations
@@ -41,13 +41,13 @@ Exports preserved: `renderTopLanguages`, `renderTopLanguagesCard`, helper math f
 * Rounding & precision for geometry coordinates (fixed precision to avoid test parsing instability).
 
 ### Validation Commands (Optional)
-Run focused top-langs tests:
+Run focused top-langs tests (Vitest):
 ```
-pwsh -Command "cd stats; node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./jest.config.js --runInBand --testPathPatterns top-langs"
+pwsh -Command "cd stats; bunx vitest --run --config ..\vitest.config.ts -g 'top-langs'"
 ```
-Run full suite:
+Run full suite (Vitest):
 ```
-pwsh -Command "cd stats; node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./jest.config.js --runInBand"
+pwsh -Command "cd stats; bunx vitest --run --config ..\vitest.config.ts"
 ```
 
 ### Migration Completion Marker
@@ -92,7 +92,7 @@ The codebase has achieved **full TypeScript consolidation** with all redundant J
 8. ✅ All common modules updated to import `utils.ts` instead of `utils.js`
 9. ✅ All API routes and tests now use TypeScript fetchers exclusively
 10. ✅ Full test suite verified (20/20 suites, 216/216 tests, 5/5 snapshots passing)
-11. ✅ Redundant config files removed (`.eslintrc.json`, `jest.config.cjs`)
+11. ✅ Redundant config files removed (`.eslintrc.json`, legacy Jest configs)
 12. ✅ Fixed Chinese text handling in `wrapTextMultiline` (uses correct full-width comma `，`)
 
 **Architecture Benefits:**
@@ -132,7 +132,7 @@ Time:        58.163 s (comprehensive) / 35.728 s (mid) / 12.669 s (fast)
 
 **Config Duplicates (removed in initial phase):**
 - `.eslintrc.json` → using `eslint.config.mjs`
-- `jest.config.cjs` → using `jest.config.js`
+- `jest.config.cjs` → legacy Jest config (removed)
 
 **Total Files Removed: 15 redundant files eliminated**
 
@@ -291,7 +291,7 @@ Completed final pass to eliminate all remaining redundant JavaScript files:
 1. Card duplicates (6): `stats.js`, `repo.js`, `gist.js`, `top-languages.js`, `stats.d.ts`, `index.js`
 2. Common utilities (3): `Card.js`, `createProgressNode.js`, `utils.js`
 3. Fetcher duplicates (6): `stats.js`, `repo.js`, `gist.js`, `top-languages.js` (initial), `repo.js`, `gist.js` (final cleanup)
-4. Config duplicates (2): `.eslintrc.json`, `jest.config.cjs`
+4. Config duplicates (2): `.eslintrc.json`, legacy Jest config
 
 ### Codebase State Analysis
 

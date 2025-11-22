@@ -42,10 +42,15 @@ jobs:
       - name: Type check (tsc)
         run: bunx tsc --noEmit
 
-      - name: Tests - stats (Jest)
+      - name: Tests - Vitest (all projects)
         env:
           CI: true
-        run: bun run test:stats
+        run: bun run test
+
+      - name: Tests - Vitest (api)
+        env:
+          CI: true
+        run: bunx vitest --run tests/api
 
       - name: Tests - leetcode (Vitest)
         env:

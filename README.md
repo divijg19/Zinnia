@@ -25,7 +25,14 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 	bunx biome check .
 	bunx biome format .
 	```
-- CI runs lint, typecheck, Jest (stats), Vitest (leetcode), and build. No auto-deploy from CI.
+- Testing notes (where to add tests)
+
+- Tests are organized per area to reuse package-level configs:
+	- `npm run test` runs the full test matrix under Vitest (root `tests/` plus package-local tests).
+	- Tests are consolidated under the repository `tests/` directory; package-local tests that require specialized setup remain in `leetcode/test`.
+	- If you need to run a single package's tests, use the package `test` script which delegates to Vitest with the shared root config.
+
+- CI runs lint, typecheck, tests (Vitest) and build. No auto-deploy from CI.
 
 ### CI/CD Workflows
 - `.github/workflows/ci.yml`: Lint, typecheck, test, build (push/PR). Concurrency-cancel enabled.

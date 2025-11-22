@@ -97,7 +97,11 @@ export function computeEtag(body: string): string {
 }
 
 // --- Simple filesystem cache for trophy SVG fallbacks ---
-const TROPHY_CACHE_DIR = path.join(process.cwd(), "cache", "trophy");
+// Allow overriding the cache location with an environment variable during
+// tests to avoid cross-worker filesystem races.
+const TROPHY_CACHE_DIR = process.env.TROPHY_CACHE_DIR
+	? path.resolve(process.env.TROPHY_CACHE_DIR)
+	: path.join(process.cwd(), "cache", "trophy");
 
 function keyFromUrl(url: string): string {
 	const h = crypto.createHash("sha1").update(url, "utf8").digest("hex");
@@ -105,6 +109,15 @@ function keyFromUrl(url: string): string {
 }
 
 async function ensureCacheDir(): Promise<void> {
+	// During tests we prefer not to create a repository-level `cache/trophy`
+	// directory unless a test explicitly provides `TROPHY_CACHE_DIR`. When
+	// running under Vitest the `VITEST_WORKER_ID` env var is present and the
+	// per-worker setup file will set `TROPHY_CACHE_DIR` to an isolated path.
+	// If `TROPHY_CACHE_DIR` is not set and we're in a test worker, skip
+	// creating the default cache directory to avoid littering the repo.
+	if (!process.env.TROPHY_CACHE_DIR && (process.env.VITEST_WORKER_ID || process.env.NODE_ENV === "test")) {
+		return;
+	}
 	try {
 		await fs.mkdir(TROPHY_CACHE_DIR, { recursive: true });
 	} catch (_e) {
@@ -133,6 +146,51 @@ export async function readTrophyCache(url: string): Promise<string | null> {
 		return data;
 	} catch (_e) {
 		return null;
+	}
+}
+
+/**
+ * Read a cached trophy SVG and metadata (if present).
+ * Returns `{ body, etag, ts }` or `null` when missing.
+ */
+export async function readTrophyCacheWithMeta(
+	url: string,
+): Promise<{ body: string; etag?: string; ts?: number } | null> {
+	try {
+		const key = keyFromUrl(url);
+		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
+		const metaFile = path.join(TROPHY_CACHE_DIR, `${key}.meta.json`);
+		const body = await fs.readFile(file, "utf8");
+		try {
+			const raw = await fs.readFile(metaFile, "utf8");
+			const parsed = JSON.parse(raw);
+			return { body, etag: parsed.etag, ts: parsed.ts };
+		} catch (_e) {
+			return { body };
+		}
+	} catch (_e) {
+		return null;
+	}
+}
+
+/**
+ * Write a cached trophy SVG and metadata (etag + timestamp).
+ */
+export async function writeTrophyCacheWithMeta(
+	url: string,
+	body: string,
+	etag: string,
+): Promise<void> {
+	try {
+		await ensureCacheDir();
+		const key = keyFromUrl(url);
+		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
+		const metaFile = path.join(TROPHY_CACHE_DIR, `${key}.meta.json`);
+		await fs.writeFile(file, body, "utf8");
+		const meta = { etag, ts: Date.now() };
+		await fs.writeFile(metaFile, JSON.stringify(meta), "utf8");
+	} catch (_e) {
+		// Best-effort caching: fail silently
 	}
 }
 

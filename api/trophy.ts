@@ -3,12 +3,14 @@ import { sendErrorSvg } from "../lib/errors.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
 import { renderTrophySVG } from "../trophy/src/renderer.js";
 import {
+	computeEtag,
 	readTrophyCache,
+	readTrophyCacheWithMeta,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setSvgHeaders,
-	writeTrophyCache,
+	writeTrophyCacheWithMeta,
 } from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -49,11 +51,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				return res.send("");
 			return res.send(svgOut);
 		}
+		// Read existing cached metadata (etag) to send If-None-Match.
+		let cachedMeta = null;
+		try {
+			cachedMeta = await readTrophyCacheWithMeta(upstream.toString());
+		} catch (_e) {
+			/* ignore */
+		}
+
 		// Fetch upstream with retries (network errors and 5xx will retry).
 		async function fetchWithRetries(
 			urlStr: string,
 			attempts = 3,
 			baseDelay = 200,
+			ifNoneMatch?: string,
 		) {
 			let lastResp: Response | null = null;
 			let lastErr: unknown = null;
@@ -61,11 +72,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const ctrl = new AbortController();
 				const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
 				try {
+					const headers: Record<string, string> = {
+						"User-Agent": "zinnia/1.0 (+trophy)",
+					};
+					if (ifNoneMatch) headers["If-None-Match"] = ifNoneMatch;
 					const r = await fetch(urlStr, {
-						headers: { "User-Agent": "zinnia/1.0 (+trophy)" },
+						headers,
 						signal: ctrl.signal,
 					});
 					lastResp = r;
+					if (r.status === 304) {
+						clearTimeout(timeout);
+						return r;
+					}
 					if (r.status >= 500) {
 						lastErr = new Error(`upstream status ${r.status}`);
 						// will retry
@@ -87,8 +106,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		let resp: Response;
 		try {
-			resp = await fetchWithRetries(upstream.toString(), 3, 200);
-			resp = await fetchWithRetries(upstream.toString(), 3, 200);
+			resp = await fetchWithRetries(
+				upstream.toString(),
+				3,
+				200,
+				cachedMeta?.etag,
+			);
 		} catch (_e) {
 			// Network-level failure after retries: try cached SVG before failing
 			try {
@@ -111,6 +134,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 		}
 		const ct = resp.headers.get("content-type") || "";
+		// Handle 304 Not Modified: serve cached body if available
+		if (resp.status === 304) {
+			try {
+				const cached =
+					cachedMeta ?? (await readTrophyCacheWithMeta(upstream.toString()));
+				if (cached?.body) {
+					setSvgHeaders(res);
+					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					if (setEtagAndMaybeSend304(req.headers as any, res, cached.body))
+						return res.send("");
+					return res.send(cached.body);
+				}
+			} catch (_e) {
+				// fall through to fetch body below
+			}
+		}
+
 		const body = await resp.text();
 		// If upstream returned 5xx, try cached SVG first
 		if (resp.status >= 500) {
@@ -205,7 +245,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
 			try {
-				await writeTrophyCache(upstream.toString(), body);
+				const etag = computeEtag(body);
+				await writeTrophyCacheWithMeta(upstream.toString(), body, etag);
 			} catch (_e) {
 				// ignore
 			}

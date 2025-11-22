@@ -78,6 +78,5 @@ infrastructure:
   - changed-files:
       - any-glob-to-any-file:
           - eslint.config.mjs
-          - jest.config.js
-          - tsconfig.json
-          - vercel.json
+            - tsconfig.json
+            - vercel.json

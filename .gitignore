@@ -148,3 +148,4 @@ _vendor_backup/**
 
 scripts/
 .vercel
+cache/

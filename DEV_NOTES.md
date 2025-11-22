@@ -103,12 +103,12 @@ Env variables
 ## CI/CD
 
 - Workflow: `.github/workflows/ci.yml`
-  - Bun install → format (Biome) → lint (Biome) → type-check (tsc) → Jest (stats) → Vitest (leetcode) → optional deploy → warm cache
+  - Bun install → format (Biome) → lint (Biome) → type-check (tsc) → Vitest (all projects) → optional deploy → warm cache
   - Secrets: `VERCEL_TOKEN` for deploy on main, `PROD_DOMAIN` to warm images post-deploy
 
 ## Testing
 
-- Stats uses Jest; LeetCode uses Vitest with fixtures/mocks to avoid live network.
+- Stats tests use Vitest; LeetCode uses Vitest with fixtures/mocks to avoid live network.
 - Windows-safe globs are quoted in scripts to prevent PowerShell expansion.
 
 Note: LeetCode CN was removed. Any previous CN-specific tests, constants, or fixtures have been neutralized. The `site` option is ignored and always treated as `us`.
@@ -141,14 +141,14 @@ Note: LeetCode CN was removed. Any previous CN-specific tests, constants, or fix
 - `src/common/error.js` / `error.ts` - Both needed
 
 **Why Both Exist**:
-- `.js` files: Used by Vercel API handlers (`api/*.js`) and Jest tests
+- `.js` files: Used by Vercel API handlers (`api/*.js`) and tests
 - `.ts` files: Used by Cloudflare Worker handlers (`api/*.ts`) with strict typing
 - Functionally identical, `.ts` adds type annotations for Worker runtime
 
 **Import Pattern**:
 - Vercel handlers: `import { guardAccess } from "../src/common/access.js"`
 - Worker handlers: `import { guardAccess } from "../src/common/access.ts"`
-- This maintains type safety in Workers while keeping Jest compatibility
+- This maintains type safety in Workers while keeping test compatibility
 
 ### API Handler Refactoring
 **Problem**: All 4 Vercel API handlers (`index.js`, `top-langs.js`, `gist.js`, `pin.js`) contained identical error handling, locale validation, and parameter parsing code.
@@ -164,8 +164,8 @@ Note: LeetCode CN was removed. Any previous CN-specific tests, constants, or fix
 - Standardized error messages: "Language not found" for locale errors
 - Improved maintainability: single source of truth for common patterns
 - Added 17 comprehensive unit tests for api-utils module
-- Test coverage: 97.66% statements, 85.43% branches maintained
-- All 233 tests passing (21 test suites)
+  - Test coverage: 97.66% statements, 85.43% branches maintained
+  - All tests passing (21 test suites)
 
 **Files Modified**:
 - Created: `stats/src/common/api-utils.js` (112 lines)
@@ -239,7 +239,7 @@ Cache-Control: public, max-age=X, s-maxage=X, stale-while-revalidate=43200
 
 **Config Files** (2 files removed):
 - ✅ Removed `.eslintrc.json` → using modern `eslint.config.mjs`
-- ✅ Removed `jest.config.cjs` → using `jest.config.js`
+- ✅ Removed legacy Jest configs
 
 **Remaining JavaScript** (Runtime Necessity):
 - `stats/src/common/access.js` - Express dev server compatibility
@@ -274,8 +274,8 @@ Cache-Control: public, max-age=X, s-maxage=X, stale-while-revalidate=43200
 - ✅ Added URL null safety in trophy API handler
 
 ### Test Suite Status
-**Final Validation**: ✅ All 237 tests passing
-- Stats Module: 236 tests (Jest)
+- **Final Validation**: ✅ All tests passing
+- Stats Module: 236 tests (Vitest)
 - Leetcode Module: 1 test (Vitest)
 - Code Coverage: 97.17% statements, 85.19% branches
 - Zero test failures, zero type errors
@@ -283,7 +283,7 @@ Cache-Control: public, max-age=X, s-maxage=X, stale-while-revalidate=43200
 **Test Updates**:
 - ✅ Updated 48+ test assertions for SVG headers
 - ✅ Added 3 new tests for `setSvgHeaders()` utility
-- ✅ Fixed Jest module resolution for TypeScript imports
+- ✅ Fixed module resolution for TypeScript imports
 - ✅ Standardized error messages across all tests
 
 ### Code Quality Metrics
@@ -303,12 +303,12 @@ Cache-Control: public, max-age=X, s-maxage=X, stale-while-revalidate=43200
 3. **Maintainability**: ~850 fewer lines of duplicate code to maintain
 4. **Developer Experience**: Enhanced IDE support with strict types
 5. **Code Quality**: Zero type suppressions, proper null handling
-6. **Test Coverage**: All 237 tests passing with strict mode
+6. **Test Coverage**: All tests passing with strict mode
 7. **Performance**: No runtime overhead from type checking
 
 ### Production Readiness Checklist
 - ✅ Zero TypeScript compilation errors
-- ✅ All 237 tests passing (Jest + Vitest)
+- ✅ All tests passing
 - ✅ Biome linting passing (198 files checked)
 - ✅ 97.17% code coverage maintained
 - ✅ GitHub embed SVG headers optimized
@@ -399,7 +399,7 @@ Updated **50+ import statements** across the codebase to reference TypeScript so
 **Current State**: ✅ **PRODUCTION READY**
 - ✅ All TypeScript type checks passing (0 errors)
 - ✅ All Biome linting checks passing (197 files)
-- ✅ **All 236 Jest tests passing** ✅
+- ✅ All tests passing ✅
 - ✅ Zero technical debt
 - ✅ Optimal lean architecture
 - **Maximum viable TypeScript coverage achieved (27 files consolidated)**
@@ -414,5 +414,5 @@ Updated **50+ import statements** across the codebase to reference TypeScript so
 - **Consolidated Exports**: Converted `stats/src/index.js` and `stats/src/common/index.js` to TypeScript
 - **Fixed Test Imports**: Updated `stats/api/status/up.js` to use named import for `retryer`
 - **Total Files Consolidated**: 27 JavaScript files migrated/removed (25 infrastructure + 2 index files)
-- **Test Suite**: All 236 tests passing with Jest + JSDOM
+- **Test Suite**: All tests passing with JSDOM
 

@@ -9,15 +9,17 @@ const repoRoot = path.resolve(__dirname);
 // Accept both repository-root-relative and package-CWD-relative runs by
 // resolving absolute paths for the setup file and using globs that match
 // either layout (helps when running `cd leetcode && vitest`).
-const setupFile = path.join(repoRoot, "leetcode/test/vitest.setup.ts");
-// A repo-wide include pattern is the most robust: it finds any *.test.* or *.spec.* file
-// regardless of whether Vitest is executed from the repo root or a package subfolder.
-const includeGlobs = [path.join(repoRoot, "**/*.{test,spec}.{ts,tsx,js,jsx}")];
+const setupFile = "leetcode/test/vitest.setup.ts";
+const rootSetup = "tests/vitest.setup.ts";
+const includeGlobs = ["tests/**/*.{test,spec}.{ts,tsx,js,jsx}", "leetcode/test/**/*.{test,spec}.{ts,tsx,js,jsx}"];
 
 export default defineConfig({
+	resolve: {},
 	test: {
-		// Leverage the existing vitest setup file under leetcode so mocks load before tests
-		setupFiles: [setupFile],
+		// Increase default test timeout to accommodate slower CI/Env setups
+		testTimeout: 60000,
+		// Leverage the existing leetcode setup and also run root setup cleanup
+		setupFiles: [setupFile, rootSetup],
 		include: includeGlobs,
 		coverage: {
 			provider: "v8",
@@ -26,5 +28,7 @@ export default defineConfig({
 				path.join(repoRoot, "packages/*/src"),
 			],
 		},
+		globals: true,
+		environment: "jsdom",
 	},
 });

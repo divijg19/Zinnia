@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.6/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -19,7 +19,8 @@
 			"!**/leetcode/packages/**/src/demo",
 			"!**/leetcode/packages/**/src/**/demo",
 			"!**/.vercel",
-			"!bun.lock"
+			"!bun.lock",
+			"!package.json"
 		]
 	},
 	"formatter": {
