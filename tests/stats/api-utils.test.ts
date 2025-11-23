@@ -199,6 +199,6 @@ describe("setSvgHeaders", () => {
 
 		setSvgHeaders(mockRes);
 
-		expect(mockRes.setHeader).toHaveBeenCalledTimes(2);
+		expect(mockRes.setHeader).toHaveBeenCalledTimes(3);
 	});
 });

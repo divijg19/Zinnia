@@ -5,6 +5,7 @@ Codebase.txt
 DEV_NOTES.md
 README.md
 api/_utils.ts
+api/cache.ts
 api/health.ts
 api/leetcode.ts
 api/stats.ts
@@ -13,6 +14,7 @@ api/top-langs.ts
 api/trophy.ts
 biome.json
 bun.lock
+docs/cache.md
 github/api/index.ts
 leetcode/.gitattributes
 leetcode/.gitignore

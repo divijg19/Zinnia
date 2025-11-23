@@ -29,7 +29,7 @@ describe("Trophy handler ETag & cache behavior", () => {
 	it("writes cache on upstream 200 and serves body", async () => {
 		const upstreamBody = "<svg>UPSTREAM-OK</svg>";
 		// Mock the api utils to capture writes and avoid fs I/O
-		const writeSpy = vi.fn(async () => { });
+		const writeSpy = vi.fn(async () => {});
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
 		(global as any).fetch = vi.fn().mockResolvedValue({

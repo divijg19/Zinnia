@@ -21,7 +21,7 @@ describe("Trophy handler upstream 404 svg passthrough", () => {
 		restoreMocks();
 	});
 
-	it("forwards upstream 404 SVG and sets 404 status", async () => {
+	it("forwards upstream 404 SVG and keeps badge embeddable", async () => {
 		const upstreamBody = "<svg>NOTFOUND</svg>";
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({}));
@@ -38,7 +38,9 @@ describe("Trophy handler upstream 404 svg passthrough", () => {
 		const res = makeRes();
 		await trophy(req, res);
 
-		expect(res.status).toHaveBeenCalledWith(404);
+		// handler exposes the original upstream status but returns 200 so
+		// embed consumers display the SVG instead of a broken image.
+		expect(res.setHeader).toHaveBeenCalledWith("X-Upstream-Status", "404");
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
 		// transient responses for upstream 404s
 		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "transient");

@@ -23,9 +23,9 @@ export default async function handler(
 		req && (req as any).query && Object.keys((req as any).query).length > 0
 			? (req as any).query
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
-				string,
-				string
-			>);
+					string,
+					string
+				>);
 
 	const {
 		id,

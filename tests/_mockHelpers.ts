@@ -1,14 +1,7 @@
 import { vi } from "vitest";
 
-/**
- * Returns a factory suitable for `vi.doMock('../../api/_utils', factory)`
- * to mock trophy cache helpers and a few utility functions used by handlers.
- *
- * Example:
- *   vi.resetModules();
- *   vi.doMock('../../api/_utils', mockApiUtilsFactory({ readMeta: { body: 'X', etag: 'e' } }));
- *   const mod = await import('../../api/trophy.js');
- */
+/** Test helpers: mock `api/_utils` factory and `api/cache` shim. */
+
 export function mockApiUtilsFactory({
 	readBody = null,
 	readMeta = null,
@@ -22,7 +15,7 @@ export function mockApiUtilsFactory({
 	readSpy?: any;
 	computeEtag?: (b: string) => string;
 } = {}) {
-	const writeImpl = writeSpy ?? vi.fn(async () => { });
+	const writeImpl = writeSpy ?? vi.fn(async () => {});
 	const readImpl = readSpy ?? vi.fn(async () => readBody);
 	const readMetaImpl = vi.fn(async () =>
 		readMeta
@@ -32,117 +25,131 @@ export function mockApiUtilsFactory({
 				: null,
 	);
 
-	return () => ({
-		computeCacheKey: (u: string) => {
-			// stable short key for tests
-			return (u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_");
-		},
-		computeEtag: (b: string) => computeEtag(b),
-		readTrophyCache: readImpl,
-		readTrophyCacheWithMeta: readMetaImpl,
-		writeTrophyCacheWithMeta: writeImpl,
-		writeTrophyCache: writeImpl,
-		// validation & theme helpers (lightweight implementations)
-		isValidUsername: (username: string | null | undefined) => {
-			if (!username) return false;
-			return /^[A-Za-z0-9-]{1,39}$/.test(String(username));
-		},
-		getUsername: (url: URL, keys: string[] = ["username", "user"]) => {
-			for (const k of keys) {
-				const v = (url as any).searchParams.get(k);
-				if (v && /^[A-Za-z0-9-]{1,39}$/.test(v)) return v;
-			}
-			return null;
-		},
-		ALLOWED_THEMES: new Set([
-			"watchdog",
-			"light",
-			"dark",
-			"onedark",
-			"dracula",
-			"radical",
-			"tokyonight",
-			"merko",
-			"github_dark",
-		]),
-		filterThemeParam: (url: URL, key = "theme") => {
-			const raw = (url as any).searchParams.get(key);
-			if (!raw) return;
-			const value = String(raw).trim().toLowerCase();
-			if (
-				![...new Set(["watchdog", "light", "dark"])].includes(value) &&
-				!value.includes(",")
-			) {
-				(url as any).searchParams.delete(key);
-			}
-		},
-		// header helpers (implement minimally so handlers behave as in prod)
-		resolveCacheSeconds: () => 86400,
-		setCacheHeaders: (res: any, seconds: number) => {
-			try {
-				res.setHeader(
-					"Cache-Control",
-					`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
-				);
-			} catch (_e) {
-				// ignore
-			}
-		},
-		setSvgHeaders: (res: any) => {
-			try {
-				res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-				res.setHeader("X-Content-Type-Options", "nosniff");
-				res.setHeader("Vary", "Accept-Encoding");
-			} catch (_e) {
-				// ignore
-			}
-		},
-		setShortCacheHeaders: (res: any, seconds = 60) => {
-			try {
-				const s = Math.max(0, Math.min(seconds, 3600));
-				res.setHeader(
-					"Cache-Control",
-					`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
-				);
-				res.setHeader("X-Cache-Status", "transient");
-			} catch (_e) {
-				// ignore
-			}
-		},
-		setFallbackCacheHeaders: (res: any, seconds: number) => {
-			try {
-				const s = Math.max(60, Math.min(seconds, 604800));
-				const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
-				res.setHeader(
-					"Cache-Control",
-					`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
-				);
-				res.setHeader("X-Cache-Status", "fallback");
-			} catch (_e) {
-				// ignore
-			}
-		},
-		setEtagAndMaybeSend304: (
-			reqHeaders: Record<string, unknown>,
-			res: any,
-			body: string,
-		) => {
-			const etag = computeEtag(body);
-			try {
-				res.setHeader("ETag", etag);
-			} catch (_e) {
-				// ignore
-			}
-			const inm = (reqHeaders["if-none-match"] ??
-				reqHeaders["If-None-Match"]) as string | string[] | undefined;
-			const inmValue = Array.isArray(inm) ? inm[0] : inm;
-			if (inmValue && inmValue === etag) {
-				res.status(304);
-				return true;
-			}
-			return false;
-		},
-	});
+	return () => {
+		// Mock `api/cache` as well so handlers that import it directly are
+		// covered by tests that only mock `api/_utils`.
+		const cacheMock = () => ({
+			computeCacheKey: (u: string) =>
+				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
+			computeEtag: (b: string) => computeEtag(b),
+			readCache: readImpl,
+			readCacheWithMeta: readMetaImpl,
+			writeCache: writeImpl,
+			writeCacheWithMeta: writeImpl,
+		});
+		vi.doMock("../../api/cache", cacheMock);
+		// Some bundlers/resolvers include the .js extension in module ids;
+		// register the variant as well so the mock is applied consistently.
+		vi.doMock("../../api/cache.js", cacheMock);
+
+		return {
+			computeCacheKey: (u: string) =>
+				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
+			computeEtag: (b: string) => computeEtag(b),
+			readTrophyCache: readImpl,
+			readTrophyCacheWithMeta: readMetaImpl,
+			writeTrophyCacheWithMeta: writeImpl,
+			writeTrophyCache: writeImpl,
+			isValidUsername: (username: string | null | undefined) => {
+				if (!username) return false;
+				return /^[A-Za-z0-9-]{1,39}$/.test(String(username));
+			},
+			getUsername: (url: URL, keys: string[] = ["username", "user"]) => {
+				for (const k of keys) {
+					const v = (url as any).searchParams.get(k);
+					if (v && /^[A-Za-z0-9-]{1,39}$/.test(v)) return v;
+				}
+				return null;
+			},
+			ALLOWED_THEMES: new Set([
+				"watchdog",
+				"light",
+				"dark",
+				"onedark",
+				"dracula",
+				"radical",
+				"tokyonight",
+				"merko",
+				"github_dark",
+			]),
+			filterThemeParam: (url: URL, key = "theme") => {
+				const raw = (url as any).searchParams.get(key);
+				if (!raw) return;
+				const value = String(raw).trim().toLowerCase();
+				if (
+					![...new Set(["watchdog", "light", "dark"])].includes(value) &&
+					!value.includes(",")
+				) {
+					(url as any).searchParams.delete(key);
+				}
+			},
+			resolveCacheSeconds: () => 86400,
+			setCacheHeaders: (res: any, seconds: number) => {
+				try {
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
+					);
+				} catch (_e) {
+					// ignore
+				}
+			},
+			setSvgHeaders: (res: any) => {
+				try {
+					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+					res.setHeader("X-Content-Type-Options", "nosniff");
+					res.setHeader("Vary", "Accept-Encoding");
+				} catch (_e) {
+					// ignore
+				}
+			},
+			setShortCacheHeaders: (res: any, seconds = 60) => {
+				try {
+					const s = Math.max(0, Math.min(seconds, 3600));
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
+					);
+					res.setHeader("X-Cache-Status", "transient");
+				} catch (_e) {
+					// ignore
+				}
+			},
+			setFallbackCacheHeaders: (res: any, seconds: number) => {
+				try {
+					const s = Math.max(60, Math.min(seconds, 604800));
+					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
+					);
+					res.setHeader("X-Cache-Status", "fallback");
+				} catch (_e) {
+					// ignore
+				}
+			},
+			setEtagAndMaybeSend304: (
+				reqHeaders: Record<string, unknown>,
+				res: any,
+				body: string,
+			) => {
+				const etag = computeEtag(body);
+				try {
+					res.setHeader("ETag", etag);
+				} catch (_e) {
+					// ignore
+				}
+				const inm = (reqHeaders["if-none-match"] ??
+					reqHeaders["If-None-Match"]) as string | string[] | undefined;
+				const inmValue = Array.isArray(inm) ? inm[0] : inm;
+				if (inmValue && inmValue === etag) {
+					res.status(304);
+					return true;
+				}
+				return false;
+			},
+		};
+	};
 }
 
 export function restoreMocks() {

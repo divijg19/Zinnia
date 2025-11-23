@@ -1,6 +1,4 @@
 import crypto from "node:crypto";
-import fs from "node:fs/promises";
-import path from "node:path";
 import type { VercelResponse } from "@vercel/node";
 
 /**
@@ -130,111 +128,36 @@ export function computeEtag(body: string): string {
 	return hash.slice(0, 16);
 }
 
-// --- Simple filesystem cache for trophy SVG fallbacks ---
-// Allow overriding the cache location with an environment variable during
-// tests to avoid cross-worker filesystem races.
-const TROPHY_CACHE_DIR = process.env.TROPHY_CACHE_DIR
-	? path.resolve(process.env.TROPHY_CACHE_DIR)
-	: path.join(process.cwd(), "cache", "trophy");
+// Delegate cache operations to the generic cache module so multiple
+// services can reuse the same implementation (see `api/cache.ts`).
+export { computeEtag as computeCacheKey } from "./cache.js";
 
-function keyFromUrl(url: string): string {
-	const h = crypto.createHash("sha1").update(url, "utf8").digest("hex");
-	return h.slice(0, 16);
+// --- Backwards-compatible wrappers that delegate to `api/cache.ts` ---
+// This keeps existing handlers/tests working while enabling a generic
+// cache implementation.
+import * as cache from "./cache.js";
+
+export async function writeTrophyCache(url: string, body: string) {
+	return cache.writeCache("trophy", url, body);
 }
 
-async function ensureCacheDir(): Promise<void> {
-	// During tests we prefer not to create a repository-level `cache/trophy`
-	// directory unless a test explicitly provides `TROPHY_CACHE_DIR`. When
-	// running under Vitest the `VITEST_WORKER_ID` env var is present and the
-	// per-worker setup file will set `TROPHY_CACHE_DIR` to an isolated path.
-	// If `TROPHY_CACHE_DIR` is not set and we're in a test worker, skip
-	// creating the default cache directory to avoid littering the repo.
-	if (
-		!process.env.TROPHY_CACHE_DIR &&
-		(process.env.VITEST_WORKER_ID || process.env.NODE_ENV === "test")
-	) {
-		return;
-	}
-	try {
-		await fs.mkdir(TROPHY_CACHE_DIR, { recursive: true });
-	} catch (_e) {
-		// ignore
-	}
+export async function readTrophyCache(url: string) {
+	return cache.readCache("trophy", url);
 }
 
-/** Write a trophy SVG to the local filesystem cache. */
-export async function writeTrophyCache(
-	url: string,
-	body: string,
-): Promise<void> {
-	try {
-		await ensureCacheDir();
-		const key = keyFromUrl(url);
-		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
-		await fs.writeFile(file, body, "utf8");
-	} catch (_e) {
-		// Best-effort caching: fail silently
-	}
+export async function readTrophyCacheWithMeta(url: string) {
+	return cache.readCacheWithMeta("trophy", url);
 }
 
-/** Read a cached trophy SVG for the given upstream URL, or null if missing. */
-export async function readTrophyCache(url: string): Promise<string | null> {
-	try {
-		const key = keyFromUrl(url);
-		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
-		const data = await fs.readFile(file, "utf8");
-		return data;
-	} catch (_e) {
-		return null;
-	}
-}
-
-/**
- * Read a cached trophy SVG and metadata (if present).
- * Returns `{ body, etag, ts }` or `null` when missing.
- */
-export async function readTrophyCacheWithMeta(
-	url: string,
-): Promise<{ body: string; etag?: string; ts?: number } | null> {
-	try {
-		const key = keyFromUrl(url);
-		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
-		const metaFile = path.join(TROPHY_CACHE_DIR, `${key}.meta.json`);
-		const body = await fs.readFile(file, "utf8");
-		try {
-			const raw = await fs.readFile(metaFile, "utf8");
-			const parsed = JSON.parse(raw);
-			return { body, etag: parsed.etag, ts: parsed.ts };
-		} catch (_e) {
-			return { body };
-		}
-	} catch (_e) {
-		return null;
-	}
-}
-
-/**
- * Write a cached trophy SVG and metadata (etag + timestamp).
- */
 export async function writeTrophyCacheWithMeta(
 	url: string,
 	body: string,
 	etag: string,
-): Promise<void> {
-	try {
-		await ensureCacheDir();
-		const key = keyFromUrl(url);
-		const file = path.join(TROPHY_CACHE_DIR, `${key}.svg`);
-		const metaFile = path.join(TROPHY_CACHE_DIR, `${key}.meta.json`);
-		await fs.writeFile(file, body, "utf8");
-		const meta = { etag, ts: Date.now() };
-		await fs.writeFile(metaFile, JSON.stringify(meta), "utf8");
-	} catch (_e) {
-		// Best-effort caching: fail silently
-	}
+) {
+	return cache.writeCacheWithMeta("trophy", url, body, etag);
 }
 
-export { keyFromUrl as computeCacheKey };
+export { cache as genericCache };
 
 /**
  * Set ETag and honor If-None-Match. Returns true if a 304 was sent and

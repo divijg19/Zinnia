@@ -8,9 +8,11 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setFallbackCacheHeaders,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
+import * as cache from "./cache.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -60,12 +62,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
-		// Fetch upstream with retries (network errors will retry). Use a
-		// small exponential backoff to reduce transient failures.
+		// Read existing cached metadata (etag) to send If-None-Match and to
+		// enable serving a cached fallback on upstream failures.
+		let cachedMeta: { body: string; etag?: string; ts?: number } | null = null;
+		try {
+			cachedMeta = await cache.readCacheWithMeta("streak", upstream.toString());
+		} catch (_e) {
+			/* ignore */
+		}
+
+		// Fetch upstream with retries (network errors and 5xx will retry).
+		// Accept an optional If-None-Match value so we can send conditional
+		// requests to upstream when we have cached metadata.
 		async function fetchWithRetries(
 			urlStr: string,
 			attempts = 3,
 			baseDelay = 200,
+			ifNoneMatch?: string,
 		) {
 			let lastResp: Response | null = null;
 			let lastErr: unknown = null;
@@ -73,8 +86,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const ctrl = new AbortController();
 				const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
 				try {
+					const headers: Record<string, string> = {
+						"User-Agent": "zinnia/1.0 (+streak)",
+					};
+					if (ifNoneMatch) headers["If-None-Match"] = ifNoneMatch;
 					const r = await fetch(urlStr, {
-						headers: { "User-Agent": "zinnia/1.0 (+streak)" },
+						headers,
 						signal: ctrl.signal,
 					});
 					lastResp = r;
@@ -99,8 +116,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		let resp: Response;
 		try {
-			resp = await fetchWithRetries(upstream.toString(), 3, 200);
+			resp = await fetchWithRetries(
+				upstream.toString(),
+				3,
+				200,
+				cachedMeta?.etag,
+			);
 		} catch (_e) {
+			// Network-level failure after retries: try cached SVG before failing
+			try {
+				const cached = await cache.readCache("streak", upstream.toString());
+				if (cached) {
+					setSvgHeaders(res);
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
+						return res.send("");
+					return res.send(cached);
+				}
+			} catch (_e2) {
+				// ignore
+			}
 			return sendErrorSvg(
 				req,
 				res,
@@ -109,6 +144,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 		}
 		const ct = resp.headers.get("content-type") || "";
+
+		// Handle 304 Not Modified: serve cached body if available
+		if (resp.status === 304) {
+			if (cachedMeta?.body) {
+				setSvgHeaders(res);
+				setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+				if (setEtagAndMaybeSend304(req.headers as any, res, cachedMeta.body))
+					return res.send("");
+				return res.send(cachedMeta.body);
+			}
+			// fall through to reading body
+		}
+
 		const body = await resp.text();
 		setSvgHeaders(res);
 		if (ct.includes("image/svg")) {
@@ -117,12 +165,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			if (resp.status === 404) {
 				// Use a short cache TTL for upstream 404s so clients recheck soon.
 				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
+				// To keep badges embeddable (e.g., GitHub README images), return
+				// a 200 status while exposing the original upstream status via
+				// a diagnostic header. Clients embedding via <img> will then
+				// display the SVG instead of showing an "Error Fetching Resource".
+				res.setHeader("X-Upstream-Status", String(resp.status));
 				if (setEtagAndMaybeSend304(req.headers as any, res, body))
 					return res.send("");
-				res.status(404);
+				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
 			}
+			// On successful upstream SVG, persist a cached copy to help
+			// future fallbacks and conditional requests.
 			setCacheHeaders(res, cacheSeconds);
+			try {
+				const etag = cache.computeEtag(body);
+				await cache.writeCacheWithMeta(
+					"streak",
+					upstream.toString(),
+					body,
+					etag,
+				);
+			} catch (_e) {
+				// ignore cache write failures
+			}
 			if (setEtagAndMaybeSend304(req.headers as any, res, body))
 				return res.send("");
 			return res.send(body);
