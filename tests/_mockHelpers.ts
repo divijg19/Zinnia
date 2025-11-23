@@ -22,7 +22,7 @@ export function mockApiUtilsFactory({
 	readSpy?: any;
 	computeEtag?: (b: string) => string;
 } = {}) {
-	const writeImpl = writeSpy ?? vi.fn(async () => {});
+	const writeImpl = writeSpy ?? vi.fn(async () => { });
 	const readImpl = readSpy ?? vi.fn(async () => readBody);
 	const readMetaImpl = vi.fn(async () =>
 		readMeta
@@ -92,6 +92,32 @@ export function mockApiUtilsFactory({
 			try {
 				res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 				res.setHeader("X-Content-Type-Options", "nosniff");
+				res.setHeader("Vary", "Accept-Encoding");
+			} catch (_e) {
+				// ignore
+			}
+		},
+		setShortCacheHeaders: (res: any, seconds = 60) => {
+			try {
+				const s = Math.max(0, Math.min(seconds, 3600));
+				res.setHeader(
+					"Cache-Control",
+					`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
+				);
+				res.setHeader("X-Cache-Status", "transient");
+			} catch (_e) {
+				// ignore
+			}
+		},
+		setFallbackCacheHeaders: (res: any, seconds: number) => {
+			try {
+				const s = Math.max(60, Math.min(seconds, 604800));
+				const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
+				res.setHeader(
+					"Cache-Control",
+					`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
+				);
+				res.setHeader("X-Cache-Status", "fallback");
 			} catch (_e) {
 				// ignore
 			}

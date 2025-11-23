@@ -6,6 +6,7 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
 
@@ -59,6 +60,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const cacheHeader = webRes.headers.get("cache-control");
 		if (cacheHeader) {
 			res.setHeader("Cache-Control", cacheHeader);
+		} else if (webRes.status >= 500) {
+			// Upstream error: mark transient so clients revalidate quickly.
+			setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
+			res.setHeader("X-Cache-Status", "transient");
 		} else {
 			setCacheHeaders(res, cacheSeconds);
 		}

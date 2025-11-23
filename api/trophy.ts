@@ -9,6 +9,8 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setFallbackCacheHeaders,
+	setShortCacheHeaders,
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "./_utils.js";
@@ -118,7 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await readTrophyCache(upstream.toString());
 				if (cached) {
 					setSvgHeaders(res);
-					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
 					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
 						return res.send("");
 					return res.send(cached);
@@ -141,7 +143,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					cachedMeta ?? (await readTrophyCacheWithMeta(upstream.toString()));
 				if (cached?.body) {
 					setSvgHeaders(res);
-					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
 					if (setEtagAndMaybeSend304(req.headers as any, res, cached.body))
 						return res.send("");
 					return res.send(cached.body);
@@ -158,7 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await readTrophyCache(upstream.toString());
 				if (cached) {
 					setSvgHeaders(res);
-					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
 					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
 						return res.send("");
 					return res.send(cached);
@@ -183,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (resp.status === 404) {
 			if (ct.includes("image/svg")) {
 				// Keep any caching short for upstream 404s
-				setCacheHeaders(res, Math.min(cacheSeconds, 60));
+				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
 				if (setEtagAndMaybeSend304(req.headers as any, res, body))
 					return res.send("");
 				res.status(404);
@@ -205,7 +207,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await readTrophyCache(upstream.toString());
 				if (cached) {
 					setSvgHeaders(res);
-					setCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
 					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
 						return res.send("");
 					return res.send(cached);
@@ -226,7 +228,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					title,
 					columns,
 				});
-				setCacheHeaders(res, 30);
+				setShortCacheHeaders(res, 30);
 				if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
 					return res.send("");
 				return res.send(svgOut);

@@ -29,7 +29,7 @@ describe("Trophy handler ETag & cache behavior", () => {
 	it("writes cache on upstream 200 and serves body", async () => {
 		const upstreamBody = "<svg>UPSTREAM-OK</svg>";
 		// Mock the api utils to capture writes and avoid fs I/O
-		const writeSpy = vi.fn(async () => {});
+		const writeSpy = vi.fn(async () => { });
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
 		(global as any).fetch = vi.fn().mockResolvedValue({
@@ -86,6 +86,8 @@ describe("Trophy handler ETag & cache behavior", () => {
 			"nosniff",
 		);
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
+		// cached responses are marked as fallback
+		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
 	});
 
 	it("falls back to cached body on upstream 500", async () => {
@@ -117,5 +119,6 @@ describe("Trophy handler ETag & cache behavior", () => {
 		);
 		// fallback served
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
+		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
 	});
 });

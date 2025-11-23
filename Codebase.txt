@@ -258,6 +258,7 @@ tests/_resShim.ts
 tests/api/api_utils.test.ts
 tests/api/health.test.ts
 tests/api/status/up.test.ts
+tests/api/streak.test.ts
 tests/api/trophy_404.test.ts
 tests/api/trophy_client_304.test.ts
 tests/api/trophy_handler.test.ts
@@ -271,7 +272,9 @@ tests/stats/fetchRepo.test.ts
 tests/stats/fetchStats.test.ts
 tests/stats/fetchTopLanguages.test.ts
 tests/stats/flexLayout.test.ts
+tests/stats/gist_api_headers.test.ts
 tests/stats/i18n.test.ts
+tests/stats/index_api_headers.test.ts
 tests/stats/pat-info.test.js
 tests/stats/pat-info.test.ts
 tests/stats/pin.test.ts

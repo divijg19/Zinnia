@@ -101,8 +101,8 @@ const setCacheHeaders = (
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${cacheSeconds}, ` +
-			`s-maxage=${cacheSeconds}, ` +
-			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+		`s-maxage=${cacheSeconds}, ` +
+		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
 };
 
@@ -124,9 +124,15 @@ const setErrorCacheHeaders = (res: {
 	res.setHeader(
 		"Cache-Control",
 		`max-age=${CACHE_TTL.ERROR}, ` +
-			`s-maxage=${CACHE_TTL.ERROR}, ` +
-			`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
+		`s-maxage=${CACHE_TTL.ERROR}, ` +
+		`stale-while-revalidate=${DURATIONS.ONE_DAY}`,
 	);
+	// Mark as transient so observability can detect degraded responses.
+	try {
+		res.setHeader("X-Cache-Status", "transient");
+	} catch (_e) {
+		// ignore
+	}
 };
 
 export {

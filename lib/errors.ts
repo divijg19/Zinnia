@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 // Use direct relative path to api/_utils to avoid ESM resolution issues in local Vercel dev
 import {
-	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setShortCacheHeaders,
 	setSvgHeaders,
 } from "../api/_utils.js";
 
@@ -41,7 +41,10 @@ export function sendErrorSvg(
 ) {
 	const body = svgError(message, code);
 	setSvgHeaders(res);
-	setCacheHeaders(res, ttlSeconds);
+	// Error responses are transient; use a short cache TTL so clients
+	// revalidate quickly when the service recovers.
+	setShortCacheHeaders(res, ttlSeconds);
+	res.setHeader("X-Cache-Status", "transient");
 	res.status(200);
 	if (setEtagAndMaybeSend304(req.headers as any, res, body))
 		return res.send("");

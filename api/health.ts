@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	resolveCacheSeconds,
-	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
 
@@ -27,7 +27,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		);
 
 		setSvgHeaders(res);
-		setCacheHeaders(res, cacheSeconds);
+		// Health checks are transient; keep short TTL so status updates quickly.
+		setShortCacheHeaders(res, cacheSeconds);
 		res.status(200);
 		const body = svg(text);
 		if (setEtagAndMaybeSend304(req.headers as any, res, body))
@@ -35,6 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		return res.send(body);
 	} catch (_e) {
 		setSvgHeaders(res);
+		// On error return a short-lived health response
+		setShortCacheHeaders(res, 60);
 		res.status(200);
 		const body = svg("OK");
 		if (setEtagAndMaybeSend304(req.headers as any, res, body))

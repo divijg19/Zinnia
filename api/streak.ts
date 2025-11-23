@@ -8,6 +8,7 @@ import {
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
+	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
 
@@ -59,30 +60,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
-		const ctrl = new AbortController();
-		const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
+		// Fetch upstream with retries (network errors will retry). Use a
+		// small exponential backoff to reduce transient failures.
+		async function fetchWithRetries(
+			urlStr: string,
+			attempts = 3,
+			baseDelay = 200,
+		) {
+			let lastResp: Response | null = null;
+			let lastErr: unknown = null;
+			for (let i = 0; i < attempts; i++) {
+				const ctrl = new AbortController();
+				const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
+				try {
+					const r = await fetch(urlStr, {
+						headers: { "User-Agent": "zinnia/1.0 (+streak)" },
+						signal: ctrl.signal,
+					});
+					lastResp = r;
+					// treat 5xx as retryable
+					if (r.status >= 500) {
+						lastErr = new Error(`upstream status ${r.status}`);
+					} else {
+						clearTimeout(timeout);
+						return r;
+					}
+				} catch (e) {
+					lastErr = e;
+				} finally {
+					clearTimeout(timeout);
+				}
+				if (i < attempts - 1)
+					await new Promise((s) => setTimeout(s, baseDelay * 2 ** i));
+			}
+			if (lastResp) return lastResp;
+			throw lastErr ?? new Error("fetch failed");
+		}
+
 		let resp: Response;
 		try {
-			resp = await fetch(upstream.toString(), {
-				headers: { "User-Agent": "zinnia/1.0 (+streak)" },
-				signal: ctrl.signal,
-			});
+			resp = await fetchWithRetries(upstream.toString(), 3, 200);
 		} catch (_e) {
-			clearTimeout(timeout);
 			return sendErrorSvg(
 				req,
 				res,
 				"Upstream streak fetch failed",
 				"STREAK_UPSTREAM_FETCH",
 			);
-		} finally {
-			clearTimeout(timeout);
 		}
 		const ct = resp.headers.get("content-type") || "";
 		const body = await resp.text();
 		setSvgHeaders(res);
-		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
+			// If upstream returned 404 with an SVG payload, forward the
+			// payload and preserve the 404 status for clients.
+			if (resp.status === 404) {
+				// Use a short cache TTL for upstream 404s so clients recheck soon.
+				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
+				if (setEtagAndMaybeSend304(req.headers as any, res, body))
+					return res.send("");
+				res.status(404);
+				return res.send(body);
+			}
+			setCacheHeaders(res, cacheSeconds);
 			if (setEtagAndMaybeSend304(req.headers as any, res, body))
 				return res.send("");
 			return res.send(body);

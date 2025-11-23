@@ -45,6 +45,40 @@ export function setCacheHeaders(res: VercelResponse, seconds: number) {
 export function setSvgHeaders(res: VercelResponse) {
 	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	res.setHeader("X-Content-Type-Options", "nosniff");
+	// Ensure caches and proxies vary on encoding so compressed responses are
+	// correctly served.
+	res.setHeader("Vary", "Accept-Encoding");
+}
+
+/**
+ * Use for short-lived/transient responses (errors, upstream 404s, local fallbacks).
+ * Keeps TTL small so clients revalidate quickly when upstream recovers.
+ */
+export function setShortCacheHeaders(res: VercelResponse, seconds = 60) {
+	const s = Math.max(0, Math.min(seconds, 3600));
+	res.setHeader(
+		"Cache-Control",
+		`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
+	);
+	// Mark as transient/fallback so debugging and caches can treat differently.
+	res.setHeader("X-Cache-Status", "transient");
+}
+
+/**
+ * Use when serving a cached "last-known-good" payload. These are safe to
+ * serve longer to reduce visible outages, but mark them as fallbacks so
+ * clients and observability can detect degraded responses.
+ */
+export function setFallbackCacheHeaders(res: VercelResponse, seconds: number) {
+	const s = Math.max(60, Math.min(seconds, 604800));
+	// Allow a reasonable stale-while-revalidate so caches can serve old copy
+	// while revalidating upstream.
+	const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
+	res.setHeader(
+		"Cache-Control",
+		`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
+	);
+	res.setHeader("X-Cache-Status", "fallback");
 }
 
 /** Username must be 1..39 chars, alnum or dash. */

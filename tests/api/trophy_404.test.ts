@@ -40,5 +40,7 @@ describe("Trophy handler upstream 404 svg passthrough", () => {
 
 		expect(res.status).toHaveBeenCalledWith(404);
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
+		// transient responses for upstream 404s
+		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "transient");
 	});
 });

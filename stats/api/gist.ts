@@ -23,9 +23,9 @@ export default async function handler(
 		req && (req as any).query && Object.keys((req as any).query).length > 0
 			? (req as any).query
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
-					string,
-					string
-				>);
+				string,
+				string
+			>);
 
 	const {
 		id,
@@ -96,6 +96,7 @@ export default async function handler(
 	// Ensure SVG content-type and nosniff for embeds
 	resShim.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	resShim.setHeader("X-Content-Type-Options", "nosniff");
+	resShim.setHeader("Vary", "Accept-Encoding");
 
 	if (!id) {
 		const body = renderError({

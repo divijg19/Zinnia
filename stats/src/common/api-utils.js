@@ -74,4 +74,5 @@ export const toNum = (v) => {
 export const setSvgHeaders = (res) => {
 	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	res.setHeader("X-Content-Type-Options", "nosniff");
+	res.setHeader("Vary", "Accept-Encoding");
 };
