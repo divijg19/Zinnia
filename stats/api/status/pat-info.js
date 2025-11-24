@@ -5,6 +5,7 @@
  * @description This function is currently rate limited to 1 request per 5 minutes.
  */
 
+import { markPatExhausted } from "../../../lib/tokens.js";
 import { dateDiff, logger, request } from "../../src/common/utils.ts";
 export const RATE_LIMIT_SECONDS = 60 * 5; // 1 request per 5 minutes
 
@@ -85,6 +86,11 @@ const getPATInfo = async (fetcher, variables) => {
 					remaining: 0,
 					resetIn: `${dateDiff(date2, date1)} minutes`,
 				};
+				try {
+					markPatExhausted(pat);
+				} catch (_) {
+					// noop in case marking is unavailable in this runtime
+				}
 			} else {
 				details[pat] = {
 					status: "valid",
@@ -98,10 +104,16 @@ const getPATInfo = async (fetcher, variables) => {
 				details[pat] = {
 					status: "expired",
 				};
+				try {
+					markPatExhausted(pat);
+				} catch (_) {}
 			} else if (errorMessage === "sorry. your account was suspended.") {
 				details[pat] = {
 					status: "suspended",
 				};
+				try {
+					markPatExhausted(pat);
+				} catch (_) {}
 			} else {
 				throw err;
 			}
