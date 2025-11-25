@@ -92,6 +92,7 @@ leetcode/wrangler.toml
 lib/errors.ts
 lib/http.ts
 lib/params.ts
+lib/patStore.ts
 lib/themes.ts
 lib/tokens.ts
 package.json
@@ -141,6 +142,7 @@ stats/api/gist.ts
 stats/api/index.ts
 stats/api/pin.js
 stats/api/status/pat-info.js
+stats/api/status/pat-status.js
 stats/api/status/up.js
 stats/api/top-langs.js
 stats/codecov.yml
@@ -265,6 +267,12 @@ tests/api/trophy_404.test.ts
 tests/api/trophy_client_304.test.ts
 tests/api/trophy_handler.test.ts
 tests/api/trophy_local.test.ts
+tests/lib/patStore.prefix.test.ts
+tests/lib/patStore.upstash.test.ts
+tests/lib/tokens.async.fallback.test.ts
+tests/lib/tokens.test.ts
+tests/lib/tokens.upstash_rr.test.ts
+tests/lib/tokens_extra.test.ts
 tests/stats/api-utils.test.js
 tests/stats/api-utils.test.ts
 tests/stats/calculateRank.test.ts
