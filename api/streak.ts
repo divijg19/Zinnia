@@ -170,6 +170,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				// a diagnostic header. Clients embedding via <img> will then
 				// display the SVG instead of showing an "Error Fetching Resource".
 				res.setHeader("X-Upstream-Status", String(resp.status));
+				// Explicitly return 200 so embedders which treat non-2xx as
+				// errors will still render the SVG.
+				res.status(200);
+				// Debug header to make it easier to identify bridged 404s in logs
+				// and downstream requests (safe to expose internally).
+				res.setHeader("X-Zinnia-Debug", "streak-404-bridged");
 				if (setEtagAndMaybeSend304(req.headers as any, res, body))
 					return res.send("");
 				// intentionally return 200 so embed consumers receive the SVG

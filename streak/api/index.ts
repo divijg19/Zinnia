@@ -51,7 +51,25 @@ export default async function handler(req: any, res: any) {
 		} finally {
 			clearTimeout(timeout);
 		}
+		const ct = resp.headers.get("content-type") || "";
+		// If upstream returned a non-OK SVG (e.g. 404 with an SVG body),
+		// bridge the SVG so embed consumers render it instead of showing
+		// an "Error fetching resource" message. Return 200 but expose
+		// the original upstream status via a header.
 		if (!resp.ok) {
+			const body = await resp.text();
+			if (ct.includes("image/svg")) {
+				res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+				// Short cache so consumers recheck upstream soon
+				res.setHeader(
+					"Cache-Control",
+					`public, max-age=${Math.min(cacheSeconds, 60)}, s-maxage=${Math.min(cacheSeconds, 60)}`,
+				);
+				res.setHeader("X-Upstream-Status", String(resp.status));
+				res.setHeader("X-Zinnia-Debug", "streak-404-bridged");
+				res.status(200);
+				return res.send(body);
+			}
 			return sendSvgError(res, `Upstream streak returned ${resp.status}`);
 		}
 		const body = await resp.text();

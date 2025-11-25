@@ -13,6 +13,10 @@ function isPatExhausted(key: string): boolean {
 	return true;
 }
 
+// Lazy import of KV-backed store helper. Kept local so tests/dev don't
+// need @vercel/kv unless enabled via env var.
+import { getPatStore } from "./patStore.js";
+
 /**
  * Discover configured PAT keys from the environment.
  * Returns keys like `PAT_1`, `PAT_2` sorted by their numeric suffix.
@@ -54,6 +58,37 @@ export function getGithubPAT(): string | undefined {
 }
 
 /**
+ * Async selector that uses a global counter in Vercel KV (when enabled)
+ * to pick a token in a globally coordinated round-robin. Falls back to
+ * the synchronous `getGithubPAT()` when KV is not enabled or fails.
+ */
+export async function getGithubPATAsync(): Promise<string | undefined> {
+	try {
+		const store = await getPatStore();
+		const keys = discoverPatKeys();
+		if (keys.length === 0) return undefined;
+
+		// If the store is the in-memory fallback, prefer the fast synchronous path
+		if (!store || store === undefined) return getGithubPAT();
+
+		const n = await store.incrCounter("pat_rr_counter");
+		const start = Number(n) % keys.length;
+		for (let i = 0; i < keys.length; i++) {
+			const idx = (start + i) % keys.length;
+			const k = keys[idx];
+			if (isPatExhausted(k)) continue;
+			const remoteEx = await store.isExhausted(k);
+			if (remoteEx) continue;
+			const token = process.env[k];
+			if (token && token.trim().length > 0) return token.trim();
+		}
+		return undefined;
+	} catch (_err) {
+		return getGithubPAT();
+	}
+}
+
+/**
  * Mark a PAT key as exhausted for the given TTL (seconds). Default TTL is 300s.
  * This is process-local and will auto-unmark after TTL when inspected.
  */
@@ -63,8 +98,37 @@ export function markPatExhausted(key: string, ttlSeconds = 300) {
 	exhaustedUntil.set(key, until);
 }
 
+/**
+ * Async variant persists exhausted state to KV when available.
+ */
+export async function markPatExhaustedAsync(key: string, ttlSeconds = 300) {
+	if (typeof key !== "string" || !key) return;
+	const until = Date.now() + Math.max(0, ttlSeconds) * 1000;
+	exhaustedUntil.set(key, until);
+	try {
+		const store = await getPatStore();
+		if (store && typeof store.setExhausted === "function") {
+			await store.setExhausted(key, ttlSeconds);
+		}
+	} catch (_e) {
+		// ignore KV failures
+	}
+}
+
 export function unmarkPatExhausted(key: string) {
 	exhaustedUntil.delete(key);
+}
+
+export async function unmarkPatExhaustedAsync(key: string) {
+	exhaustedUntil.delete(key);
+	try {
+		const store = await getPatStore();
+		if (store && typeof store.clearExhausted === "function") {
+			await store.clearExhausted(key);
+		}
+	} catch (_e) {
+		// ignore
+	}
 }
 
 export function listPatStatus() {

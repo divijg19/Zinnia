@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
-import { getGithubPAT } from "../lib/tokens.js";
+import { getGithubPATAsync } from "../lib/tokens.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		if (!getGithubPAT()) {
+		const pat = await getGithubPATAsync();
+		if (!pat) {
 			return sendErrorSvg(
 				req,
 				res,
