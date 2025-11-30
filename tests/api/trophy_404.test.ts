@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
 function makeReq(urlPath: string) {
 	return {
 		headers: { host: "localhost", "x-forwarded-proto": "http" },
 		url: urlPath,
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 function makeRes() {
@@ -13,7 +14,7 @@ function makeRes() {
 		setHeader: vi.fn(),
 		send: vi.fn(),
 		status: vi.fn().mockReturnThis(),
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 describe("Trophy handler upstream 404 svg passthrough", () => {
@@ -25,13 +26,15 @@ describe("Trophy handler upstream 404 svg passthrough", () => {
 		const upstreamBody = "<svg>NOTFOUND</svg>";
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({}));
-		(global as any).fetch = vi.fn().mockResolvedValue({
-			status: 404,
-			headers: {
-				get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
-			},
-			text: async () => upstreamBody,
-		});
+		setGlobalFetchMock(
+			makeFetchResolved({
+				status: 404,
+				headers: {
+					get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
+				},
+				text: async () => upstreamBody,
+			}),
+		);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");

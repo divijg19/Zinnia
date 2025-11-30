@@ -49,7 +49,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const svgOut = renderTrophySVG({ username, theme, title, columns });
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
-			if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
+			if (
+				setEtagAndMaybeSend304(
+					req.headers as Record<string, unknown>,
+					res,
+					svgOut,
+				)
+			)
 				return res.send("");
 			return res.send(svgOut);
 		}
@@ -121,7 +127,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
-					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
+					if (
+						setEtagAndMaybeSend304(
+							req.headers as Record<string, unknown>,
+							res,
+							cached,
+						)
+					)
 						return res.send("");
 					return res.send(cached);
 				}
@@ -144,7 +156,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached?.body) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
-					if (setEtagAndMaybeSend304(req.headers as any, res, cached.body))
+					if (
+						setEtagAndMaybeSend304(
+							req.headers as Record<string, unknown>,
+							res,
+							String(cached.body),
+						)
+					)
 						return res.send("");
 					return res.send(cached.body);
 				}
@@ -161,7 +179,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
-					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
+					if (
+						setEtagAndMaybeSend304(
+							req.headers as Record<string, unknown>,
+							res,
+							cached,
+						)
+					)
 						return res.send("");
 					return res.send(cached);
 				}
@@ -190,7 +214,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
 				// Expose original upstream status as a diagnostic header
 				res.setHeader("X-Upstream-Status", String(resp.status));
-				if (setEtagAndMaybeSend304(req.headers as any, res, body))
+				if (
+					setEtagAndMaybeSend304(
+						req.headers as Record<string, unknown>,
+						res,
+						String(body),
+					)
+				)
 					return res.send("");
 				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
@@ -214,7 +244,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			} catch (_e) {
 				// ignore
 			}
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
+			if (
+				setEtagAndMaybeSend304(
+					req.headers as Record<string, unknown>,
+					res,
+					String(body),
+				)
+			)
 				return res.send("");
 			return res.send(body);
 		}

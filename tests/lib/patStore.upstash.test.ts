@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
 
 describe("patStore Upstash adapter", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		(global as any).fetch = undefined;
+		clearGlobalFetchMock();
 	});
 
 	it("uses Upstash REST for INCR and GET/SET/EXPIRE", async () => {
 		const calls: Array<{ body: any }> = [];
 		// simple mock of Upstash REST: INCR returns incrementing number
 		let counter = 0;
-		(global as any).fetch = vi
-			.fn()
-			.mockImplementation(async (_url: string, opts: any) => {
+		setGlobalFetchMock(
+			vi.fn().mockImplementation(async (_url: string, opts: any) => {
 				const body = JSON.parse(opts.body as string);
 				calls.push({ body });
 				const cmd = body[0];
@@ -29,7 +29,8 @@ describe("patStore Upstash adapter", () => {
 				}
 				// SET/EXPIRE/DEL return simple OK
 				return { ok: true, json: async () => ({ result: "OK" }) };
-			});
+			}),
+		);
 
 		// set env so getPatStore picks Upstash
 		process.env.UPSTASH_REST_URL = "https://upstash.test";

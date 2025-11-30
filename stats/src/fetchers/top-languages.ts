@@ -6,6 +6,17 @@ import type { TopLangData } from "./types.js";
 
 type Variables = { login: string };
 
+type Edge = { size: number; node: { name: string; color?: string | null } };
+type RepoNodeShape = {
+	name: string;
+	languages: { edges: Edge[] };
+	size?: number;
+};
+type LangAccumulator = Record<
+	string,
+	{ name: string; color: string; size: number; count: number }
+>;
+
 const fetcher = (variables: Variables, token?: string) => {
 	return request(
 		{
@@ -71,7 +82,9 @@ export const fetchTopLanguages = async (
 		);
 	}
 
-	let repoNodes = res.data.data.user.repositories.nodes;
+	let repoNodes =
+		(res.data.data.user.repositories.nodes as RepoNodeShape[] | undefined) ??
+		[];
 	const repoToHide: Record<string, boolean> = {};
 	const allExcludedRepos = [...exclude_repo, ...excludeRepositories];
 
@@ -83,39 +96,36 @@ export const fetchTopLanguages = async (
 
 	repoNodes = repoNodes
 		// sort by a synthetic size if present; default 0 to be safe in strict mode
-		.sort((a: any, b: any) => (b?.size ?? 0) - (a?.size ?? 0))
-		.filter((name: any) => !repoToHide[name.name]);
+		.sort(
+			(a: RepoNodeShape, b: RepoNodeShape) => (b?.size ?? 0) - (a?.size ?? 0),
+		)
+		.filter((repo: RepoNodeShape) => !repoToHide[repo.name]);
 
 	let repoCount = 0;
 
-	type Edge = { size: number; node: { name: string; color: string } };
-	type LangAccumulator = Record<
-		string,
-		{ name: string; color: string; size: number; count: number }
-	>;
-
 	const flattened: Edge[] = repoNodes
-		.filter((node: any) => node.languages.edges.length > 0)
+		.filter((node) => (node.languages?.edges ?? []).length > 0)
 		.reduce(
-			(acc: Edge[], curr: any) => acc.concat(curr.languages.edges as Edge[]),
-			[],
+			(accum: Edge[], curr: RepoNodeShape) =>
+				accum.concat(curr.languages.edges ?? []),
+			[] as Edge[],
 		);
 
 	const acc: LangAccumulator = {};
-	flattened.forEach((prev) => {
-		let langSize = prev.size;
-		const existingLang = acc[prev.node.name];
+	flattened.forEach((edge) => {
+		let langSize = edge.size ?? 0;
+		const existingLang = acc[edge.node.name];
 
-		if (existingLang && prev.node.name === existingLang.name) {
-			langSize = prev.size + existingLang.size;
+		if (existingLang && edge.node.name === existingLang.name) {
+			langSize = edge.size + existingLang.size;
 			repoCount += 1;
 		} else {
 			repoCount = 1;
 		}
 
-		acc[prev.node.name] = {
-			name: prev.node.name,
-			color: prev.node.color,
+		acc[edge.node.name] = {
+			name: edge.node.name,
+			color: edge.node.color ?? "",
 			size: langSize,
 			count: repoCount,
 		};

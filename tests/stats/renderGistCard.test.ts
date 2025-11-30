@@ -95,15 +95,21 @@ describe("test renderGistCard", () => {
 			const styleTag = document.querySelector("style");
 			expect(styleTag).not.toBeNull();
 			const content = (styleTag as HTMLStyleElement).innerHTML;
-			expect(content).toContain(`#${(themes as any)[name].title_color}`);
-			expect(content).toContain(`#${(themes as any)[name].text_color}`);
-			expect(content).toContain(`#${(themes as any)[name].icon_color}`);
+			expect(content).toContain(
+				`#${(themes as unknown as Record<string, any>)[name].title_color}`,
+			);
+			expect(content).toContain(
+				`#${(themes as unknown as Record<string, any>)[name].text_color}`,
+			);
+			expect(content).toContain(
+				`#${(themes as unknown as Record<string, any>)[name].icon_color}`,
+			);
 			const backgroundElement = document.querySelector(
 				'[data-testid="card-bg"]',
 			);
 			const backgroundElementFill = backgroundElement?.getAttribute("fill");
 			expect([
-				`#${(themes as any)[name].bg_color}`,
+				`#${(themes as unknown as Record<string, any>)[name].bg_color}`,
 				"url(#gradient)",
 			]).toContain(backgroundElementFill);
 		});

@@ -17,7 +17,14 @@ const includeGlobs = [
 ];
 
 export default defineConfig({
-	resolve: {},
+	resolve: {
+		alias: [
+			{
+				find: /^nano-font\/fonts\/.*/,
+				replacement: path.resolve(__dirname, "leetcode/test/__mocks__/font-stub.ts"),
+			},
+		],
+	},
 	test: {
 		// Increase default test timeout to accommodate slower CI/Env setups
 		testTimeout: 60000,
@@ -29,6 +36,11 @@ export default defineConfig({
 			include: [
 				path.join(repoRoot, "leetcode/packages/*/src"),
 				path.join(repoRoot, "packages/*/src"),
+			],
+			exclude: [
+				"leetcode/packages/**/src/**/demo/**",
+				"**/*.html",
+				"leetcode/packages/core/src/constants.ts",
 			],
 		},
 		globals: true,

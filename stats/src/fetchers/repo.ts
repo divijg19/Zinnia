@@ -5,44 +5,66 @@ import type { RepositoryData } from "./types.js";
 
 type Variables = { login: string; repo: string };
 
+type RepoShape = {
+	name: string;
+	nameWithOwner?: string;
+	isPrivate?: boolean;
+	isArchived?: boolean;
+	isTemplate?: boolean;
+	stargazers?: { totalCount?: number } | null;
+	description?: string | null;
+	primaryLanguage?: { color?: string; id?: string; name?: string } | null;
+	forkCount?: number | null;
+};
+
+type GraphQLAxiosResponse = {
+	data: {
+		data?: {
+			user?: { repository?: RepoShape | null };
+			organization?: { repository?: RepoShape | null };
+		};
+		errors?: Array<{ type?: string; message?: string }>;
+	};
+	statusText: string;
+	response?: { data?: { message?: string } };
+};
+
 const fetcher = (variables: Variables, token?: string) => {
+	const query = `
+			fragment RepoInfo on Repository {
+				name
+				nameWithOwner
+				isPrivate
+				isArchived
+				isTemplate
+				stargazers {
+					totalCount
+				}
+				description
+				primaryLanguage {
+					color
+					id
+					name
+				}
+				forkCount
+			}
+			query getRepo($login: String!, $repo: String!) {
+				user(login: $login) {
+					repository(name: $repo) {
+						...RepoInfo
+					}
+				}
+				organization(login: $login) {
+					repository(name: $repo) {
+						...RepoInfo
+					}
+				}
+			}
+		`;
 	return request(
-		{
-			query: `
-      fragment RepoInfo on Repository {
-        name
-        nameWithOwner
-        isPrivate
-        isArchived
-        isTemplate
-        stargazers {
-          totalCount
-        }
-        description
-        primaryLanguage {
-          color
-          id
-          name
-        }
-        forkCount
-      }
-      query getRepo($login: String!, $repo: String!) {
-        user(login: $login) {
-          repository(name: $repo) {
-            ...RepoInfo
-          }
-        }
-        organization(login: $login) {
-          repository(name: $repo) {
-            ...RepoInfo
-          }
-        }
-      }
-    `,
-			variables,
-		},
+		{ query, variables },
 		token ? { Authorization: `token ${token}` } : {},
-	);
+	) as Promise<GraphQLAxiosResponse>;
 };
 
 const urlExample = "/api/pin?username=USERNAME&amp;repo=REPO_NAME";
@@ -61,37 +83,43 @@ export const fetchRepo = async (
 		throw new MissingParamError(["repo"], urlExample);
 	}
 
-	const res = await retryer(fetcher, { login: username, repo: reponame });
+	const res = (await retryer(fetcher, {
+		login: username,
+		repo: reponame,
+	} as Variables)) as GraphQLAxiosResponse;
 
-	const data = res.data.data;
+	if (res.data?.errors && res.data.errors.length > 0) {
+		throw new Error(res.data.errors[0]?.message || "Unknown error");
+	}
 
-	if (!data.user && !data.organization) {
+	const dataObj = res.data.data ?? {};
+
+	if (!dataObj.user && !dataObj.organization) {
 		throw new Error("Not found");
 	}
 
-	const isUser = data.organization === null && data.user;
-	const isOrg = data.user === null && data.organization;
+	const isUser = dataObj.organization === null && Boolean(dataObj.user);
+	const isOrg = dataObj.user === null && Boolean(dataObj.organization);
 
 	if (isUser) {
-		if (!data.user.repository || data.user.repository.isPrivate) {
+		const repoObj = dataObj.user?.repository;
+		if (!repoObj || repoObj.isPrivate) {
 			throw new Error("User Repository Not found");
 		}
 		return {
-			...data.user.repository,
-			starCount: data.user.repository.stargazers.totalCount,
+			...(repoObj as unknown as RepositoryData),
+			starCount: repoObj.stargazers?.totalCount ?? 0,
 		} as RepositoryData;
 	}
 
 	if (isOrg) {
-		if (
-			!data.organization.repository ||
-			data.organization.repository.isPrivate
-		) {
+		const repoObj = dataObj.organization?.repository;
+		if (!repoObj || repoObj.isPrivate) {
 			throw new Error("Organization Repository Not found");
 		}
 		return {
-			...data.organization.repository,
-			starCount: data.organization.repository.stargazers.totalCount,
+			...(repoObj as unknown as RepositoryData),
+			starCount: repoObj.stargazers?.totalCount ?? 0,
 		} as RepositoryData;
 	}
 

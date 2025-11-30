@@ -26,29 +26,57 @@ query gistInfo($gistName: String!) {
 }
 `;
 
-const fetcher = async (variables: unknown, token?: string) => {
+type GistShape = {
+	description?: string | null;
+	owner?: { login?: string } | null;
+	stargazerCount?: number | null;
+	forks?: { totalCount?: number } | null;
+	files: Record<string, GistFile>;
+};
+
+type GraphQLAxiosResponse = {
+	data: {
+		data?: { viewer?: { gist?: GistShape } };
+		errors?: Array<{ type?: string; message?: string }>;
+	};
+	statusText: string;
+	response?: { data?: { message?: string } };
+};
+
+const fetcher = (variables: Record<string, unknown>, token?: string) => {
 	const headers: Record<string, string> = token
 		? { Authorization: `token ${token}` }
 		: {};
-	return await request({ query: QUERY, variables }, headers);
+	return request(
+		{ query: QUERY, variables },
+		headers,
+	) as Promise<GraphQLAxiosResponse>;
 };
 
-type GistFile = { name: string; language?: { name: string }; size: number };
+type GistFile = {
+	name: string;
+	language?: { name?: string | null } | null;
+	size: number;
+};
 
-const calculatePrimaryLanguage = (files: GistFile[]) => {
+const calculatePrimaryLanguage = (
+	files: Record<string, GistFile> | undefined,
+): string | null => {
+	if (!files) return null;
 	const languages: Record<string, number> = {};
-	for (const file of files) {
-		if (file.language) {
+	for (const file of Object.values(files)) {
+		if (file.language?.name) {
 			const name = file.language.name;
-			languages[name] = (languages[name] || 0) + file.size;
+			languages[name] = (languages[name] || 0) + (file.size || 0);
 		}
 	}
 	const keys = Object.keys(languages);
-	let primaryLanguage = keys[0] ?? "";
+	if (keys.length === 0) return null;
+	let primaryLanguage = keys[0] as string;
 	for (const language of keys) {
-		const langSize = languages[language];
-		const primaryLangSize = languages[primaryLanguage];
-		if (langSize && primaryLangSize && langSize > primaryLangSize) {
+		const langSize = languages[language] ?? 0;
+		const primaryLangSize = languages[primaryLanguage] ?? 0;
+		if (langSize > primaryLangSize) {
 			primaryLanguage = language;
 		}
 	}
@@ -68,33 +96,34 @@ export const fetchGist = async (id: string): Promise<GistData> => {
 	if (!id) {
 		throw new MissingParamError(["id"], "/api/gist?id=GIST_ID");
 	}
-	const res = (await retryer(fetcher, { gistName: id })) as Record<
+
+	const res = (await retryer(fetcher, { gistName: id } as Record<
 		string,
 		unknown
-	>;
-	const dataRoot =
-		(res.data as Record<string, unknown> | undefined) ?? undefined;
-	if (dataRoot && (dataRoot as any).errors) {
-		const dr: any = dataRoot;
-		throw new Error(dr.errors[0].message as string);
+	>)) as GraphQLAxiosResponse;
+
+	if (res.data?.errors && res.data.errors.length > 0) {
+		throw new Error(res.data.errors[0]?.message || "Unknown error");
 	}
-	const viewerGist = (dataRoot as any)?.data?.viewer?.gist;
-	if (!viewerGist) {
+
+	const gist = res.data?.data?.viewer?.gist;
+	if (!gist) {
 		throw new Error("Gist not found");
 	}
-	const data = viewerGist;
-	const fileKeys = Object.keys(data.files);
+
+	const fileKeys = Object.keys(gist.files || {});
 	const firstFileKey = fileKeys[0];
 	if (!firstFileKey) {
 		throw new Error("Gist has no files");
 	}
-	const firstFile = data.files[firstFileKey];
+	const firstFile = gist.files[firstFileKey] as GistFile;
+
 	return {
 		name: firstFile.name,
-		nameWithOwner: `${data.owner.login}/${firstFile.name}`,
-		description: data.description,
-		language: calculatePrimaryLanguage(data.files),
-		starsCount: data.stargazerCount,
-		forksCount: data.forks.totalCount,
+		nameWithOwner: `${gist.owner?.login ?? ""}/${firstFile.name}`,
+		description: gist.description ?? null,
+		language: calculatePrimaryLanguage(gist.files),
+		starsCount: gist.stargazerCount ?? 0,
+		forksCount: gist.forks?.totalCount ?? 0,
 	};
 };

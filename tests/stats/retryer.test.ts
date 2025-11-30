@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { RETRIES, retryer } from "../../stats/src/common/retryer";
+import {
+	type FetcherFunction,
+	RETRIES,
+	retryer,
+} from "../../stats/src/common/retryer";
 import { logger } from "../../stats/src/common/utils";
 
 const fetcher = vi.fn((variables: any, token: any) => {
@@ -42,21 +46,27 @@ const fetcherFailWithMessageBasedRateLimitErr = vi.fn(
 
 describe("Retryer (vitest)", () => {
 	it("returns value and has zero retries on first try", async () => {
-		const res = await retryer(fetcher as any, {} as any);
+		const res = await retryer(
+			fetcher as unknown as FetcherFunction<any>,
+			{} as unknown as Record<string, unknown>,
+		);
 		expect(fetcher).toHaveBeenCalledTimes(1);
 		expect(res).toStrictEqual({ data: "ok" });
 	});
 
 	it("retries and succeeds on second try", async () => {
-		const res = await retryer(fetcherFailOnSecondTry as any, {} as any);
+		const res = await retryer(
+			fetcherFailOnSecondTry as unknown as FetcherFunction<any>,
+			{} as unknown as Record<string, unknown>,
+		);
 		expect(fetcherFailOnSecondTry).toHaveBeenCalledTimes(2);
 		expect(res).toStrictEqual({ data: "ok" });
 	});
 
 	it("retries on message-based rate limit and succeeds", async () => {
 		const res = await retryer(
-			fetcherFailWithMessageBasedRateLimitErr as any,
-			{} as any,
+			fetcherFailWithMessageBasedRateLimitErr as unknown as FetcherFunction<any>,
+			{} as unknown as Record<string, unknown>,
 		);
 		expect(fetcherFailWithMessageBasedRateLimitErr).toHaveBeenCalledTimes(2);
 		expect(res).toStrictEqual({ data: "ok" });
@@ -64,7 +74,10 @@ describe("Retryer (vitest)", () => {
 
 	it("throws when maximum retries reached", async () => {
 		try {
-			await retryer(fetcherFail as any, {} as any);
+			await retryer(
+				fetcherFail as unknown as FetcherFunction<any>,
+				{} as unknown as Record<string, unknown>,
+			);
 		} catch (err: any) {
 			expect(fetcherFail).toHaveBeenCalledTimes(RETRIES + 1);
 			expect(err.message).toBe("Downtime due to GitHub API rate limiting");

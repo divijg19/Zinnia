@@ -169,17 +169,22 @@ export function setEtagAndMaybeSend304(
 	body: string,
 ): boolean {
 	const etag = computeEtag(body);
-	res.setHeader("ETag", etag);
+	// Use a quoted ETag per RFC; make comparisons tolerant of weak/quoted values.
+	const quoted = `"${etag}"`;
+	res.setHeader("ETag", quoted);
 	const inm = (reqHeaders["if-none-match"] ?? reqHeaders["If-None-Match"]) as
 		| string
 		| string[]
 		| undefined;
 	const inmValue = Array.isArray(inm) ? inm[0] : inm;
-	if (inmValue && inmValue === etag) {
-		// Not Modified
-		res.status(304);
-		// It is typical to omit body for 304
-		return true;
+	if (inmValue) {
+		// Normalize: remove weak prefix W/, strip surrounding quotes, then compare.
+		const norm = String(inmValue).replace(/^W\//i, "").replace(/^"|"$/g, "");
+		if (norm === etag) {
+			res.status(304);
+			// It is typical to omit body for 304
+			return true;
+		}
 	}
 	return false;
 }

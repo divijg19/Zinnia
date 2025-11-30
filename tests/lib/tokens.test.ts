@@ -4,7 +4,7 @@ import * as tokens from "../../lib/tokens.js";
 describe("tokens distribution", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		process.env = {} as any;
+		process.env = {} as unknown as NodeJS.ProcessEnv;
 		process.env.PAT_1 = "a";
 		process.env.PAT_2 = "b";
 		process.env.PAT_3 = "c";

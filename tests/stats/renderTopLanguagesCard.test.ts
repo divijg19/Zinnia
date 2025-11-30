@@ -207,12 +207,12 @@ describe("Test renderTopLanguages (rendering)", () => {
 				// `name` is string from Object.keys; cast to the theme key type so
 				// TypeScript accepts it for the `theme` option.
 				document.body.innerHTML = renderTopLanguages(langs, {
-					theme: name as any,
+					theme: name as unknown as keyof typeof themes,
 				});
 				const styleTag = document.querySelector("style");
 				expect(styleTag).not.toBeNull();
 				expect((styleTag as HTMLStyleElement).innerHTML).toContain(
-					`#${(themes as any)[name].title_color}`,
+					`#${(themes as unknown as Record<string, any>)[name].title_color}`,
 				);
 			});
 	});

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
 
 describe("patStore prefix detection (ZINNIA)", () => {
 	beforeEach(() => {
@@ -8,7 +9,7 @@ describe("patStore prefix detection (ZINNIA)", () => {
 		delete process.env.UPSTASH_PREFIX;
 		delete process.env.ZINNIA_REST_URL;
 		delete process.env.ZINNIA_REST_TOKEN;
-		(global as any).fetch = undefined;
+		clearGlobalFetchMock();
 	});
 
 	it("detects ZINNIA_* env vars and calls the correct REST URL", async () => {
@@ -17,12 +18,12 @@ describe("patStore prefix detection (ZINNIA)", () => {
 		process.env.ZINNIA_REST_TOKEN = "secret";
 
 		const calls: Array<{ url: string; opts: any }> = [];
-		(global as any).fetch = vi
-			.fn()
-			.mockImplementation(async (url: string, opts: any) => {
+		setGlobalFetchMock(
+			vi.fn().mockImplementation(async (url: string, opts: any) => {
 				calls.push({ url, opts });
 				return { ok: true, json: async () => ({ result: 1 }) };
-			});
+			}),
+		);
 
 		const mod = await import("../../lib/patStore.js");
 		const store = await mod.getPatStore();

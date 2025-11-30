@@ -56,7 +56,7 @@ export function mockApiUtilsFactory({
 			},
 			getUsername: (url: URL, keys: string[] = ["username", "user"]) => {
 				for (const k of keys) {
-					const v = (url as any).searchParams.get(k);
+					const v = (url as unknown as URL).searchParams.get(k);
 					if (v && /^[A-Za-z0-9-]{1,39}$/.test(v)) return v;
 				}
 				return null;
@@ -73,14 +73,14 @@ export function mockApiUtilsFactory({
 				"github_dark",
 			]),
 			filterThemeParam: (url: URL, key = "theme") => {
-				const raw = (url as any).searchParams.get(key);
+				const raw = (url as unknown as URL).searchParams.get(key);
 				if (!raw) return;
 				const value = String(raw).trim().toLowerCase();
 				if (
 					![...new Set(["watchdog", "light", "dark"])].includes(value) &&
 					!value.includes(",")
 				) {
-					(url as any).searchParams.delete(key);
+					(url as unknown as URL).searchParams.delete(key);
 				}
 			},
 			resolveCacheSeconds: () => 86400,
@@ -135,16 +135,21 @@ export function mockApiUtilsFactory({
 			) => {
 				const etag = computeEtag(body);
 				try {
-					res.setHeader("ETag", etag);
+					res.setHeader("ETag", `"${etag}"`);
 				} catch (_e) {
 					// ignore
 				}
 				const inm = (reqHeaders["if-none-match"] ??
 					reqHeaders["If-None-Match"]) as string | string[] | undefined;
 				const inmValue = Array.isArray(inm) ? inm[0] : inm;
-				if (inmValue && inmValue === etag) {
-					res.status(304);
-					return true;
+				if (inmValue) {
+					const norm = String(inmValue)
+						.replace(/^W\//i, "")
+						.replace(/^"|"$/g, "");
+					if (norm === etag) {
+						res.status(304);
+						return true;
+					}
 				}
 				return false;
 			},

@@ -11,17 +11,20 @@ import { fetchGist } from "../src/fetchers/gist.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 export default async function handler(
-	req: Request | any,
-	res?: any,
+	req: Request | unknown,
+	res?: unknown,
 ): Promise<any> {
-	const rawUrl = (req as any)?.url;
+	const rawUrl = (req as unknown as { url?: string })?.url;
 	const safeUrl =
 		typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
 	const q =
-		req && (req as any).query && Object.keys((req as any).query).length > 0
-			? (req as any).query
+		req &&
+		(req as unknown as { query?: Record<string, unknown> }).query &&
+		Object.keys((req as unknown as { query?: Record<string, unknown> }).query!)
+			.length > 0
+			? (req as unknown as { query: Record<string, unknown> }).query
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
 					string,
 					string
@@ -80,8 +83,8 @@ export default async function handler(
 			},
 			send(body: string, status?: number) {
 				// Prefer global Response when available
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const G = globalThis as any as Record<string, any>;
+				// Prefer global Response when available
+				const G = globalThis as unknown as Record<string, unknown>;
 				if (typeof G.Response === "function") {
 					return new G.Response(body, {
 						headers: Object.fromEntries(this.headers),
@@ -139,7 +142,8 @@ export default async function handler(
 	try {
 		const gistData = await fetchGist(String(id));
 		const requestedValue =
-			"cache_seconds" in q && (q as any).cache_seconds !== undefined
+			"cache_seconds" in q &&
+			(q as Record<string, unknown>).cache_seconds !== undefined
 				? parseInt(String(cache_seconds), 10)
 				: NaN;
 		const cacheSeconds = resolveCacheSeconds({
@@ -157,13 +161,13 @@ export default async function handler(
 				icon_color,
 				text_color,
 				bg_color,
-				theme: theme as any,
+				theme: theme as unknown as string,
 				border_radius: border_radius ? Number(border_radius) : undefined,
 				border_color,
 				locale: locale ? locale.toLowerCase() : undefined,
 				show_owner: parseBoolean(show_owner),
 				hide_border: parseBoolean(hide_border),
-			} as any),
+			} as unknown as Record<string, unknown>),
 		);
 	} catch (err: unknown) {
 		setErrorCacheHeaders(resShim);

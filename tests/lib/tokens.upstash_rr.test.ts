@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
 
 describe("getGithubPATAsync round-robin with Upstash", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		(global as any).fetch = undefined;
+		clearGlobalFetchMock();
 		// ensure clean env
 		delete process.env.UPSTASH_REST_URL;
 		delete process.env.UPSTASH_REST_TOKEN;
@@ -24,9 +25,8 @@ describe("getGithubPATAsync round-robin with Upstash", () => {
 
 		// Mock Upstash REST API: INCR returns incrementing numbers (1,2,3...),
 		// GET returns non-null for the exhausted key ex:PAT_3, causing it to be skipped.
-		(global as any).fetch = vi
-			.fn()
-			.mockImplementation(async (url: string, opts: any) => {
+		setGlobalFetchMock(
+			vi.fn().mockImplementation(async (url: string, opts: any) => {
 				const body = JSON.parse(opts.body as string);
 				calls.push({ body, url });
 				const cmd = body[0];
@@ -43,7 +43,8 @@ describe("getGithubPATAsync round-robin with Upstash", () => {
 				}
 				// default for SET/EXPIRE/DEL
 				return { ok: true, json: async () => ({ result: "OK" }) };
-			});
+			}),
+		);
 
 		// enable Upstash path
 		process.env.UPSTASH_REST_URL = "https://upstash.test";

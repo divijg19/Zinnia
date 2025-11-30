@@ -5,8 +5,15 @@ describe("stats api gist handler headers", () => {
 		const mod = await import("../../stats/api/gist.js");
 		const handler = mod.default;
 
-		const res = { setHeader: vi.fn(), send: vi.fn(), status: vi.fn() } as any;
-		const req = { url: "http://localhost/api/gist" } as any;
+		const res = {
+			setHeader: vi.fn(),
+			send: vi.fn(),
+			status: vi.fn(),
+		} as unknown as Record<string, unknown>;
+		const req = { url: "http://localhost/api/gist" } as unknown as Record<
+			string,
+			unknown
+		>;
 
 		await handler(req, res);
 
