@@ -149,3 +149,27 @@ _vendor_backup/**
 scripts/
 .vercel
 cache/
+
+# --- Consolidated package ignores ---
+# Package-local node_modules, lockfiles, IDE files, demos and archives
+node_modules
+*.lock
+.idea/
+.vscode/
+.DS_Store
+vendor/
+composer.phar
+composer.lock
+.php-version
+DOCKER_ENV
+docker_tag
+
+# LeetCode / Worker build artifacts
+dist/
+lib/
+.wrangler/
+worker.capnp
+.storage/
+
+# Editor / workspace
+*.code-workspace

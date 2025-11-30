@@ -1,0 +1,29 @@
+.gitignore
+.github
+README.md
+LICENSE
+debug.ts
+.devcontainer
+.husky
+.vscode
+benchmarks
+coverage
+scripts
+tests
+.env
+**/*.md
+**/*.svg
+.eslintrc.json
+.prettierignore
+.prettterrc.json
+codecov.yml
+
+# Ignore node_modules and build artifacts from uploads
+node_modules/
+dist/
+lib/
+.wrangler/
+
+# Editor config and IDE
+.vscode/
+.idea/
