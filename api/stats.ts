@@ -70,7 +70,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 
 		res.status(200);
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
+		if (
+			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
+		)
 			return res.send("");
 		return res.send(body);
 	} catch (_err) {

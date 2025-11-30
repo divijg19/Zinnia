@@ -48,19 +48,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"LEETCODE_INVALID",
 			);
 		}
-		const sanitized: any = {
+		type SanitizedOptions = {
+			username: string;
+			site: string;
+			width: number;
+			height: number;
+			css: string[];
+			extensions: unknown[];
+			font: string;
+			animation: boolean;
+			theme: string | { light: string; dark: string };
+			cache: number;
+		};
+
+		const sanitized: SanitizedOptions = {
 			username: config.username.trim(),
 			site: (config.site || "us").toLowerCase(),
 			width: parseInt(config.width || "500", 10) || 500,
 			height: parseInt(config.height || "200", 10) || 200,
 			css: [] as string[],
-			extensions: [] as any[],
-			font: (config.font?.trim() || "baloo_2") as any,
+			extensions: [] as unknown[],
+			font: (config.font?.trim() || "baloo_2") as string,
 			animation:
 				config.animation !== undefined
 					? !/^false|0|no$/i.test((config.animation || "").trim())
 					: true,
-			theme: { light: "light", dark: "dark" } as any,
+			theme: { light: "light", dark: "dark" },
 			cache: 60,
 		};
 
@@ -122,7 +135,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const svgOut = await generator.generate(sanitized);
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
-			if (setEtagAndMaybeSend304(req.headers as any, res, svgOut))
+			if (
+				setEtagAndMaybeSend304(
+					req.headers as Record<string, unknown>,
+					res,
+					svgOut,
+				)
+			)
 				return res.send("");
 			return res.send(svgOut);
 		} catch (e) {

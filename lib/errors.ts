@@ -45,8 +45,22 @@ export function sendErrorSvg(
 	// revalidate quickly when the service recovers.
 	setShortCacheHeaders(res, ttlSeconds);
 	res.setHeader("X-Cache-Status", "transient");
+	// Diagnostic headers: only expose when explicitly enabled to avoid
+	// accidentally leaking messages in public production environments.
+	try {
+		const expose = (
+			process.env.ZINNIA_EXPOSE_ERROR_HEADERS || ""
+		).toLowerCase();
+		if (expose === "1" || expose === "true") {
+			res.setHeader("X-Error-Code", code);
+			const msg = String(message).slice(0, 200);
+			res.setHeader("X-Error-Message", msg);
+		}
+	} catch {
+		// ignore header failures
+	}
 	res.status(200);
-	if (setEtagAndMaybeSend304(req.headers as any, res, body))
+	if (setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body))
 		return res.send("");
 	return res.send(body);
 }

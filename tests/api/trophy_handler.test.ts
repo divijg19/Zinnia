@@ -1,11 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	clearGlobalFetchMock,
+	makeFetchResolved,
+	setGlobalFetchMock,
+} from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
 function makeReq(urlPath: string) {
 	return {
 		headers: { host: "localhost", "x-forwarded-proto": "http" },
 		url: urlPath,
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 function makeRes() {
@@ -13,13 +18,13 @@ function makeRes() {
 		setHeader: vi.fn(),
 		send: vi.fn(),
 		status: vi.fn().mockReturnThis(),
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 describe("Trophy handler ETag & cache behavior", () => {
 	beforeEach(async () => {
 		// avoid touching real filesystem here; tests use mocked api/_utils
-		(global as any).fetch = undefined;
+		clearGlobalFetchMock();
 	});
 
 	afterEach(async () => {
@@ -32,13 +37,15 @@ describe("Trophy handler ETag & cache behavior", () => {
 		const writeSpy = vi.fn(async () => {});
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
-		(global as any).fetch = vi.fn().mockResolvedValue({
-			status: 200,
-			headers: {
-				get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
-			},
-			text: async () => upstreamBody,
-		});
+		setGlobalFetchMock(
+			makeFetchResolved({
+				status: 200,
+				headers: {
+					get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
+				},
+				text: async () => upstreamBody,
+			}),
+		);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
@@ -66,11 +73,13 @@ describe("Trophy handler ETag & cache behavior", () => {
 			"../../api/_utils",
 			mockApiUtilsFactory({ readMeta: { body: upstreamBody, etag: "etag-1" } }),
 		);
-		(global as any).fetch = vi.fn().mockResolvedValue({
-			status: 304,
-			headers: { get: () => null },
-			text: async () => "",
-		});
+		setGlobalFetchMock(
+			makeFetchResolved({
+				status: 304,
+				headers: { get: () => null },
+				text: async () => "",
+			}),
+		);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
@@ -98,11 +107,13 @@ describe("Trophy handler ETag & cache behavior", () => {
 			"../../api/_utils",
 			mockApiUtilsFactory({ readBody: upstreamBody }),
 		);
-		(global as any).fetch = vi.fn().mockResolvedValue({
-			status: 500,
-			headers: { get: () => "image/svg+xml" },
-			text: async () => "<svg>ERR</svg>",
-		});
+		setGlobalFetchMock(
+			makeFetchResolved({
+				status: 500,
+				headers: { get: () => "image/svg+xml" },
+				text: async () => "<svg>ERR</svg>",
+			}),
+		);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const res = makeRes();

@@ -34,6 +34,17 @@
 			"use": "@vercel/node"
 		}
 	],
+	"functions": {
+		"api/**/*.[jt]s": {
+			"runtime": "nodejs18.x",
+			"maxDuration": 10
+		},
+		"api/*.[jt]s": {
+			"runtime": "nodejs18.x",
+			"memory": 128,
+			"maxDuration": 10
+		}
+	},
 	"routes": [
 		{
 			"src": "/api/health$",
@@ -70,6 +81,19 @@
 		{
 			"src": "/api/stats/top-langs$",
 			"dest": "api/top-langs.ts"
+		}
+	],
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/api/$1"
+		}
+	],
+	"redirects": [
+		{
+			"source": "/",
+			"destination": "https://github.com/anuraghazra/leetcode-readme-stats",
+			"statusCode": 302
 		}
 	]
 }

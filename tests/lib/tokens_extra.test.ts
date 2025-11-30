@@ -4,7 +4,7 @@ import * as tokens from "../../lib/tokens.js";
 describe("PAT rotation integration", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		process.env = {} as any;
+		process.env = {} as unknown as NodeJS.ProcessEnv;
 		process.env.PAT_1 = "A";
 		process.env.PAT_2 = "B";
 		process.env.PAT_3 = "C";

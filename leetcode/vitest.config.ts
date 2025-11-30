@@ -7,10 +7,9 @@ const __dirname = dirname(__filename);
 
 export default defineConfig({
 	test: {
-		// Use a relative setup path resolved from the leetcode/ package root
+		// Package-local minimal overrides: keep package setup and test include/excludes
 		setupFiles: ["test/vitest.setup.ts"],
 		testTimeout: 15000,
-		// Only run our own tests; exclude upstream package tests
 		include: ["test/**/*.{test,spec}.{ts,tsx,js,jsx}"],
 		exclude: ["packages/core/src/_test/**", "packages/**/src/**/demo/**"],
 		coverage: {

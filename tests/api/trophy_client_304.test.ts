@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
+import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
 function makeReq(urlPath: string, headers: Record<string, string> = {}) {
 	return {
 		headers: { host: "localhost", "x-forwarded-proto": "http", ...headers },
 		url: urlPath,
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 function makeRes() {
@@ -13,7 +14,7 @@ function makeRes() {
 		setHeader: vi.fn(),
 		send: vi.fn(),
 		status: vi.fn().mockReturnThis(),
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 describe("Trophy handler honors client If-None-Match with 304", () => {
@@ -30,11 +31,13 @@ describe("Trophy handler honors client If-None-Match with 304", () => {
 			mockApiUtilsFactory({ readMeta: { body: cachedBody, etag } }),
 		);
 		// upstream returns 304 Not Modified
-		(global as any).fetch = vi.fn().mockResolvedValue({
-			status: 304,
-			headers: { get: () => null },
-			text: async () => "",
-		});
+		setGlobalFetchMock(
+			makeFetchResolved({
+				status: 304,
+				headers: { get: () => null },
+				text: async () => "",
+			}),
+		);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light", {

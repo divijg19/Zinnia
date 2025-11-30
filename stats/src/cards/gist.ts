@@ -17,11 +17,10 @@ import type { GistData } from "../fetchers/types.js";
 import type { GistCardOptions } from "./types.js";
 
 const require = createRequire(import.meta.url);
-// languageColors is a large static JSON map. Use an index signature for loose lookup.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// languageColors is a large static JSON map. Values are hex color strings.
 const languageColors: Record<
 	string,
-	any
+	string
 > = require("../common/languageColors.json");
 
 const ICON_SIZE = 16;

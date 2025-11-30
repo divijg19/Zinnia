@@ -3,6 +3,9 @@ const STATIC_PAT_KEYS = ["PAT_1", "PAT_2", "PAT_3", "PAT_4", "PAT_5"] as const;
 // In-memory map of token -> expiry timestamp (ms) for exhausted/invalid tokens
 const exhaustedUntil = new Map<string, number>();
 
+// module-scoped round-robin counter used by `choosePatKey`
+let rrCounter = 0;
+
 function isPatExhausted(key: string): boolean {
 	const until = exhaustedUntil.get(key);
 	if (!until) return false;
@@ -42,18 +45,24 @@ export function choosePatKey(): string | undefined {
 	const keys = discoverPatKeys().filter((k) => !isPatExhausted(k));
 	if (keys.length === 0) return undefined;
 	// deterministic, per-process round-robin for even distribution
-	if (typeof (choosePatKey as any).rrCounter === "undefined")
-		(choosePatKey as any).rrCounter = 0;
-	const rr = (choosePatKey as any).rrCounter as number;
+	// Use a module-scoped counter instead of attaching to the function object.
+	if (
+		typeof (choosePatKey as unknown as { rrCounter?: number }).rrCounter ===
+		"undefined"
+	) {
+		// noop: handled by module-scoped `rrCounter` below
+	}
+	const rr = rrCounter as number;
 	const key = keys[rr % keys.length];
-	(choosePatKey as any).rrCounter = (rr + 1) % keys.length;
+	rrCounter = (rr + 1) % keys.length;
 	return key;
 }
 
 export function getGithubPAT(): string | undefined {
 	const key = choosePatKey();
 	if (!key) return undefined;
-	const t = process.env[key];
+	// process.env[] may be undefined; assert here that key is present (we returned above)
+	const t = process.env[key as string];
 	return t && t.trim().length > 0 ? t.trim() : undefined;
 }
 
@@ -76,10 +85,11 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
 		for (let i = 0; i < keys.length; i++) {
 			const idx = (start + i) % keys.length;
 			const k = keys[idx];
+			if (!k) continue;
 			if (isPatExhausted(k)) continue;
 			const remoteEx = await store.isExhausted(k);
 			if (remoteEx) continue;
-			const token = process.env[k];
+			const token = process.env[k as string];
 			if (token && token.trim().length > 0) return token.trim();
 		}
 		return undefined;

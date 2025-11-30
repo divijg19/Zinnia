@@ -117,7 +117,9 @@ describe("Test fetchGist (vitest)", () => {
 	it("should throw error if id is not provided", async () => {
 		const mod = await import("../../stats/src/fetchers/gist");
 		const { fetchGist } = mod;
-		await expect((fetchGist as any)()).rejects.toThrow(
+		await expect(
+			(fetchGist as unknown as () => Promise<any>)(),
+		).rejects.toThrow(
 			'Missing params "id" make sure you pass the parameters in URL',
 		);
 	});

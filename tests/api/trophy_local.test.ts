@@ -5,7 +5,7 @@ function makeReq(urlPath: string) {
 	return {
 		headers: { host: "localhost", "x-forwarded-proto": "http" },
 		url: urlPath,
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 function makeRes() {
@@ -13,7 +13,7 @@ function makeRes() {
 		setHeader: vi.fn(),
 		send: vi.fn(),
 		status: vi.fn().mockReturnThis(),
-	} as any;
+	} as unknown as Record<string, unknown>;
 }
 
 describe("Trophy handler local renderer (watchdog)", () => {

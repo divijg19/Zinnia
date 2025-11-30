@@ -12,17 +12,20 @@ import { fetchStats } from "../src/fetchers/stats.js";
 import { isLocaleAvailable } from "../src/translations.js";
 
 export default async function handler(
-	req: Request | any,
+	req: Request | unknown,
 	res?: any,
 ): Promise<any> {
-	const rawUrl = (req as any)?.url;
+	const rawUrl = (req as unknown as { url?: string })?.url;
 	const safeUrl =
 		typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
 	const q =
-		req && (req as any).query && Object.keys((req as any).query).length > 0
-			? (req as any).query
+		req &&
+		(req as unknown as { query?: Record<string, unknown> }).query &&
+		Object.keys((req as unknown as { query?: Record<string, unknown> }).query!)
+			.length > 0
+			? (req as unknown as { query: Record<string, unknown> }).query
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
 					string,
 					string
@@ -95,8 +98,7 @@ export default async function handler(
 			send(body: string, status?: number) {
 				// In server runtime global Response should exist; keep behavior.
 				// Use the global Response if available.
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const G = globalThis as any as Record<string, any>;
+				const G = globalThis as unknown as Record<string, unknown>;
 				if (typeof G.Response === "function") {
 					return new G.Response(body, {
 						headers: Object.fromEntries(this.headers),

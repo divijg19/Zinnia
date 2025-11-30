@@ -16,14 +16,19 @@ type RenderOptions = {
 };
 
 // Reuse RenderOptions to avoid duplication and satisfy linter
+type ResponseLike = {
+	setHeader: (name: string, value: string) => unknown;
+	send: (body: string) => unknown;
+};
+
 type ApiErrorOptions = {
-	res: any;
+	res: ResponseLike;
 	err: unknown;
 } & RenderOptions;
 
 type ValidateLocaleOptions = {
 	locale?: string;
-	res: any;
+	res: ResponseLike;
 } & RenderOptions;
 
 /**
@@ -125,7 +130,9 @@ export const toNum = (
  * Set proper SVG headers for GitHub README embeds.
  * Ensures correct Content-Type with charset and security headers.
  */
-export const setSvgHeaders = (res: any): void => {
+export const setSvgHeaders = (res: ResponseLike): void => {
 	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	res.setHeader("X-Content-Type-Options", "nosniff");
+	// Ensure caching proxies/clients vary on encoding
+	res.setHeader("Vary", "Accept-Encoding");
 };

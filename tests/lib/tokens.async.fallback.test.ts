@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	clearGlobalFetchMock,
+	makeFetchRejected,
+	setGlobalFetchMock,
+} from "../_globalFetchMock";
 
 describe("tokens async fallback behavior", () => {
 	beforeEach(() => {
@@ -7,7 +12,7 @@ describe("tokens async fallback behavior", () => {
 		delete process.env.UPSTASH_REST_TOKEN;
 		delete process.env.ZINNIA_REST_URL;
 		delete process.env.ZINNIA_REST_TOKEN;
-		(global as any).fetch = undefined;
+		clearGlobalFetchMock();
 		// set PATs for sync fallback
 		process.env.PAT_1 = "AAA";
 		process.env.PAT_2 = "BBB";
@@ -19,9 +24,7 @@ describe("tokens async fallback behavior", () => {
 		process.env.UPSTASH_REST_URL = "https://upstash.fail";
 		process.env.UPSTASH_REST_TOKEN = "tok";
 
-		(global as any).fetch = vi.fn().mockImplementation(async () => {
-			throw new Error("network failure");
-		});
+		setGlobalFetchMock(makeFetchRejected(new Error("network failure")));
 
 		const tokens = await import("../../lib/tokens.js");
 		// getGithubPATAsync should catch the error and return a sync token

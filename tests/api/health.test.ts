@@ -1,27 +1,17 @@
-import { describe, expect, it, vi } from "vitest";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { describe, expect, it } from "vitest";
 import { computeEtag } from "../../api/_utils";
 import health from "../../api/health";
-
-function makeReq(urlPath: string, headers: Record<string, string> = {}) {
-	return {
-		headers: { host: "localhost", "x-forwarded-proto": "http", ...headers },
-		url: urlPath,
-	} as any;
-}
-
-function makeRes() {
-	return {
-		setHeader: vi.fn(),
-		send: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-	} as any;
-}
+import { makeReq, makeRes } from "../_resShim";
 
 describe("/api/health", () => {
 	it("returns OK svg and sets cache headers", async () => {
 		const req = makeReq("/api/health");
 		const res = makeRes();
-		await health(req, res);
+		await health(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
 		expect(res.setHeader).toHaveBeenCalledWith(
 			"Content-Type",
 			"image/svg+xml; charset=utf-8",
@@ -41,7 +31,10 @@ describe("/api/health", () => {
 	it("respects ?text= parameter", async () => {
 		const req = makeReq("/api/health?text=HELLO");
 		const res = makeRes();
-		await health(req, res);
+		await health(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
 		expect(res.send).toHaveBeenCalledWith(expect.stringContaining(">HELLO<"));
 	});
 
@@ -51,8 +44,12 @@ describe("/api/health", () => {
 		const etag = computeEtag(body);
 		const req = makeReq("/api/health", { "if-none-match": etag });
 		const res = makeRes();
-		await health(req, res);
-		expect(res.setHeader).toHaveBeenCalledWith("ETag", etag);
+		await health(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
+		// ETag values are emitted quoted per RFC; accept quoted form here.
+		expect(res.setHeader).toHaveBeenCalledWith("ETag", `"${etag}"`);
 		expect(res.status).toHaveBeenCalledWith(304);
 		expect(res.send).toHaveBeenCalledWith("");
 	});

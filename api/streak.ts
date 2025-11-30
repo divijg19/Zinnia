@@ -3,6 +3,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
+import {
+	incrementFallbackServed,
+	incrementUpstreamError,
+} from "../lib/telemetry.js";
 import { WATCHDOG } from "../lib/themes.js";
 import {
 	resolveCacheSeconds,
@@ -16,6 +20,39 @@ import * as cache from "./cache.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
+		// Delegate to the streak-provided vercel handler when available.
+		// Disabled by default; enable by setting `STREAK_DELEGATE_VERCEL_HANDLER=1`.
+		if (process.env.STREAK_DELEGATE_VERCEL_HANDLER === "1") {
+			try {
+				const tryImport = async (base: string) => {
+					try {
+						return await import(`${base}.js`);
+					} catch (_e) {
+						return await import(`${base}.ts`);
+					}
+				};
+				let vh: any = null;
+				try {
+					vh = await tryImport("../streak/dist/vercel_handler");
+				} catch {
+					try {
+						vh = await tryImport("../streak/src/vercel_handler");
+					} catch {
+						vh = null;
+					}
+				}
+				if (vh && typeof vh.default === "function") {
+					return await vh.default(
+						req as unknown as VercelRequest,
+						res as unknown as VercelResponse,
+					);
+				}
+			} catch (delegErr) {
+				// delegation failed — fall back to built-in logic below
+				console.warn("streak: vercel handler delegation failed", delegErr);
+			}
+		}
+
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
 		const url = new URL(req.url as string, `${proto}://${host}`);
@@ -31,6 +68,151 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const upstream = new URL("https://streak-stats.demolab.com/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 		upstream.searchParams.set("user", user);
+
+		// If the TS renderer is enabled, try local implementation first.
+		// Default to true unless explicitly disabled with `STREAK_USE_TS=0|false`.
+		const _useTsEnv = process.env.STREAK_USE_TS;
+		const useTs = !(_useTsEnv === "0" || _useTsEnv === "false");
+		if (useTs) {
+			try {
+				// Try to import a bundled `streak/dist/index.js` first (prod),
+				// then fall back to local source `streak/src` for dev.
+				const tryImport = async (base: string) => {
+					try {
+						return await import(`${base}.js`);
+					} catch (_e) {
+						return await import(`${base}.ts`);
+					}
+				};
+				let idx: any;
+				try {
+					idx = await tryImport("../streak/dist/index");
+				} catch {
+					idx = await tryImport("../streak/src/index");
+				}
+				const { renderForUser, getCache: getCacheLocal } = idx;
+				const cacheLocal = await getCacheLocal();
+
+				const paramsObj = Object.fromEntries(url.searchParams);
+				const localKey = `streak:local:${user}:${JSON.stringify(paramsObj)}`;
+				// Try in-memory/Upstash cache first (streak/src/cache)
+				try {
+					const cached = await cacheLocal.get(localKey);
+					if (cached) {
+						const etag = cache.computeEtag
+							? cache.computeEtag(cached)
+							: undefined;
+						if (etag) res.setHeader("ETag", `"${etag}"`);
+						if (
+							etag &&
+							setEtagAndMaybeSend304(
+								req.headers as Record<string, unknown>,
+								res,
+								cached,
+							)
+						)
+							return res.send("");
+						setSvgHeaders(res);
+						setFallbackCacheHeaders(
+							res,
+							Math.max(
+								resolveCacheSeconds(
+									url,
+									["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+									86400,
+								),
+								86400,
+							),
+						);
+						return res.send(cached);
+					}
+				} catch {
+					// ignore cache read errors and fall through
+				}
+
+				// Render using centralized renderer
+				try {
+					const out = await renderForUser(
+						user as string,
+						paramsObj as Record<string, string>,
+					);
+					if (out.status) res.status(out.status);
+
+					// Persist to local cache (try best-effort)
+					try {
+						await cacheLocal.set(
+							localKey,
+							out.body,
+							resolveCacheSeconds(
+								url,
+								["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+								86400,
+							),
+						);
+					} catch {
+						// ignore cache write failures
+					}
+
+					// Compute and set ETag, honor If-None-Match
+					try {
+						const etag = cache.computeEtag(String(out.body));
+						if (etag) res.setHeader("ETag", `"${etag}"`);
+						if (
+							etag &&
+							setEtagAndMaybeSend304(
+								req.headers as Record<string, unknown>,
+								res,
+								String(out.body),
+							)
+						)
+							return res.send("");
+					} catch {
+						// ignore etag failures
+					}
+
+					res.setHeader("Content-Type", out.contentType);
+					if (out.contentType === "image/png") {
+						setCacheHeaders(
+							res,
+							resolveCacheSeconds(
+								url,
+								["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+								86400,
+							),
+						);
+						return res.send(out.body as Buffer);
+					}
+					if (out.contentType === "application/json") {
+						setCacheHeaders(
+							res,
+							resolveCacheSeconds(
+								url,
+								["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+								86400,
+							),
+						);
+						return res.send(out.body as string);
+					}
+					// default to svg
+					setSvgHeaders(res);
+					setCacheHeaders(
+						res,
+						resolveCacheSeconds(
+							url,
+							["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+							86400,
+						),
+					);
+					return res.send(out.body as string);
+				} catch (e) {
+					console.error("streak: renderer output error", e);
+					// fallthrough to default behavior
+				}
+			} catch (e) {
+				console.error("streak: ts renderer error", e);
+				// fall through to upstream proxy
+			}
+		}
 		// Map theme=watchdog to explicit color params supported by upstream
 		filterThemeParam(url);
 		const theme = (url.searchParams.get("theme") || "").toLowerCase();
@@ -127,9 +309,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			try {
 				const cached = await cache.readCache("streak", upstream.toString());
 				if (cached) {
+					// record that we served a cached fallback due to upstream/network failure
+					try {
+						incrementFallbackServed();
+					} catch {
+						// ignore telemetry failures
+					}
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
-					if (setEtagAndMaybeSend304(req.headers as any, res, cached))
+					if (
+						setEtagAndMaybeSend304(
+							req.headers as Record<string, unknown>,
+							res,
+							cached,
+						)
+					)
 						return res.send("");
 					return res.send(cached);
 				}
@@ -150,7 +344,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			if (cachedMeta?.body) {
 				setSvgHeaders(res);
 				setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
-				if (setEtagAndMaybeSend304(req.headers as any, res, cachedMeta.body))
+				if (
+					setEtagAndMaybeSend304(
+						req.headers as Record<string, unknown>,
+						res,
+						String(cachedMeta.body),
+					)
+				)
 					return res.send("");
 				return res.send(cachedMeta.body);
 			}
@@ -173,10 +373,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				// Explicitly return 200 so embedders which treat non-2xx as
 				// errors will still render the SVG.
 				res.status(200);
-				// Debug header to make it easier to identify bridged 404s in logs
-				// and downstream requests (safe to expose internally).
-				res.setHeader("X-Zinnia-Debug", "streak-404-bridged");
-				if (setEtagAndMaybeSend304(req.headers as any, res, body))
+				// bridged 404s are indicated via X-Upstream-Status; avoid extra debug headers
+				if (
+					setEtagAndMaybeSend304(
+						req.headers as Record<string, unknown>,
+						res,
+						String(body),
+					)
+				)
 					return res.send("");
 				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
@@ -195,10 +399,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			} catch (_e) {
 				// ignore cache write failures
 			}
-			if (setEtagAndMaybeSend304(req.headers as any, res, body))
+			if (
+				setEtagAndMaybeSend304(
+					req.headers as Record<string, unknown>,
+					res,
+					String(body),
+				)
+			)
 				return res.send("");
 			return res.send(body);
 		}
+		// record upstream error metric and expose upstream status for diagnosis
+		try {
+			incrementUpstreamError();
+		} catch {
+			// ignore telemetry failures
+		}
+		res.setHeader("X-Upstream-Status", String(resp.status));
 		return sendErrorSvg(
 			req,
 			res,

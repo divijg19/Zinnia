@@ -31,7 +31,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setShortCacheHeaders(res, cacheSeconds);
 		res.status(200);
 		const body = svg(text);
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
+		if (
+			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
+		)
 			return res.send("");
 		return res.send(body);
 	} catch (_e) {
@@ -40,7 +42,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setShortCacheHeaders(res, 60);
 		res.status(200);
 		const body = svg("OK");
-		if (setEtagAndMaybeSend304(req.headers as any, res, body))
+		if (
+			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
+		)
 			return res.send("");
 		return res.send(body);
 	}
