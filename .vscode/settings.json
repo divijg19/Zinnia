@@ -1,7 +1,0 @@
-{
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "biomejs.biome",
-    "[javascript]": {
-        "editor.tabSize": 2
-    }
-}

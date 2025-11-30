@@ -1,8 +1,0 @@
-{
-    "recommendations": [
-        "yzhang.markdown-all-in-one",
-        "biomejs.biome",
-        "dbaeumer.vscode-eslint",
-        "ms-azuretools.vscode-containers"
-    ]
-}
