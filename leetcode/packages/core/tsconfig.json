@@ -4,22 +4,32 @@
 		"outDir": "./dist",
 		"module": "esnext",
 		"target": "esnext",
-		"lib": ["esnext", "dom"],
-		"alwaysStrict": true,
-		"strict": true,
-		"preserveConstEnums": true,
+		"lib": [
+			"esnext",
+			"dom"
+		],
 		"moduleResolution": "node",
-		"baseUrl": "./",
 		"paths": {
-			"leetcode-query": ["./src/shims/leetcode-query.ts"],
-			"nano-font/fonts/*": ["./src/shims/fonts/*"]
+			"leetcode-query": [
+				"./src/shims/leetcode-query.ts"
+			],
+			"nano-font/fonts/*": [
+				"./src/shims/fonts/*"
+			]
 		},
-		"ignoreDeprecations": "6.0",
-		"sourceMap": true,
-		"esModuleInterop": true,
-		"types": [],
-		"typeRoots": ["../../../types", "./node_modules/@types"]
+		"typeRoots": [
+			"../../../types",
+			"./node_modules/@types"
+		],
+		"esModuleInterop": true
 	},
-	"include": ["src", "../../../types/**/*.d.ts"],
-	"exclude": ["node_modules", "dist", "tsup.config.ts"]
+	"include": [
+		"src",
+		"../../../types/**/*.d.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"tsup.config.ts"
+	]
 }

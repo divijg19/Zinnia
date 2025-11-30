@@ -19,15 +19,14 @@ export default async function handler(
 		typeof rawUrl === "string" && rawUrl ? rawUrl : "http://localhost/";
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
+	const maybeReqQuery =
+		req && (req as unknown as { query?: Record<string, unknown> }).query;
 	const q =
-		req &&
-		(req as unknown as { query?: Record<string, unknown> }).query &&
-		Object.keys((req as unknown as { query?: Record<string, unknown> }).query!)
-			.length > 0
-			? (req as unknown as { query: Record<string, unknown> }).query
+		maybeReqQuery && Object.keys(maybeReqQuery).length > 0
+			? (maybeReqQuery as Record<string, unknown>)
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
-					string,
-					string
+				string,
+				string
 				>);
 
 	const {

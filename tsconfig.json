@@ -1,7 +1,10 @@
 {
 	"compilerOptions": {
 		// Environment setup & latest features
-		"lib": ["ESNext", "DOM"],
+		"lib": [
+			"ESNext",
+			"DOM"
+		],
 		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",
@@ -13,6 +16,12 @@
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": false,
 		"noEmit": true,
+		"baseUrl": ".",
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
+		],
+		"ignoreDeprecations": "6.0",
 		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
