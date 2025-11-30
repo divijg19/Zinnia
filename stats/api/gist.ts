@@ -26,7 +26,10 @@ export default async function handler(
 	const q: Record<string, unknown> =
 		maybeReqQuery && Object.keys(maybeReqQuery).length > 0
 			? maybeReqQuery
-			: (Object.fromEntries(url.searchParams.entries()) as Record<string, string>);
+			: (Object.fromEntries(url.searchParams.entries()) as Record<
+					string,
+					string
+				>);
 
 	// Helper to coerce values from the untyped query object
 	const asStr = (v: unknown) => (v === undefined ? undefined : String(v));
@@ -62,7 +65,9 @@ export default async function handler(
 		status?: (n: number) => any;
 	};
 	const isExpressRes = (x: unknown): x is ExpressRes =>
-		!!x && typeof (x as any).setHeader === "function" && typeof (x as any).send === "function";
+		!!x &&
+		typeof (x as any).setHeader === "function" &&
+		typeof (x as any).send === "function";
 	const externalRes: ExpressRes | null = isExpressRes(res) ? res : null;
 
 	let resShim: ResShim;
@@ -149,7 +154,7 @@ export default async function handler(
 		const gistData = await fetchGist(String(id));
 		const requestedValue =
 			"cache_seconds" in q &&
-				(q as Record<string, unknown>).cache_seconds !== undefined
+			(q as Record<string, unknown>).cache_seconds !== undefined
 				? parseInt(String(cache_seconds), 10)
 				: NaN;
 		const cacheSeconds = resolveCacheSeconds({
