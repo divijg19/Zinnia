@@ -21,7 +21,10 @@ export default defineConfig({
 		alias: [
 			{
 				find: /^nano-font\/fonts\/.*/,
-				replacement: path.resolve(__dirname, "leetcode/test/__mocks__/font-stub.ts"),
+				replacement: path.resolve(
+					__dirname,
+					"leetcode/test/__mocks__/font-stub.ts",
+				),
 			},
 		],
 	},

@@ -27,3 +27,18 @@ lib/
 # Editor config and IDE
 .vscode/
 .idea/
+
+# Archives and backups
+archives/
+consolidation-backup/
+
+# Node and build artifacts
+node_modules/
+dist/
+lib/
+.wrangler/
+
+# Ignore devcontainers and husky hooks
+.devcontainer
+.husky
+

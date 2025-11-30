@@ -173,3 +173,15 @@ worker.capnp
 
 # Editor / workspace
 *.code-workspace
+
+# Archives and consolidation backups
+archives/
+consolidation-backup/
+_vendor_backup/
+
+# Demo folders that should not be tracked or deployed
+**/src/**/demo/**
+**/packages/**/src/**/demo/**
+
+# Vercel helper files
+.vercelignore
