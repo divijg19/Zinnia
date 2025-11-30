@@ -1,0 +1,82 @@
+themes:
+  - changed-files:
+      - any-glob-to-any-file:
+          - themes/index.js
+
+card-i18n:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/translations.js
+          - src/common/I18n.js
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - readme.md
+          - CONTRIBUTING.md
+          - CODE_OF_CONDUCT.md
+          - SECURITY.md
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+
+lang-card:
+  - changed-files:
+      - any-glob-to-any-file:
+          - api/top-langs.js
+          - src/cards/top-languages.ts
+          - src/fetchers/top-languages.ts
+          - tests/fetchTopLanguages.test.js
+          - tests/renderTopLanguagesCard.test.js
+          - tests/top-langs.test.js
+
+repo-card:
+  - changed-files:
+      - any-glob-to-any-file:
+          - api/pin.js
+          - src/cards/repo.ts
+          - src/fetchers/repo.ts
+          - tests/fetchRepo.test.js
+          - tests/renderRepoCard.test.js
+          - tests/pin.test.js
+
+stats-card:
+  - changed-files:
+      - any-glob-to-any-file:
+          - api/index.js
+          - src/cards/stats.ts
+          - src/fetchers/stats.ts
+          - tests/fetchStats.test.js
+          - tests/renderStatsCard.test.js
+          - tests/api.test.js
+
+gist-card:
+  - changed-files:
+      - any-glob-to-any-file:
+          - api/gist.js
+          - src/cards/gist.ts
+          - src/fetchers/gist.ts
+          - tests/fetchGist.test.js
+          - tests/renderGistCard.test.js
+          - tests/gist.test.js
+
+ranks:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/calculateRank.js
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/*
+          - scripts/*
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+          - eslint.config.mjs
+            - tsconfig.json
+            - vercel.json
