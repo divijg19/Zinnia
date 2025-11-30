@@ -185,3 +185,10 @@ _vendor_backup/
 
 # Vercel helper files
 .vercelignore
+
+# Additional consolidated entries from packages
+# Trophy and stats package-specific ignores
+deno.lock
+*.sh
+vercel_token
+benchmarks

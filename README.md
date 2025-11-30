@@ -1,5 +1,22 @@
 # My GitHub Visuals
 
+> Note: This repository targets Node.js 24 LTS. Use the project `.nvmrc` (root) or your preferred version manager to set Node 24.
+
+**Packages**
+- `streak/` — streak stats card and renderer (see `streak/README.md` for package specifics)
+- `stats/` — GitHub README Stats and language/top-langs tooling (see `stats/README.md`)
+- `leetcode/` — LeetCode cards and Cloudflare Worker variants (see `leetcode/README.md`)
+- `trophy/` — profile trophy renderer (see `trophy/README.md`)
+
+**Development (quickstart)**
+- Install (Bun): ``bun install``
+- Typecheck: ``bunx tsc --noEmit``
+- Run tests: ``bunx vitest --run``
+- Lint & format: ``bunx biome check . && bunx biome format . --write``
+- Build (root): ``bun build index.ts --outdir=dist``
+
+See the **Packages** list above for package-specific docs and examples.
+
 ## Monorepo Configuration & Deployment
 
 This repository is a monorepo for GitHub profile visualizations, stats, streaks, trophies, and LeetCode cards. It is ready for deployment on Vercel and CI/CD via GitHub Actions.
