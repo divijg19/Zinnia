@@ -2,10 +2,7 @@
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
 		"target": "es2021",
-		"lib": [
-			"ES2021",
-			"WebWorker"
-		],
+		"lib": ["ES2021", "WebWorker"],
 		"module": "es2022",
 		"resolveJsonModule": true,
 		"allowJs": true,
@@ -14,11 +11,6 @@
 		"allowSyntheticDefaultImports": true,
 		"types": []
 	},
-	"exclude": [
-		"test"
-	],
-	"include": [
-		"worker-configuration.d.ts",
-		"src/**/*.ts"
-	]
+	"exclude": ["test"],
+	"include": ["worker-configuration.d.ts", "src/**/*.ts"]
 }

@@ -9,8 +9,6 @@
 .husky/.gitignore
 .husky/pre-commit
 .vercelignore
-.vscode/extensions.json
-.vscode/settings.json
 Codebase.txt
 README.md
 api/_utils.ts

@@ -28,7 +28,7 @@ export default async function handler(
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
 				string,
 				string
-				>);
+			>);
 
 	const {
 		username,
@@ -153,7 +153,7 @@ export default async function handler(
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-				showStats.includes("prs_merged_percentage"),
+			showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(String(commits_year || "0"), 10),

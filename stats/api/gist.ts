@@ -20,29 +20,31 @@ export default async function handler(
 	const url = new URL(safeUrl);
 	// Support both Request.url (serverless) and Express-like `req.query` used in tests
 	const maybeReqQuery =
-		req && (req as unknown as { query?: Record<string, unknown> }).query;
-	const q =
+		req && (req as any).query && typeof (req as any).query === "object"
+			? ((req as any).query as Record<string, unknown>)
+			: undefined;
+	const q: Record<string, unknown> =
 		maybeReqQuery && Object.keys(maybeReqQuery).length > 0
-			? (maybeReqQuery as Record<string, unknown>)
-			: (Object.fromEntries(url.searchParams.entries()) as Record<
-				string,
-				string
-				>);
+			? maybeReqQuery
+			: (Object.fromEntries(url.searchParams.entries()) as Record<string, string>);
 
-	const {
-		id,
-		title_color,
-		icon_color,
-		text_color,
-		bg_color,
-		theme,
-		cache_seconds,
-		locale,
-		border_radius,
-		border_color,
-		show_owner,
-		hide_border,
-	} = q;
+	// Helper to coerce values from the untyped query object
+	const asStr = (v: unknown) => (v === undefined ? undefined : String(v));
+	const asBoolOrStr = (v: unknown): boolean | string | undefined =>
+		v === undefined ? undefined : typeof v === "boolean" ? v : String(v);
+
+	const id = asStr(q.id);
+	const title_color = asStr(q.title_color);
+	const icon_color = asStr(q.icon_color);
+	const text_color = asStr(q.text_color);
+	const bg_color = asStr(q.bg_color);
+	const theme = asStr(q.theme);
+	const cache_seconds = q.cache_seconds;
+	const locale = asStr(q.locale);
+	const border_radius = q.border_radius;
+	const border_color = asStr(q.border_color);
+	const show_owner = q.show_owner;
+	const hide_border = q.hide_border;
 
 	// guardAccess expects res-like object; use the caller-provided res when
 	// available (tests), otherwise create a local shim that returns a
@@ -53,10 +55,15 @@ export default async function handler(
 		send(body: string, status?: number): any;
 	};
 
-	const externalRes =
-		res && typeof res.setHeader === "function" && typeof res.send === "function"
-			? res
-			: null;
+	// Narrow `res` to an Express-like response when possible
+	type ExpressRes = {
+		setHeader: (k: string, v: string) => void;
+		send: (body: any) => any;
+		status?: (n: number) => any;
+	};
+	const isExpressRes = (x: unknown): x is ExpressRes =>
+		!!x && typeof (x as any).setHeader === "function" && typeof (x as any).send === "function";
+	const externalRes: ExpressRes | null = isExpressRes(res) ? res : null;
 
 	let resShim: ResShim;
 	if (externalRes) {
@@ -82,10 +89,10 @@ export default async function handler(
 			},
 			send(body: string, status?: number) {
 				// Prefer global Response when available
-				// Prefer global Response when available
 				const G = globalThis as unknown as Record<string, unknown>;
-				if (typeof G.Response === "function") {
-					return new G.Response(body, {
+				const Resp = (G as any).Response;
+				if (typeof Resp === "function") {
+					return new Resp(body, {
 						headers: Object.fromEntries(this.headers),
 						status,
 					});
@@ -142,7 +149,7 @@ export default async function handler(
 		const gistData = await fetchGist(String(id));
 		const requestedValue =
 			"cache_seconds" in q &&
-			(q as Record<string, unknown>).cache_seconds !== undefined
+				(q as Record<string, unknown>).cache_seconds !== undefined
 				? parseInt(String(cache_seconds), 10)
 				: NaN;
 		const cacheSeconds = resolveCacheSeconds({
@@ -164,8 +171,8 @@ export default async function handler(
 				border_radius: border_radius ? Number(border_radius) : undefined,
 				border_color,
 				locale: locale ? locale.toLowerCase() : undefined,
-				show_owner: parseBoolean(show_owner),
-				hide_border: parseBoolean(hide_border),
+				show_owner: parseBoolean(asBoolOrStr(show_owner)),
+				hide_border: parseBoolean(asBoolOrStr(hide_border)),
 			} as unknown as Record<string, unknown>),
 		);
 	} catch (err: unknown) {
