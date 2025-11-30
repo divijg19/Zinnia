@@ -1,7 +1,11 @@
+> NOTE: Common project-level docs (install, tests, CI, Node version) are consolidated in the root `README.md`.
+>
 <p align="center">
   <img src="https://i.imgur.com/GZHodUG.png" width="100px"/>
   <h3 align="center">Github Readme Streak Stats</h3>
 </p>
+
+> Note: When running locally or in CI for this monorepo, prefer Node.js 24 LTS. A root `.nvmrc` is present to set the version.
 
 <p align="center">
   Display your total contributions, current streak,

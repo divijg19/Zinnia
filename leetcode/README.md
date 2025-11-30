@@ -1,3 +1,10 @@
+> NOTE: Common project-level docs (install, tests, CI, Node version) are consolidated in the root `README.md`.
+
+# LeetCode Stats Card
+
+# leetcode
+
+This directory contains the LeetCode cards and related packages. See root `README.md` for common developer instructions.
 # LeetCode Stats Card
 
 [![CodeFactor](https://www.codefactor.io/repository/github/jacoblincool/leetcode-stats-card/badge)](https://www.codefactor.io/repository/github/jacoblincool/leetcode-stats-card)
