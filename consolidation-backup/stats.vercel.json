@@ -1,0 +1,17 @@
+{
+    "//": "Unused in monorepo: deployments use root vercel.json. Kept for local dev only.",
+    "functions": {
+        "api/*.[jt]s": {
+            "runtime": "nodejs18.x",
+            "memory": 128,
+            "maxDuration": 10
+        }
+    },
+    "redirects": [
+        {
+            "source": "/",
+            "destination": "https://github.com/anuraghazra/leetcode-readme-stats",
+            "statusCode": 302
+        }
+    ]
+}

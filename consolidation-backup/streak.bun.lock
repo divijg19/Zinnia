@@ -1,0 +1,12 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "devDependencies": {
+        "@prettier/plugin-php": "latest",
+        "prettier": "latest"
+      }
+    }
+  },
+  "packages": {}
+}

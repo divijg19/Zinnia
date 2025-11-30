@@ -1,0 +1,12 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "cloudflare-worker",
+      "dependencies": {
+        "hono": "^4.6.10"
+      }
+    }
+  },
+  "packages": {}
+}
