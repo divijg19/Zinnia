@@ -1,3 +1,5 @@
+> NOTE: Common project-level docs (install, tests, CI, Node version) are consolidated in the root `README.md`.
+
 <p align="center">
  <img width="100px" src="https://res.cloudinary.com/anuraghazra/image/upload/v1594908242/logo_ccswme.svg" align="center" alt="GitHub Readme Stats" />
  <h2 align="center">GitHub Readme Stats</h2>
@@ -31,93 +33,11 @@
 </p>
 
 <p align="center">
-  <a href="#all-demos">View Demo</a>
-  ·
-  <a href="https://github.com/anuraghazra/github-readme-stats/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml">Report Bug</a>
-  ·
-  <a href="https://github.com/anuraghazra/github-readme-stats/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.yml">Request Feature</a>
-  ·
-  <a href="https://github.com/anuraghazra/github-readme-stats/discussions/1770">FAQ</a>
-  ·
-  <a href="https://github.com/anuraghazra/github-readme-stats/discussions/new?category=q-a">Ask Question</a>
-</p>
+  # Deployment
 
+  Platform-specific deployment and self-hosting instructions (Vercel, Heroku, Docker, etc.) have been consolidated in the repository root `README.md`.
 
-<p align="center">Love the project? Please consider <a href="https://www.paypal.me/anuraghazra">donating</a> to help it improve!</p>
-
-<details>
-<summary>Table of contents (Click to show)</summary>
-
-- [GitHub Stats Card](#github-stats-card)
-    - [Hiding individual stats](#hiding-individual-stats)
-    - [Showing additional individual stats](#showing-additional-individual-stats)
-    - [Showing icons](#showing-icons)
-    - [Showing commits count for specified year](#showing-commits-count-for-specified-year)
-    - [Themes](#themes)
-    - [Customization](#customization)
-- [GitHub Extra Pins](#github-extra-pins)
-    - [Usage](#usage)
-    - [Options](#options)
-    - [Demo](#demo)
-- [GitHub Gist Pins](#github-gist-pins)
-    - [Usage](#usage-1)
-    - [Options](#options-1)
-    - [Demo](#demo-1)
-- [Top Languages Card](#top-languages-card)
-    - [Usage](#usage-2)
-    - [Options](#options-2)
-    - [Language stats algorithm](#language-stats-algorithm)
-    - [Exclude individual repositories](#exclude-individual-repositories)
-    - [Hide individual languages](#hide-individual-languages)
-    - [Show more languages](#show-more-languages)
-    - [Compact Language Card Layout](#compact-language-card-layout)
-    - [Donut Chart Language Card Layout](#donut-chart-language-card-layout)
-    - [Donut Vertical Chart Language Card Layout](#donut-vertical-chart-language-card-layout)
-    - [Pie Chart Language Card Layout](#pie-chart-language-card-layout)
-    - [Hide Progress Bars](#hide-progress-bars)
-    - [Change format of language's stats](#change-format-of-languages-stats)
-    - [Demo](#demo-2)
-- [All Demos](#all-demos)
-  - [Quick Tip (Align The Cards)](#quick-tip-align-the-cards)
-    - [Stats and top languages cards](#stats-and-top-languages-cards)
-    - [Pinning repositories](#pinning-repositories)
-- [Deploy on your own](#deploy-on-your-own)
-  - [First step: get your Personal Access Token (PAT)](#first-step-get-your-personal-access-token-pat)
-    - [Classic token](#classic-token)
-    - [Fine-grained token](#fine-grained-token)
-  - [On Vercel](#on-vercel)
-    - [:film\_projector: Check Out Step By Step Video Tutorial By @codeSTACKr](#film_projector-check-out-step-by-step-video-tutorial-by-codestackr)
-  - [On other platforms](#on-other-platforms)
-  - [Available environment variables](#available-environment-variables)
-  - [Keep your fork up to date](#keep-your-fork-up-to-date)
-- [:sparkling\_heart: Support the project](#sparkling_heart-support-the-project)
-</details>
-
-# Important Notices <!-- omit in toc -->
-
-> [!IMPORTANT]
-> Please note that we are NOT participating in Hacktoberfest this year. As a small team, we cannot handle the increased volume of PRs and issues that the event brings. We appreciate your understanding.
-
-> [!IMPORTANT]
-> Since the GitHub API only [allows 5k requests per hour per user account](https://docs.github.com/en/graphql/overview/resource-limitations), the public Vercel instance hosted on `https://github-readme-stats.vercel.app/api` could possibly hit the rate limiter (see [#1471](https://github.com/anuraghazra/github-readme-stats/issues/1471)). We use caching to prevent this from happening (see https://github.com/anuraghazra/github-readme-stats#common-options). You can turn off these rate limit protections by [deploying your own Vercel instance](#deploy-on-your-own).
-
-<img alt="Uptime Badge" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fgithub-readme-stats-git-monitoring-github-readme-stats-team.vercel.app%2Fapi%2Fstatus%2Fup%3Ftype%3Dshields">
-
-> [!IMPORTANT]
-> We're a small team, and to prioritize, we rely on upvotes :+1:. We use the Top Issues dashboard for tracking community demand (see [#1935](https://github.com/anuraghazra/github-readme-stats/issues/1935)). Do not hesitate to upvote the issues and pull requests you are interested in. We will work on the most upvoted first.
-
-# GitHub Stats Card
-
-Copy and paste this into your markdown, and that's it. Simple!
-
-Change the `?username=` value to your GitHub username.
-
-```md
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=anuraghazra)](https://github.com/anuraghazra/github-readme-stats)
-```
-
-> [!WARNING]
-> By default, the stats card only shows statistics like stars, commits, and pull requests from public repositories. To show private statistics on the stats card, you should [deploy your own instance](#deploy-on-your-own) using your own GitHub API token.
+  Please see the root `README.md` for the canonical deployment guide and environment-variable notes.
 
 > [!NOTE]
 > Available ranks are S (top 1%), A+ (12.5%), A (25%), A- (37.5%), B+ (50%), B (62.5%), B- (75%), C+ (87.5%) and C (everyone). This ranking scheme is based on the [Japanese academic grading](https://wikipedia.org/wiki/Academic_grading_in_Japan) system. The global percentile is calculated as a weighted sum of percentiles for each statistic (number of commits, pull requests, reviews, issues, stars, and followers), based on the cumulative distribution function of the [exponential](https://wikipedia.org/wiki/exponential_distribution) and the [log-normal](https://wikipedia.org/wiki/Log-normal_distribution) distributions. The implementation can be investigated at [src/calculateRank.js](https://github.com/anuraghazra/github-readme-stats/blob/master/src/calculateRank.js). The circle around the rank shows 100 minus the global percentile.

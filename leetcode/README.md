@@ -1,3 +1,10 @@
+> NOTE: Common project-level docs (install, tests, CI, Node version) are consolidated in the root `README.md`.
+
+# LeetCode Stats Card
+
+# leetcode
+
+This directory contains the LeetCode cards and related packages. See root `README.md` for common developer instructions.
 # LeetCode Stats Card
 
 [![CodeFactor](https://www.codefactor.io/repository/github/jacoblincool/leetcode-stats-card/badge)](https://www.codefactor.io/repository/github/jacoblincool/leetcode-stats-card)
@@ -24,13 +31,10 @@ It also has a [NPM package](https://www.npmjs.com/package/leetcode-card) and a [
 
 Want to contribute? Feel free to open a pull request!
 
-## Self-hosting
 
-You can also self-host this service using the [`jacoblincool/leetcode-stats-card`](https://hub.docker.com/r/jacoblincool/leetcode-stats-card) Docker image.
+## Deployment
 
-To build the image by yourself, use `pnpm build:image` script.
-
-See [docker-compose.yml](./docker-compose.yml) for an example.
+Self-hosting and deployment instructions have been consolidated into the repository root `README.md`. See the root `README.md` for platform-specific guidance (Vercel, Docker, other hosts) and environment variables.
 
 ## Usage
 

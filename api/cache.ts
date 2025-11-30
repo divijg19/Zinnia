@@ -12,16 +12,23 @@ function computeKeyFromUrl(url: string): string {
 	return h.slice(0, 16);
 }
 
-function serviceCacheDir(service: string): string {
+function serviceCacheDir(service: string): string | null {
 	const svcEnv = `${service.toUpperCase()}_CACHE_DIR`;
 	if (process.env[svcEnv]) return path.resolve(process.env[svcEnv] as string);
 	if (process.env.CACHE_DIR)
 		return path.resolve(process.env.CACHE_DIR as string, service);
-	return path.join(process.cwd(), "cache", service);
+
+	// Do NOT default to a repo-local `./cache` directory. Returning `null`
+	// means filesystem cache is disabled unless explicitly enabled via
+	// `<SERVICE>_CACHE_DIR` or `CACHE_DIR` environment variables.
+	return null;
 }
 
 async function ensureCacheDir(service: string): Promise<void> {
 	const dir = serviceCacheDir(service);
+	// If no directory configured, do not create a repo-level cache.
+	if (!dir) return;
+
 	// During tests prefer not to create a repo-level `cache/` unless a
 	// service-specific env var is provided. Tests will typically set
 	// `<SERVICE>_CACHE_DIR` or `VITEST_WORKER_ID`.
@@ -44,9 +51,12 @@ export async function writeCache(
 	body: string,
 ): Promise<void> {
 	try {
+		const dir = serviceCacheDir(service);
+		if (!dir) return; // filesystem cache disabled
+
 		await ensureCacheDir(service);
 		const key = computeKeyFromUrl(url);
-		const file = path.join(serviceCacheDir(service), `${key}.svg`);
+		const file = path.join(dir, `${key}.svg`);
 		await fs.writeFile(file, body, "utf8");
 	} catch (_e) {
 		// best-effort
@@ -58,8 +68,11 @@ export async function readCache(
 	url: string,
 ): Promise<string | null> {
 	try {
+		const dir = serviceCacheDir(service);
+		if (!dir) return null; // filesystem cache disabled
+
 		const key = computeKeyFromUrl(url);
-		const file = path.join(serviceCacheDir(service), `${key}.svg`);
+		const file = path.join(dir, `${key}.svg`);
 		const data = await fs.readFile(file, "utf8");
 		return data;
 	} catch (_e) {
@@ -74,10 +87,13 @@ export async function writeCacheWithMeta(
 	etag: string,
 ): Promise<void> {
 	try {
+		const dir = serviceCacheDir(service);
+		if (!dir) return; // filesystem cache disabled
+
 		await ensureCacheDir(service);
 		const key = computeKeyFromUrl(url);
-		const file = path.join(serviceCacheDir(service), `${key}.svg`);
-		const metaFile = path.join(serviceCacheDir(service), `${key}.meta.json`);
+		const file = path.join(dir, `${key}.svg`);
+		const metaFile = path.join(dir, `${key}.meta.json`);
 		await fs.writeFile(file, body, "utf8");
 		const meta = { etag, ts: Date.now() };
 		await fs.writeFile(metaFile, JSON.stringify(meta), "utf8");
@@ -91,9 +107,12 @@ export async function readCacheWithMeta(
 	url: string,
 ): Promise<{ body: string; etag?: string; ts?: number } | null> {
 	try {
+		const dir = serviceCacheDir(service);
+		if (!dir) return null; // filesystem cache disabled
+
 		const key = computeKeyFromUrl(url);
-		const file = path.join(serviceCacheDir(service), `${key}.svg`);
-		const metaFile = path.join(serviceCacheDir(service), `${key}.meta.json`);
+		const file = path.join(dir, `${key}.svg`);
+		const metaFile = path.join(dir, `${key}.meta.json`);
 		const body = await fs.readFile(file, "utf8");
 		try {
 			const raw = await fs.readFile(metaFile, "utf8");

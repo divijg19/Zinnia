@@ -73,9 +73,10 @@ async function handleWeb(req: Request): Promise<Response> {
 	>;
 	if (!query.username) {
 		// return simple HTML demo
-		const demo = (
-			await import("../packages/cloudflare-worker/src/demo/index.js")
-		).default;
+		// The demo module lives in a package folder; suppress TS resolution here.
+		const demo =
+			// @ts-expect-error: dynamic import resolves at runtime
+			(await import("../packages/cloudflare-worker/src/demo/index.js")).default;
 		return new Response(demo, {
 			headers: new Headers({ "Content-Type": "text/html" }),
 		});

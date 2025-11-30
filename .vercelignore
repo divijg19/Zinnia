@@ -1,3 +1,18 @@
+.devcontainer
+.github
+.husky
+.vscode
+benchmarks
+coverage
+scripts
+tests
+.env
+**/*.md
+**/*.svg
+.eslintrc.json
+.prettierignore
+.pretterrc.json
+codecov.yml
 .gitignore
 .github
 README.md
@@ -27,3 +42,18 @@ lib/
 # Editor config and IDE
 .vscode/
 .idea/
+
+# Archives and backups
+archives/
+consolidation-backup/
+
+# Node and build artifacts
+node_modules/
+dist/
+lib/
+.wrangler/
+
+# Ignore devcontainers and husky hooks
+.devcontainer
+.husky
+
