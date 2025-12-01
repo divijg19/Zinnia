@@ -26,9 +26,9 @@ export default async function handler(
 		maybeReqQuery && Object.keys(maybeReqQuery).length > 0
 			? (maybeReqQuery as Record<string, unknown>)
 			: (Object.fromEntries(url.searchParams.entries()) as Record<
-					string,
-					string
-				>);
+				string,
+				string
+			>);
 
 	const {
 		username,
@@ -58,7 +58,7 @@ export default async function handler(
 		border_color,
 		rank_icon,
 		show,
-	} = q;
+	} = q as Record<string, any>;
 
 	// Use the caller-provided response shim (tests) when available, otherwise
 	// create a local shim that returns a Response (serverless runtime).
@@ -98,8 +98,9 @@ export default async function handler(
 				// In server runtime global Response should exist; keep behavior.
 				// Use the global Response if available.
 				const G = globalThis as unknown as Record<string, unknown>;
-				if (typeof G.Response === "function") {
-					return new G.Response(body, {
+				const ResponseCtor = (G as any).Response;
+				if (typeof ResponseCtor === "function") {
+					return new ResponseCtor(body, {
 						headers: Object.fromEntries(this.headers),
 						status,
 					});
@@ -153,7 +154,7 @@ export default async function handler(
 			parseBoolean(include_all_commits),
 			parseArray(exclude_repo),
 			showStats.includes("prs_merged") ||
-				showStats.includes("prs_merged_percentage"),
+			showStats.includes("prs_merged_percentage"),
 			showStats.includes("discussions_started"),
 			showStats.includes("discussions_answered"),
 			parseInt(String(commits_year || "0"), 10),
