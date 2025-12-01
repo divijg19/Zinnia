@@ -1,46 +1,12 @@
 {
 	"version": 2,
-	"builds": [
-		{
-			"src": "api/health.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "api/stats.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "api/top-langs.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "api/streak.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "api/trophy.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "api/leetcode.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "stats/api/index.ts",
-			"use": "@vercel/node"
-		},
-		{
-			"src": "stats/api/gist.ts",
-			"use": "@vercel/node"
-		}
-	],
 	"functions": {
 		"api/**/*.[jt]s": {
-			"runtime": "nodejs18.x",
+			"runtime": "nodejs24.x",
 			"maxDuration": 10
 		},
 		"api/*.[jt]s": {
-			"runtime": "nodejs18.x",
+			"runtime": "nodejs24.x",
 			"memory": 128,
 			"maxDuration": 10
 		}

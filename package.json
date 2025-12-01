@@ -9,10 +9,7 @@
 	"packageManager": "bun@1.3.3",
 	"scripts": {
 		"dev": "bun run --watch index.ts",
-		"test:all": "node scripts/run-tests-all.mjs",
-		"clean:locks": "node scripts/cleanup-locks.mjs",
-		"consolidate:configs": "node scripts/consolidate-configs.mjs",
-		"build": "bun build index.ts --outdir=dist && npm run build:streak",
+		"build": "bun build index.ts --outdir=dist && bun run build:streak",
 		"build:streak": "esbuild \"streak/src/index.ts\" --bundle --platform=node --outfile=streak/dist/index.js --format=esm --sourcemap --external:sharp",
 		"vercel": "vercel dev",
 		"verify:local": "node scripts/verify-local.mjs",
@@ -22,13 +19,9 @@
 		"type-check": "tsc --noEmit",
 		"test:stats": "bunx vitest --run --config ./vitest.config.ts -- -t 'tests/stats'",
 		"test:api": "bunx vitest --run --config ./vitest.config.ts -- -t 'tests/api'",
-		"test:vitest": "bunx vitest --run",
 		"test:leetcode": "cd leetcode && bunx vitest --run --pool=threads",
 		"test": "bunx vitest --run",
-		"verify:deploy": "node scripts/verify-deploy.mjs",
-		"streak:php-harness": "php streak/scripts/php-harness.php",
-		"streak:compare": "bun ./streak/scripts/compare.ts",
-		"streak:compare:full": "npm run streak:php-harness && npm run streak:compare"
+		"verify:deploy": "node scripts/verify-deploy.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.8",
