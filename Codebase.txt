@@ -23,6 +23,7 @@ api/trophy.ts
 biome.json
 bun.lock
 github/api/index.ts
+index.ts
 leetcode/Dockerfile
 leetcode/LICENSE
 leetcode/README.md
