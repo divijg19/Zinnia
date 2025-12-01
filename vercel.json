@@ -11,44 +11,6 @@
 			"maxDuration": 10
 		}
 	},
-	"routes": [
-		{
-			"src": "/api/health$",
-			"dest": "api/health.ts"
-		},
-		{
-			"src": "/api/stats$",
-			"dest": "api/stats.ts"
-		},
-		{
-			"src": "/api/top-langs$",
-			"dest": "api/top-langs.ts"
-		},
-		{
-			"src": "/api/streak$",
-			"dest": "api/streak.ts"
-		},
-		{
-			"src": "/api/trophy$",
-			"dest": "api/trophy.ts"
-		},
-		{
-			"src": "/api/leetcode$",
-			"dest": "api/leetcode.ts"
-		},
-		{
-			"src": "/stats$",
-			"dest": "api/stats.ts"
-		},
-		{
-			"src": "/stats/top-langs$",
-			"dest": "api/top-langs.ts"
-		},
-		{
-			"src": "/api/stats/top-langs$",
-			"dest": "api/top-langs.ts"
-		}
-	],
 	"rewrites": [
 		{
 			"source": "/(.*)",
