@@ -1,16 +1,5 @@
 {
 	"version": 2,
-	"functions": {
-		"api/**/*.[jt]s": {
-			"runtime": "nodejs24.x",
-			"maxDuration": 10
-		},
-		"api/*.[jt]s": {
-			"runtime": "nodejs24.x",
-			"memory": 128,
-			"maxDuration": 10
-		}
-	},
 	"rewrites": [
 		{
 			"source": "/(.*)",
