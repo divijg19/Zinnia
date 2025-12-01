@@ -1,6 +1,5 @@
 {
 	"name": "zinnia",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
 	"engines": {
@@ -8,9 +7,8 @@
 	},
 	"packageManager": "bun@1.3.3",
 	"scripts": {
-		"dev": "bun run --watch index.ts",
-		"build": "bun build index.ts --outdir=dist && bun run build:streak",
-		"build:streak": "esbuild \"streak/src/index.ts\" --bundle --platform=node --outfile=streak/dist/index.js --format=esm --sourcemap --external:sharp",
+		"dev": "vercel dev",
+		"build": "bunx tsup streak/src/index.ts --format esm --out-dir streak/dist --platform node --target node24 --sourcemap --external:sharp --clean",
 		"vercel": "vercel dev",
 		"verify:local": "node scripts/verify-local.mjs",
 		"vercel:deploy": "bunx vercel --prod --token $VERCEL_TOKEN --yes",
