@@ -13,7 +13,7 @@
 - Typecheck: ``bunx tsc --noEmit``
 - Run tests: ``bunx vitest --run``
 - Lint & format: ``bunx biome check . && bunx biome format . --write``
-- Build (root): ``bun build index.ts --outdir=dist``
+- Build (root): ``bun run build``
 
 See the **Packages** list above for package-specific docs and examples.
 
