@@ -1,4 +1,4 @@
-import { getGithubPATAsync, markPatExhaustedAsync } from "../../lib/tokens.ts";
+import { getGithubPATAsync, markPatExhaustedAsync } from "../../lib/tokens";
 import type { ContributionDay } from "./types.js";
 
 // Build GraphQL query for a year's contribution calendar and optional fields

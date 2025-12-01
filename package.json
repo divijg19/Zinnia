@@ -9,7 +9,6 @@
 	"scripts": {
 		"dev": "vercel dev",
 		"build": "bunx tsup streak/src/index.ts --format esm --out-dir streak/dist --platform node --target node24 --sourcemap --external sharp --clean",
-		"vercel": "vercel dev",
 		"verify:local": "node scripts/verify-local.mjs",
 		"vercel:deploy": "bunx vercel --prod --token $VERCEL_TOKEN --yes",
 		"lint": "biome check . && tsc --noEmit",
