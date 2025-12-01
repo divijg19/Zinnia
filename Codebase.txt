@@ -94,6 +94,7 @@ lib/telemetry.ts
 lib/themes.ts
 lib/tokens.ts
 package.json
+public/index.html
 scripts/inspectDonutParts.mjs
 scripts/inspectRenderTopLanguages.mjs
 scripts/inspectTopLanguages.mjs
