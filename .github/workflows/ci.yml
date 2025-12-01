@@ -42,10 +42,10 @@ jobs:
       - name: Type check (tsc)
         run: bunx tsc --noEmit
 
+      - name: Build
+        run: bun run build
+
       - name: Tests - Vitest (all projects)
         env:
           CI: true
         run: bun run test
-
-      - name: Build
-        run: bun run build

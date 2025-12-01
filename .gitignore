@@ -139,7 +139,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
-
 .vercel/
 
 # Vendor backups and large archives
@@ -166,7 +165,6 @@ docker_tag
 
 # LeetCode / Worker build artifacts
 dist/
-lib/
 .wrangler/
 worker.capnp
 .storage/
@@ -175,8 +173,6 @@ worker.capnp
 *.code-workspace
 
 # Archives and consolidation backups
-archives/
-consolidation-backup/
 _vendor_backup/
 
 # Demo folders that should not be tracked or deployed
