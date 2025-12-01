@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			HeatmapExtension,
 			ActivityExtension,
 			ContestExtension,
-		} = await import("../leetcode/packages/core/src/index.js");
+		} = await import("../leetcode/packages/core/dist/index.js");
 
 		sanitized.extensions = [FontExtension, AnimationExtension, ThemeExtension];
 
@@ -125,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		try {
 			const { Generator } = (await import(
-				"../leetcode/packages/core/src/card.js"
+				"../leetcode/packages/core/dist/index.js"
 			)) as { Generator: any };
 			const generator = new Generator(
 				null as unknown as Cache,
