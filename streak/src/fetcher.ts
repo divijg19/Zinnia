@@ -1,4 +1,4 @@
-import { getGithubPATAsync, markPatExhaustedAsync } from "../../lib/tokens";
+import { getGithubPATWithKeyAsync, markPatExhaustedAsync } from "../../lib/tokens";
 import type { ContributionDay } from "./types.js";
 
 // Build GraphQL query for a year's contribution calendar and optional fields
@@ -17,8 +17,9 @@ async function doGraphQL(
 	const to =
 		timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
 	let res: Response | undefined;
-	try {
-		res = await fetch("https://api.github.com/graphql", {
+
+	async function attemptFetch(): Promise<Response> {
+		return fetch("https://api.github.com/graphql", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -28,11 +29,22 @@ async function doGraphQL(
 			body: JSON.stringify({ query, variables }),
 			signal: controller.signal,
 		});
+	}
+
+	try {
+		res = await attemptFetch();
 	} catch (err: unknown) {
 		if (to) clearTimeout(to);
 		const maybeName = (err as unknown as { name?: string })?.name;
 		if (maybeName === "AbortError") throw new Error("fetch-timeout");
-		throw err as Error;
+		// Safe retry once for transient network errors (not auth failures)
+		const jitterMs = 200 + Math.floor(Math.random() * 201); // 200-400ms
+		await new Promise((r) => setTimeout(r, jitterMs));
+		try {
+			res = await attemptFetch();
+		} catch (err2: unknown) {
+			throw err2 as Error;
+		}
 	} finally {
 		if (to) clearTimeout(to);
 	}
@@ -41,7 +53,10 @@ async function doGraphQL(
 	if (!res.ok) {
 		if (res.status === 401 || res.status === 403) {
 			try {
-				await markPatExhaustedAsync?.(pat, 300);
+				// 'pat' here is the token value; prefer marking by key if available.
+				// When using getGithubPATWithKeyAsync, callers can pass the key via a header.
+				const keyHeader = (variables as any).__patKey as string | undefined;
+				if (keyHeader) await markPatExhaustedAsync?.(keyHeader, 300);
 			} catch {
 				// swallow
 			}
@@ -65,10 +80,14 @@ export async function fetchContributions(
 	// 3) Request each year's calendar and merge contributionDays
 
 	const thisYear = new Date().getUTCFullYear();
-	const pat = await getGithubPATAsync();
-	if (!pat) throw new Error("no-github-pat");
+	const patInfo = await getGithubPATWithKeyAsync();
+	if (!patInfo) throw new Error("no-github-pat");
 
-	const json = await doGraphQL(yearQuery(thisYear), { login: username }, pat);
+	const json = await doGraphQL(
+		yearQuery(thisYear),
+		{ login: username, __patKey: patInfo.key },
+		patInfo.token,
+	);
 	const user = json?.data?.user;
 	if (!user) {
 		// propagate upstream message
@@ -98,7 +117,11 @@ export async function fetchContributions(
 
 	// For each year, perform a query and extract days
 	for (const y of yearsToRequest) {
-		const result = await doGraphQL(yearQuery(y), { login: username }, pat);
+		const result = await doGraphQL(
+			yearQuery(y),
+			{ login: username, __patKey: patInfo.key },
+			patInfo.token,
+		);
 		const weeks =
 			result?.data?.user?.contributionsCollection?.contributionCalendar
 				?.weeks ?? [];

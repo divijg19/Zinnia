@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
-import { compareCases } from "../../streak/scripts/compare.ts";
+import { compareCases } from "../../streak/src/compare.ts";
 
 describe("compareCases integration (injected generateOutput)", () => {
 	it("handles string body, no php baseline", async () => {

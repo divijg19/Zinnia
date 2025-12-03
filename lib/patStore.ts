@@ -40,6 +40,12 @@ const IN_MEMORY_STORE: PatStore = (() => {
 
 let STORE: PatStore | null = null;
 
+// Namespace keys so multiple deployments/environments don't collide.
+// Override with `PAT_STORE_NAMESPACE` if needed (e.g., project or environment name).
+const NAMESPACE = (process.env.PAT_STORE_NAMESPACE || "zinnia").toLowerCase();
+const RR_COUNTER_KEY = `${NAMESPACE}:rr:pat`;
+const EX_PREFIX = `${NAMESPACE}:ex:`;
+
 // Allow a configurable prefix (e.g., ZINNIA) for env vars injected by
 // the Vercel Marketplace. Default is UPSTASH. Set `UPSTASH_PREFIX=ZINNIA`
 // in Vercel if you used a custom prefix when installing the integration.
@@ -109,16 +115,28 @@ async function createUpstashStore(): Promise<PatStore | null> {
 	if (!url || !token) return null;
 	return {
 		incrCounter: async (key: string) => {
-			const r = await upstashCall(url, token, "INCR", key);
+			const r = await upstashCall(url, token, "INCR", key || RR_COUNTER_KEY);
 			return Number(r || 0);
 		},
 		isExhausted: async (patKey: string) => {
-			const r = await upstashCall(url, token, "GET", `ex:${patKey}`);
-			return r !== null && r !== undefined;
+			// Check namespaced first, then legacy key format for backward compatibility
+			const rNs = await upstashCall(url, token, "GET", `${EX_PREFIX}${patKey}`);
+			if (rNs !== null && rNs !== undefined) return true;
+			const rLegacy = await upstashCall(url, token, "GET", `ex:${patKey}`);
+			return rLegacy !== null && rLegacy !== undefined;
 		},
 		setExhausted: async (patKey: string, ttlSeconds = 300) => {
+			// Write both namespaced and legacy keys to ease migrations
+			await upstashCall(url, token, "SET", `${EX_PREFIX}${patKey}`, "1");
 			await upstashCall(url, token, "SET", `ex:${patKey}`, "1");
 			try {
+				await upstashCall(
+					url,
+					token,
+					"EXPIRE",
+					`${EX_PREFIX}${patKey}`,
+					String(Math.max(1, Math.floor(ttlSeconds))),
+				);
 				await upstashCall(
 					url,
 					token,
@@ -132,6 +150,7 @@ async function createUpstashStore(): Promise<PatStore | null> {
 		},
 		clearExhausted: async (patKey: string) => {
 			try {
+				await upstashCall(url, token, "DEL", `${EX_PREFIX}${patKey}`);
 				await upstashCall(url, token, "DEL", `ex:${patKey}`);
 			} catch (_e) {
 				// ignore
@@ -149,10 +168,19 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 		const IORedis = require("ioredis");
 		const client = new IORedis(redisUrl);
 		return {
-			incrCounter: async (key: string) => Number(await client.incr(key)),
+			incrCounter: async (key: string) => Number(await client.incr(key || RR_COUNTER_KEY)),
 			isExhausted: async (patKey: string) =>
-				Boolean(await client.get(`ex:${patKey}`)),
+				Boolean(
+					(await client.get(`${EX_PREFIX}${patKey}`)) ||
+					(await client.get(`ex:${patKey}`)),
+				),
 			setExhausted: async (patKey: string, ttlSeconds = 300) => {
+				await client.set(
+					`${EX_PREFIX}${patKey}`,
+					"1",
+					"EX",
+					Math.max(1, Math.floor(ttlSeconds)),
+				);
 				await client.set(
 					`ex:${patKey}`,
 					"1",
@@ -161,6 +189,7 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 				);
 			},
 			clearExhausted: async (patKey: string) => {
+				await client.del(`${EX_PREFIX}${patKey}`);
 				await client.del(`ex:${patKey}`);
 			},
 		};
