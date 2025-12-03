@@ -4,7 +4,10 @@ const STATIC_PAT_KEYS = ["PAT_1", "PAT_2", "PAT_3", "PAT_4", "PAT_5"] as const;
 const exhaustedUntil = new Map<string, number>();
 
 // module-scoped round-robin counter used by `choosePatKey`
-let rrCounter = 0;
+// Seed with a random offset per process so serverless instances don't
+// all start at 0 and bias the first key. A larger seed space reduces
+// collision probability across many instances.
+let rrCounter = Math.floor(Math.random() * 1024);
 
 function isPatExhausted(key: string): boolean {
 	const until = exhaustedUntil.get(key);
@@ -45,16 +48,24 @@ export function choosePatKey(): string | undefined {
 	const keys = discoverPatKeys().filter((k) => !isPatExhausted(k));
 	if (keys.length === 0) return undefined;
 	// deterministic, per-process round-robin for even distribution
-	// Use a module-scoped counter instead of attaching to the function object.
-	if (
-		typeof (choosePatKey as unknown as { rrCounter?: number }).rrCounter ===
-		"undefined"
-	) {
-		// noop: handled by module-scoped `rrCounter` below
-	}
 	const rr = rrCounter as number;
 	const key = keys[rr % keys.length];
 	rrCounter = (rr + 1) % keys.length;
+
+	// Diagnostic: log chosen key name (do not log token values).
+	try {
+		if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
+			// console.* used intentionally for visibility in server logs
+			// without leaking secrets.
+			// Example log: [tokens] choosePatKey -> PAT_3
+			// Keep this lightweight to avoid noisy logs in test runs.
+			// eslint-disable-next-line no-console
+			console.info(`[tokens] choosePatKey -> ${key}`);
+		}
+	} catch (_e) {
+		// ignore logging failures
+	}
+
 	return key;
 }
 
@@ -90,11 +101,73 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
 			const remoteEx = await store.isExhausted(k);
 			if (remoteEx) continue;
 			const token = process.env[k as string];
-			if (token && token.trim().length > 0) return token.trim();
+			if (token && token.trim().length > 0) {
+				// Diagnostic: log chosen key name when using KV-based rotation
+				try {
+					if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
+						// eslint-disable-next-line no-console
+						console.info(`[tokens] getGithubPATAsync -> ${k}`);
+					}
+				} catch (_e) {
+					// ignore
+				}
+				return token.trim();
+			}
 		}
 		return undefined;
 	} catch (_err) {
 		return getGithubPAT();
+	}
+}
+
+/**
+ * Variant that returns both the env key name (e.g., PAT_3) and the token value.
+ * Enables correct exhaustion marking by key when an API call fails.
+ */
+export async function getGithubPATWithKeyAsync(): Promise<
+	| { key: string; token: string }
+	| undefined
+> {
+	try {
+		const store = await getPatStore();
+		const keys = discoverPatKeys();
+		if (keys.length === 0) return undefined;
+
+		if (!store || store === undefined) {
+			const key = choosePatKey();
+			if (!key) return undefined;
+			const token = process.env[key];
+			if (token && token.trim().length > 0) return { key, token: token.trim() };
+			return undefined;
+		}
+
+		const n = await store.incrCounter("pat_rr_counter");
+		const start = Number(n) % keys.length;
+		for (let i = 0; i < keys.length; i++) {
+			const idx = (start + i) % keys.length;
+			const k = keys[idx];
+			if (!k) continue;
+			if (isPatExhausted(k)) continue;
+			const remoteEx = await store.isExhausted(k);
+			if (remoteEx) continue;
+			const token = process.env[k];
+			if (token && token.trim().length > 0) {
+				try {
+					if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
+						// eslint-disable-next-line no-console
+						console.info(`[tokens] getGithubPATWithKeyAsync -> ${k}`);
+					}
+				} catch { }
+				return { key: k, token: token.trim() };
+			}
+		}
+		return undefined;
+	} catch {
+		const key = choosePatKey();
+		if (!key) return undefined;
+		const token = process.env[key];
+		if (token && token.trim().length > 0) return { key, token: token.trim() };
+		return undefined;
 	}
 }
 

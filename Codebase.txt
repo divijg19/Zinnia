@@ -167,6 +167,8 @@ streak/src/cache.ts
 streak/src/card.ts
 streak/src/card_helpers.ts
 streak/src/colors.ts
+streak/src/compare.ts
+streak/src/compare_helpers.ts
 streak/src/demo/preview.js
 streak/src/fetcher.ts
 streak/src/index.ts
@@ -175,6 +177,7 @@ streak/src/renderer.ts
 streak/src/server_types.ts
 streak/src/stats.ts
 streak/src/stats_tz.ts
+streak/src/svg-compare.ts
 streak/src/svg_builder.ts
 streak/src/telemetry.ts
 streak/src/themes.ts
@@ -190,6 +193,7 @@ streak/tests/renderer.test.ts
 streak/tmp/expected.normalized.svg
 streak/tmp/generated.normalized.svg
 streak/tmp/generated.raw.svg
+tests/_assertHeaders.ts
 tests/_globalFetchMock.ts
 tests/_mockHelpers.ts
 tests/_resShim.ts
@@ -218,9 +222,8 @@ tests/stats/fetchRepo.test.ts
 tests/stats/fetchStats.test.ts
 tests/stats/fetchTopLanguages.test.ts
 tests/stats/flexLayout.test.ts
-tests/stats/gist_api_headers.test.ts
+tests/stats/headers.test.ts
 tests/stats/i18n.test.ts
-tests/stats/index_api_headers.test.ts
 tests/stats/pat-info.test.ts
 tests/stats/pin.test.ts
 tests/stats/renderGistCard.test.ts
@@ -244,6 +247,8 @@ tests/streak/structural.test.ts
 tests/streak/svg-compare.test.ts
 tests/streak/translations.test.ts
 tests/vitest.setup.ts
+tmp/streak-demo.svg
+tmp/trophy-smoke.svg
 trophy/CONTRIBUTING.md
 trophy/LICENSE
 trophy/README.md

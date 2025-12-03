@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	bodyToString,
 	normalizeSvg,
-} from "../../streak/scripts/compare_helpers.ts";
+} from "../../streak/src/compare_helpers.ts";
 
 describe("compare helpers", () => {
 	it("converts string, buffer and Uint8Array bodies", async () => {

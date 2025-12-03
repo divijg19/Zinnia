@@ -236,9 +236,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (!upstream.searchParams.has(k)) upstream.searchParams.set(k, v);
 			}
 		}
-		const token = process.env.TOKEN;
-		if (token && !upstream.searchParams.has("token"))
-			upstream.searchParams.set("token", token);
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
