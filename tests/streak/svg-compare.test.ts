@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareSvg } from "../../streak/scripts/svg-compare.ts";
+import { compareSvg } from "../../streak/src/svg-compare.ts";
 
 describe("svg structural compare", () => {
 	it("considers small numeric differences equal", async () => {

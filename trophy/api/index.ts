@@ -30,11 +30,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		return svgError("Missing ?username=...");
 	}
 
-	const mode = (
-		url.searchParams.get("mode") ||
-		process.env.TROPHY_MODE ||
-		"proxy"
-	).toLowerCase();
+	const mode = (url.searchParams.get("mode") || "proxy").toLowerCase();
 	const cacheSeconds =
 		parseInt(
 			process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "300",
