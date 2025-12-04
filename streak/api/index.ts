@@ -59,9 +59,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					| undefined;
 				let getCache:
 					| (() => Promise<{
-							get: (k: string) => Promise<string | null>;
-							set: (k: string, v: string, ttl: number) => Promise<void>;
-					  }>)
+						get: (k: string) => Promise<string | null>;
+						set: (k: string, v: string, ttl: number) => Promise<void>;
+					}>)
 					| undefined;
 				let THEMES: Record<string, Record<string, string>> | undefined;
 				if (coreMod) {
@@ -263,8 +263,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				const cacheSeconds =
 					parseInt(
 						process.env.STREAK_CACHE_SECONDS ||
-							process.env.CACHE_SECONDS ||
-							"300",
+						process.env.CACHE_SECONDS ||
+						"300",
 						10,
 					) || 300;
 				try {
@@ -316,11 +316,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 		// Normalize parameter name expected by upstream
 		upstream.searchParams.set("user", user);
-
-		const token = process.env.TOKEN;
-		if (token && !upstream.searchParams.has("token")) {
-			upstream.searchParams.set("token", token);
-		}
 
 		const cacheSeconds =
 			parseInt(

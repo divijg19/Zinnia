@@ -61,7 +61,7 @@ Vercel is the recommended option for hosting the files since it is **free** and 
 2. Create your repository by filling in a Repository Name and clicking "Create"
 3. Visit [this link](https://github.com/settings/tokens/new?description=GitHub%20Readme%20Streak%20Stats) to create a new Personal Access Token (no scopes required)
 4. Scroll to the bottom and click **"Generate token"**
-5. **Add the token** as a Config Var with the key `TOKEN`:
+5. Configure tokens in your deployment platform using the PAT rotation format: `PAT_1`, `PAT_2`, ... (`PAT_1` is sufficient for a single token). See the root `README.md` for exact env variable names and Upstash guidance.
 
 ![vercel environment variables](https://github.com/DenverCoder1/github-readme-streak-stats/assets/20955511/17a433d6-0aaa-4c69-9a53-6d4638318fbb)
 
@@ -87,7 +87,7 @@ Vercel is the recommended option for hosting the files since it is **free** and 
 8. Open [this link](https://github.com/settings/tokens/new?description=GitHub%20Readme%20Streak%20Stats) to create a new Personal Access Token on GitHub. You don't need to select any scopes for the token.
 9. Scroll to the bottom of the page and click on **"Generate token"**
 10. Visit the Vercel dashboard at <https://vercel.com/dashboard> and select your project. Then, click on **"Settings"** and choose **"Environment Variables"**.
-11. Add a new environment variable with the key `TOKEN` and the value as the token you generated in step 9, then save your changes
+11. Add a new environment variable with the key `PAT_1` (or `PAT_1..PAT_5` for rotation) and the value as the token you generated in step 9, then save your changes
 12. To apply the new environment variable, you need to redeploy the app. Run `vercel --prod` to deploy the app to production.
 
 ![image](https://user-images.githubusercontent.com/20955511/209588756-8bf5b0cd-9aa6-41e8-909c-97bf41e525b3.png)
@@ -118,7 +118,7 @@ Heroku is another great option for hosting the files. All features are supported
 
 [![][hspace]](#) [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)][herokudeploy]
 
-5. **Add the token** as a Config Var with the key `TOKEN`:
+5. Add your PATs as Config Vars using `PAT_1` (or `PAT_1..PAT_5` for rotation).
 
 ![heroku config variables](https://user-images.githubusercontent.com/20955511/136292022-a8d9b3b5-d7d8-4a5e-a049-8d23b51ce9d7.png)
 
@@ -157,11 +157,11 @@ Docker is a great option for self-hosting with full control over your environmen
    docker build -t streak-stats .
    ```
 
-5. Run the container with your GitHub token:
+5. Run the container with your GitHub PAT (use `PAT_1`):
 
-   ```bash
-   docker run -d -p 8080:80 -e TOKEN=your_github_token_here streak-stats
-   ```
+  ```bash
+  docker run -d -p 8080:80 -e PAT_1=your_github_token_here streak-stats
+  ```
 
 6. Visit http://localhost:8080 to access your self-hosted instance
 

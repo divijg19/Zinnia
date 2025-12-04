@@ -4,15 +4,13 @@
 
 - Node.js 20.x
 - [Vercel](https://vercel.com/) (local dev and deploy)
-- GitHub API v4 (used by upstream service; optional proxy token)
+- GitHub API v4 (used by upstream service via PAT-based proxy)
 
 ## Local Run
 
-Create a `.env` file at the repo root (optional) to pass a token to the upstream
-proxy (improves rate limits when using the default proxy mode):
+Create a `.env` file at the repo root (optional) to configure cache TTLs. Trophy uses PAT rotation (`PAT_1..PAT_5`) and the `?mode=` query parameter instead of a `TROPHY_TOKEN` env:
 
 ```properties
-TROPHY_TOKEN=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 TROPHY_CACHE_SECONDS=300
 CACHE_SECONDS=300
 ```

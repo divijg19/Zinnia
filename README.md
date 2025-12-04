@@ -63,6 +63,7 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 	npm run vercel:deploy
 	```
 - **Setup**: Connect your repo in the Vercel dashboard and set required environment variables (see below).
+ - **Upstash/Redis (recommended)**: For persistent token rotation and cache counters, set `UPSTASH_REST_URL` and `UPSTASH_REST_TOKEN` (or marketplace-prefixed variants). Optionally set `PAT_STORE_NAMESPACE` to isolate environments. If not set, an in-memory fallback is used.
 
 ## Embeds
 
@@ -131,9 +132,16 @@ Some endpoints require higher GitHub API limits to avoid rate limiting:
 	- Optional rotation: PAT_2, PAT_3, ... (the stats service will pick among available tokens)
 	- Without a PAT, the endpoints still return a valid SVG with guidance text so GitHub embeds don’t break.
 
-- Optional upstream tokens
-	- TOKEN: passed through to streak-stats.demolab.com if not provided in query
-	- TROPHY_TOKEN: passed through to github-profile-trophy.vercel.app if not provided in query
+-- Optional upstream tokens
+	- Trophy upstream auth: If callers supply a `token` query param, the Trophy endpoint will use it. Otherwise the service uses centralized PAT rotation (`PAT_1..PAT_5`) to provide upstream auth and will mark exhausted keys on 401/403. Trophy mode is controlled by the `?mode=` query parameter (e.g. `?mode=local`).
+
+### Validate environment
+
+Run a quick validation before deploy to ensure PATs and Upstash are configured:
+
+```pwsh
+node scripts/validate-env.mjs
+```
 
 ### Cache-busting when updating embeds
 

@@ -21,7 +21,8 @@ function svgError(message: string, cacheSeconds = 60) {
 }
 
 // Trophy handler supports two modes:
-// - Local (Node/TS SVG renderer): TROPHY_MODE=local or ?mode=local
+import { getGithubPATWithKeyAsync, markPatExhaustedAsync } from "../../lib/tokens";
+// - Local (Node/TS SVG renderer): ?mode=local
 // - Proxy (default): fetches upstream SVG and returns it for full feature coverage
 export async function handleWeb(req: Request): Promise<Response> {
 	const url = new URL(req.url);
@@ -53,9 +54,18 @@ export async function handleWeb(req: Request): Promise<Response> {
 	// Default: Proxy to upstream for rich/complete rendering with cache fallback
 	const upstream = new URL("https://github-profile-trophy.vercel.app/");
 	for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
-	const token = process.env.TROPHY_TOKEN;
-	if (token && !upstream.searchParams.has("token"))
-		upstream.searchParams.set("token", token);
+
+	// If caller supplied a `token` query param, respect it. Otherwise use
+	// the centralized PAT rotation (round-robin) to supply an auth token.
+	let patInfo: { key: string; token: string } | undefined;
+	if (!upstream.searchParams.has("token")) {
+		patInfo = await getGithubPATWithKeyAsync();
+		if (patInfo) {
+			upstream.searchParams.set("token", patInfo.token);
+			// carry key in query for observability (ignored by upstream)
+			upstream.searchParams.set("__patKey", patInfo.key);
+		}
+	}
 
 	// Try cached last-known-good body first for quick 304 handling
 	const cached = await readTrophyCacheWithMeta(upstream.toString());
@@ -114,6 +124,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 	}
 
 	if (!resp.ok) {
+		// If upstream rejects due to auth (401/403), mark selected PAT exhausted
+		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
+			try { await markPatExhaustedAsync(patInfo.key, 300); } catch { }
+		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500 && cached?.body) {
 			const h = new Headers();
@@ -132,6 +146,13 @@ export async function handleWeb(req: Request): Promise<Response> {
 	const body = await resp.text();
 	// Write cache with meta (ETag placeholder) then return fresh body
 	await writeTrophyCacheWithMeta(upstream.toString(), body, "");
+	// Detect auth error strings and mark exhausted when applicable (defensive)
+	if (patInfo?.key) {
+		const lc = body.toLowerCase();
+		if (lc.includes("bad credentials") || lc.includes("rate limit") || lc.includes("unauthorized")) {
+			try { await markPatExhaustedAsync(patInfo.key, 300); } catch { }
+		}
+	}
 	const headers = new Headers();
 	setSvgHeaders({
 		setHeader: (k: string, v: string) => headers.set(k, v),

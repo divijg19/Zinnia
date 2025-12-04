@@ -31,9 +31,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const upstream = new URL("https://github-profile-trophy.vercel.app/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
-		const token = process.env.TROPHY_TOKEN;
-		if (token && !upstream.searchParams.has("token"))
-			upstream.searchParams.set("token", token);
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"],
