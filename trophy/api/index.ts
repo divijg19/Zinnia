@@ -1,4 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+	readTrophyCacheWithMeta,
+	setEtagAndMaybeSend304,
+	setFallbackCacheHeaders,
+	setShortCacheHeaders,
+	setSvgHeaders,
+	writeTrophyCacheWithMeta,
+} from "../../api/_utils";
 import { renderTrophySVG } from "../src/renderer";
 
 function svgError(message: string, cacheSeconds = 60) {
@@ -46,12 +54,40 @@ export async function handleWeb(req: Request): Promise<Response> {
 		});
 	}
 
-	// Default: Proxy to upstream for rich/complete rendering
+	// Default: Proxy to upstream for rich/complete rendering with cache fallback
 	const upstream = new URL("https://github-profile-trophy.vercel.app/");
 	for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 	const token = process.env.TROPHY_TOKEN;
 	if (token && !upstream.searchParams.has("token"))
 		upstream.searchParams.set("token", token);
+
+	// Try cached last-known-good body first for quick 304 handling
+	const cached = await readTrophyCacheWithMeta(upstream.toString());
+	if (cached?.body) {
+		// ETag conditional
+		const resHeaders = new Headers();
+		setSvgHeaders({
+			setHeader: (k: string, v: string) => resHeaders.set(k, v),
+		} as any);
+		const did304 = setEtagAndMaybeSend304(
+			Object.fromEntries(req.headers as any),
+			{
+				setHeader: (k: string, v: string) => resHeaders.set(k, v),
+				status: (_code: number) => { },
+				send: (_b: string) => { },
+			} as any,
+			cached.body,
+		);
+		if (did304) {
+			setFallbackCacheHeaders(
+				{
+					setHeader: (k: string, v: string) => resHeaders.set(k, v),
+				} as any,
+				cacheSeconds,
+			);
+			return new Response("", { status: 304, headers: resHeaders });
+		}
+	}
 
 	// Upstream fetch with timeout protection
 	const ctrl = new AbortController();
@@ -64,20 +100,51 @@ export async function handleWeb(req: Request): Promise<Response> {
 		});
 	} catch (_e) {
 		clearTimeout(timeout);
+		// Serve cached last-known-good if present
+		if (cached?.body) {
+			const h = new Headers();
+			setSvgHeaders({
+				setHeader: (k: string, v: string) => h.set(k, v),
+			} as any);
+			setFallbackCacheHeaders(
+				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
+				cacheSeconds,
+			);
+			return new Response(cached.body, { headers: h });
+		}
 		return svgError("Upstream trophy fetch failed");
 	} finally {
 		clearTimeout(timeout);
 	}
+
 	if (!resp.ok) {
+		// On 404, pass through a short error; on 5xx serve cached if present
+		if (resp.status >= 500 && cached?.body) {
+			const h = new Headers();
+			setSvgHeaders({
+				setHeader: (k: string, v: string) => h.set(k, v),
+			} as any);
+			setFallbackCacheHeaders(
+				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
+				cacheSeconds,
+			);
+			return new Response(cached.body, { headers: h });
+		}
 		return svgError(`Upstream trophy returned ${resp.status}`);
 	}
+
 	const body = await resp.text();
-	return new Response(body, {
-		headers: new Headers({
-			"Content-Type": "image/svg+xml; charset=utf-8",
-			"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-		}),
-	});
+	// Write cache with meta (ETag placeholder) then return fresh body
+	await writeTrophyCacheWithMeta(upstream.toString(), body, "");
+	const headers = new Headers();
+	setSvgHeaders({
+		setHeader: (k: string, v: string) => headers.set(k, v),
+	} as any);
+	setShortCacheHeaders(
+		{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
+		cacheSeconds,
+	);
+	return new Response(body, { headers });
 }
 
 // Bridge for @vercel/node (Node.js Serverless) -> Web Response
