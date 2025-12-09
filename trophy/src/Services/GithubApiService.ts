@@ -1,5 +1,4 @@
-import { getEnv, Logger } from "../Helpers/Logger.ts";
-import { Retry } from "../Helpers/Retry.ts";
+import { Logger } from "../Helpers/Logger.ts";
 import { GithubRepository } from "../Repository/GithubRepository.ts";
 import {
 	queryUserActivity,
@@ -15,16 +14,13 @@ import {
 	type GitHubUserRepository,
 	UserInfo,
 } from "../user_info.ts";
-import { CONSTANTS } from "../utils.ts";
 import { requestGithubData } from "./request.ts";
 
-// Need to be here - Exporting from another file makes array of null
-// Only keep non-empty tokens to avoid wasted retries.
-export const TOKENS = [getEnv("GITHUB_TOKEN1"), getEnv("GITHUB_TOKEN2")].filter(
-	(t): t is string => Boolean(t && t.trim().length > 0),
-);
-
 export class GithubApiService extends GithubRepository {
+	constructor(private token: string) {
+		super();
+	}
+
 	async requestUserRepository(
 		username: string,
 	): Promise<GitHubUserRepository | ServiceError> {
@@ -89,13 +85,7 @@ export class GithubApiService extends GithubRepository {
 		variables: { [key: string]: string },
 	) {
 		try {
-			const retry = new Retry(
-				TOKENS.length,
-				CONSTANTS.DEFAULT_GITHUB_RETRY_DELAY,
-			);
-			return await retry.fetch<Promise<T>>(async ({ attempt }) => {
-				return await requestGithubData(query, variables, TOKENS[attempt]);
-			});
+			return await requestGithubData<T>(query, variables, this.token);
 		} catch (error: any) {
 			if (error.cause instanceof ServiceError) {
 				Logger.error(error.cause.message);

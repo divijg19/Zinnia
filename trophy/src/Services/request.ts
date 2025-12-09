@@ -1,4 +1,3 @@
-import { soxa } from "../../deps.ts";
 import {
 	EServiceKindError,
 	type GithubErrorResponse,
@@ -13,17 +12,23 @@ export async function requestGithubData<T = unknown>(
 	token = "",
 ): Promise<T> {
 	// Build headers only when a token is provided.
-	const headers: Record<string, string> = token
-		? { Authorization: `bearer ${token}` }
-		: {};
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		"User-Agent": "zinnia/1.0 (+trophy)",
+	};
+	if (token) {
+		headers.Authorization = `bearer ${token}`;
+	}
 
-	// Send GraphQL query in the request body (second arg), not via config.data.
-	const response = (await soxa.post(
-		"",
-		{ query, variables },
-		{ headers },
-	)) as QueryDefaultResponse<{ user: T }>;
-	const responseData = response.data;
+	const response = await fetch("https://api.github.com/graphql", {
+		method: "POST",
+		headers,
+		body: JSON.stringify({ query, variables }),
+	});
+
+	const responseData = (await response.json()) as QueryDefaultResponse<{
+		user: T;
+	}>;
 
 	if (responseData?.data?.user) {
 		return responseData.data.user;

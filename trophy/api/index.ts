@@ -7,7 +7,11 @@ import {
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "../../api/_utils";
+import { Card } from "../src/card";
 import { renderTrophySVG } from "../src/renderer";
+import { GithubApiService } from "../src/Services/GithubApiService";
+import { COLORS, type Theme } from "../src/theme";
+import type { UserInfo } from "../src/user_info";
 
 function svgError(message: string, cacheSeconds = 60) {
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
@@ -18,6 +22,45 @@ function svgError(message: string, cacheSeconds = 60) {
 			"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=300`,
 		}),
 	});
+}
+
+async function renderLocalTrophy(
+	username: string,
+	token: string,
+	params: URLSearchParams,
+): Promise<string> {
+	const service = new GithubApiService(token);
+	const userInfoOrError = await service.requestUserInfo(username);
+
+	if (userInfoOrError instanceof Error) {
+		throw userInfoOrError;
+	}
+
+	const themeName = params.get("theme") || "flat";
+	const theme = (COLORS[themeName] || COLORS.flat) as Theme;
+
+	const titles = (params.get("title") || "").split(",").filter(Boolean);
+	const ranks = (params.get("rank") || "").split(",").filter(Boolean);
+	const column = Number(params.get("column") || "-1");
+	const row = Number(params.get("row") || "3");
+	const marginW = Number(params.get("margin-w") || "0");
+	const marginH = Number(params.get("margin-h") || "0");
+	const noBg = params.get("no-bg") === "true";
+	const noFrame = params.get("no-frame") === "true";
+
+	const card = new Card(
+		titles,
+		ranks,
+		column,
+		row,
+		110, // panelSize default
+		marginW,
+		marginH,
+		noBg,
+		noFrame,
+	);
+
+	return card.render(userInfoOrError as UserInfo, theme);
 }
 
 // Trophy handler supports two modes:
@@ -41,33 +84,67 @@ export async function handleWeb(req: Request): Promise<Response> {
 			10,
 		) || 300;
 
+	// Get token for both local mode and proxy mode (if needed)
+	let patInfo: { key: string; token: string } | undefined;
+	if (!url.searchParams.has("token")) {
+		patInfo = await getGithubPATWithKeyAsync();
+	} else {
+		patInfo = {
+			key: "custom",
+			token: url.searchParams.get("token") || "",
+		};
+	}
+
 	if (mode === "local") {
-		const theme = url.searchParams.get("theme") || undefined;
-		const title = url.searchParams.get("title") || undefined;
-		const columns = Number(url.searchParams.get("columns") || "4") || 4;
-		const svg = renderTrophySVG({ username, theme, title, columns });
-		return new Response(svg, {
-			headers: new Headers({
-				"Content-Type": "image/svg+xml; charset=utf-8",
-				"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-			}),
-		});
+		try {
+			if (!patInfo?.token) {
+				// Fallback to stub renderer if no token available
+				const theme = url.searchParams.get("theme") || undefined;
+				const title = url.searchParams.get("title") || undefined;
+				const columns = Number(url.searchParams.get("columns") || "4") || 4;
+				const svg = renderTrophySVG({ username, theme, title, columns });
+				return new Response(svg, {
+					headers: new Headers({
+						"Content-Type": "image/svg+xml; charset=utf-8",
+						"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+					}),
+				});
+			}
+
+			const svg = await renderLocalTrophy(
+				username,
+				patInfo.token,
+				url.searchParams,
+			);
+			return new Response(svg, {
+				headers: new Headers({
+					"Content-Type": "image/svg+xml; charset=utf-8",
+					"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+				}),
+			});
+		} catch (_e) {
+			// Fallback to stub renderer on error
+			const theme = url.searchParams.get("theme") || undefined;
+			const title = url.searchParams.get("title") || undefined;
+			const columns = Number(url.searchParams.get("columns") || "4") || 4;
+			const svg = renderTrophySVG({ username, theme, title, columns });
+			return new Response(svg, {
+				headers: new Headers({
+					"Content-Type": "image/svg+xml; charset=utf-8",
+					"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+				}),
+			});
+		}
 	}
 
 	// Default: Proxy to upstream for rich/complete rendering with cache fallback
 	const upstream = new URL("https://github-profile-trophy.vercel.app/");
 	for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 
-	// If caller supplied a `token` query param, respect it. Otherwise use
-	// the centralized PAT rotation (round-robin) to supply an auth token.
-	let patInfo: { key: string; token: string } | undefined;
-	if (!upstream.searchParams.has("token")) {
-		patInfo = await getGithubPATWithKeyAsync();
-		if (patInfo) {
-			upstream.searchParams.set("token", patInfo.token);
-			// carry key in query for observability (ignored by upstream)
-			upstream.searchParams.set("__patKey", patInfo.key);
-		}
+	if (patInfo) {
+		upstream.searchParams.set("token", patInfo.token);
+		// carry key in query for observability (ignored by upstream)
+		upstream.searchParams.set("__patKey", patInfo.key);
 	}
 
 	// Try cached last-known-good body first for quick 304 handling
@@ -121,6 +198,24 @@ export async function handleWeb(req: Request): Promise<Response> {
 			);
 			return new Response(cached.body, { headers: h });
 		}
+		// Fallback to local generation if upstream fails
+		if (patInfo?.token) {
+			try {
+				const svg = await renderLocalTrophy(
+					username,
+					patInfo.token,
+					url.searchParams,
+				);
+				return new Response(svg, {
+					headers: new Headers({
+						"Content-Type": "image/svg+xml; charset=utf-8",
+						"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+					}),
+				});
+			} catch {
+				// ignore local gen error and return upstream error
+			}
+		}
 		return svgError("Upstream trophy fetch failed");
 	} finally {
 		clearTimeout(timeout);
@@ -134,16 +229,36 @@ export async function handleWeb(req: Request): Promise<Response> {
 			} catch {}
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
-		if (resp.status >= 500 && cached?.body) {
-			const h = new Headers();
-			setSvgHeaders({
-				setHeader: (k: string, v: string) => h.set(k, v),
-			} as any);
-			setFallbackCacheHeaders(
-				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
-				cacheSeconds,
-			);
-			return new Response(cached.body, { headers: h });
+		if (resp.status >= 500) {
+			if (cached?.body) {
+				const h = new Headers();
+				setSvgHeaders({
+					setHeader: (k: string, v: string) => h.set(k, v),
+				} as any);
+				setFallbackCacheHeaders(
+					{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
+					cacheSeconds,
+				);
+				return new Response(cached.body, { headers: h });
+			}
+			// Fallback to local generation if upstream 5xx and no cache
+			if (patInfo?.token) {
+				try {
+					const svg = await renderLocalTrophy(
+						username,
+						patInfo.token,
+						url.searchParams,
+					);
+					return new Response(svg, {
+						headers: new Headers({
+							"Content-Type": "image/svg+xml; charset=utf-8",
+							"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+						}),
+					});
+				} catch {
+					// ignore local gen error
+				}
+			}
 		}
 		return svgError(`Upstream trophy returned ${resp.status}`);
 	}

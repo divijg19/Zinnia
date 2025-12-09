@@ -1,3 +1,5 @@
+import { COLORS } from "./theme.ts";
+
 type TrophyConfig = {
 	username: string;
 	theme?: string;
@@ -5,18 +7,21 @@ type TrophyConfig = {
 	columns?: number;
 };
 
-const THEMES: Record<string, { bg: string; fg: string; accent: string }> = {
-	dark: { bg: "#0d1117", fg: "#c9d1d9", accent: "#58a6ff" },
-	light: { bg: "#ffffff", fg: "#24292f", accent: "#0969da" },
-	nord: { bg: "#2e3440", fg: "#eceff4", accent: "#88c0d0" },
-	watchdog: { bg: "#021D4A", fg: "#A9FEF7", accent: "#FE428E" },
-};
-
-function getTheme(theme?: string): { bg: string; fg: string; accent: string } {
-	const selected = THEMES[theme ?? "dark"];
-	if (!selected)
-		return THEMES.dark as { bg: string; fg: string; accent: string };
-	return selected;
+function getTheme(themeName?: string): {
+	bg: string;
+	fg: string;
+	accent: string;
+} {
+	const t = COLORS[themeName ?? "flat"] || COLORS.flat;
+	if (!t) {
+		// Fallback if even flat is missing (should not happen)
+		return { bg: "#fff", fg: "#000", accent: "#000" };
+	}
+	return {
+		bg: t.BACKGROUND,
+		fg: t.TITLE,
+		accent: t.NEXT_RANK_BAR,
+	};
 }
 
 export function renderTrophySVG(cfg: TrophyConfig): string {
@@ -52,16 +57,35 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
     `);
 	}
 
+	// Handle gradient background: "angle,color1,color2" or simple hex
+	let bgDef = "";
+	let bgFill = "";
+	if (bg?.includes(",")) {
+		const parts = bg.split(",");
+		const angle = parseInt(parts[0] || "45", 10) || 45;
+		const p1 = parts[1] || "";
+		const p2 = parts[2] || "";
+		const startColor = p1.startsWith("#") ? p1 : `#${p1}`;
+		const endColor = p2.startsWith("#") ? p2 : `#${p2}`;
+		// Convert angle to x1,y1,x2,y2 approximation
+		const rad = (angle * Math.PI) / 180;
+		const x2 = Math.abs(Math.cos(rad));
+		const y2 = Math.abs(Math.sin(rad));
+		bgDef = `
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="${x2}" y2="${y2}">
+      <stop offset="0%" stop-color="${startColor}" />
+      <stop offset="100%" stop-color="${endColor}" />
+    </linearGradient>`;
+		bgFill = "url(#bgGrad)";
+	} else {
+		bgFill = bg;
+	}
+
 	return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trophy for ${username}">
   <title>Trophies for ${username}</title>
-  <defs>
-    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${bg}" />
-      <stop offset="100%" stop-color="${bg}" />
-    </linearGradient>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#bgGrad)" />
+  <defs>${bgDef}</defs>
+  <rect width="100%" height="100%" fill="${bgFill}" />
 	<g transform="translate(16, 16)">
 		<text x="0" y="24" fill="${fg}" font-size="18" font-family="ui-sans-serif, system-ui" font-weight="600">${
 			title ?? `GitHub Profile Trophies`

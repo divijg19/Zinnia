@@ -13,9 +13,6 @@ export type GithubExceedError = {
 };
 
 export type QueryDefaultResponse<T = unknown> = {
-	data: {
-		data: T;
-		errors?: GithubErrorResponse;
-		message?: string;
-	};
+	data?: T;
+	errors?: GithubError[];
 };

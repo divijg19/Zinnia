@@ -52,9 +52,14 @@ export class Trophy {
 		const nextRankCondition = this.rankConditions.find(
 			(r) => r.rank === nextRank,
 		);
+
+		if (!nextRankCondition || !this.rankCondition) {
+			return 0;
+		}
+
 		const distance =
-			nextRankCondition?.requiredScore - this.rankCondition?.requiredScore;
-		const progress = this.score - this.rankCondition?.requiredScore;
+			nextRankCondition.requiredScore - this.rankCondition.requiredScore;
+		const progress = this.score - this.rankCondition.requiredScore;
 		const result = progress / distance;
 		return result;
 	}
