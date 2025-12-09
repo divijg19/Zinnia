@@ -166,6 +166,7 @@ streak/src/card_helpers.ts
 streak/src/colors.ts
 streak/src/compare.ts
 streak/src/compare_helpers.ts
+streak/src/demo/preview.ts
 streak/src/fetcher.ts
 streak/src/index.ts
 streak/src/lru.ts
