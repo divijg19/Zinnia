@@ -8,6 +8,7 @@ import {
 	writeTrophyCacheWithMeta,
 } from "../../api/_utils";
 import { Card } from "../src/card";
+import { Logger } from "../src/Helpers/Logger.ts";
 import { renderTrophySVG } from "../src/renderer";
 import { GithubApiService } from "../src/Services/GithubApiService";
 import { COLORS, type Theme } from "../src/theme";
@@ -102,6 +103,9 @@ export async function handleWeb(req: Request): Promise<Response> {
 				const theme = url.searchParams.get("theme") || undefined;
 				const title = url.searchParams.get("title") || undefined;
 				const columns = Number(url.searchParams.get("columns") || "4") || 4;
+				Logger.warn(
+					`trophy: local mode - no token available, using stub renderer for ${username}`,
+				);
 				const svg = renderTrophySVG({ username, theme, title, columns });
 				return new Response(svg, {
 					headers: new Headers({
@@ -124,6 +128,9 @@ export async function handleWeb(req: Request): Promise<Response> {
 			});
 		} catch (_e) {
 			// Fallback to stub renderer on error
+			Logger.warn(
+				`trophy: local mode - renderLocalTrophy errored for ${username}, falling back to stub`,
+			);
 			const theme = url.searchParams.get("theme") || undefined;
 			const title = url.searchParams.get("title") || undefined;
 			const columns = Number(url.searchParams.get("columns") || "4") || 4;
@@ -171,7 +178,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 				} as any,
 				cacheSeconds,
 			);
-			return new Response("", { status: 304, headers: resHeaders });
+			// Return the cached SVG body (200) to ensure embedders always receive a full SVG
+			return new Response(cached.body, { status: 200, headers: resHeaders });
 		}
 	}
 
@@ -195,6 +203,9 @@ export async function handleWeb(req: Request): Promise<Response> {
 			setFallbackCacheHeaders(
 				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
 				cacheSeconds,
+			);
+			Logger.warn(
+				`trophy: upstream fetch failed for ${username}; serving cached fallback`,
 			);
 			return new Response(cached.body, { headers: h });
 		}

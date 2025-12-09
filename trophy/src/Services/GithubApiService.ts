@@ -87,14 +87,18 @@ export class GithubApiService extends GithubRepository {
 		try {
 			return await requestGithubData<T>(query, variables, this.token);
 		} catch (error: any) {
-			if (error.cause instanceof ServiceError) {
+			if (error instanceof ServiceError) {
+				Logger.error(error.message);
+				return error;
+			}
+			if (error?.cause instanceof ServiceError) {
 				Logger.error(error.cause.message);
 				return error.cause;
 			}
-			if (error instanceof Error && error.cause) {
-				Logger.error(JSON.stringify(error.cause, null, 2));
+			if (error instanceof Error) {
+				Logger.error(error.message || String(error));
 			} else {
-				Logger.error(error);
+				Logger.error(JSON.stringify(error, null, 2));
 			}
 			return new ServiceError("not found", EServiceKindError.NOT_FOUND);
 		}

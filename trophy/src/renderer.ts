@@ -61,24 +61,38 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
 	let bgDef = "";
 	let bgFill = "";
 	if (bg?.includes(",")) {
-		const parts = bg.split(",");
-		const angle = parseInt(parts[0] || "45", 10) || 45;
-		const p1 = parts[1] || "";
-		const p2 = parts[2] || "";
-		const startColor = p1.startsWith("#") ? p1 : `#${p1}`;
-		const endColor = p2.startsWith("#") ? p2 : `#${p2}`;
-		// Convert angle to x1,y1,x2,y2 approximation
-		const rad = (angle * Math.PI) / 180;
-		const x2 = Math.abs(Math.cos(rad));
-		const y2 = Math.abs(Math.sin(rad));
-		bgDef = `
+		const parts = bg
+			.split(",")
+			.map((p) => p.trim())
+			.filter(Boolean);
+		if (parts.length >= 3) {
+			const angle = parseInt(parts[0] || "45", 10) || 45;
+			const p1 = parts[1] || "";
+			const p2 = parts[2] || "";
+			const normalize = (c: string) => {
+				if (!c) return "";
+				if (c.startsWith("#")) return c;
+				// basic 3/6 hex acceptance
+				if (/^[0-9a-fA-F]{3,6}$/.test(c)) return `#${c}`;
+				return "";
+			};
+			const startColor = normalize(p1) || "#000";
+			const endColor = normalize(p2) || startColor;
+			// Convert angle to x1,y1,x2,y2 approximation
+			const rad = (angle * Math.PI) / 180;
+			const x2 = Math.abs(Math.cos(rad));
+			const y2 = Math.abs(Math.sin(rad));
+			bgDef = `
     <linearGradient id="bgGrad" x1="0" y1="0" x2="${x2}" y2="${y2}">
       <stop offset="0%" stop-color="${startColor}" />
       <stop offset="100%" stop-color="${endColor}" />
     </linearGradient>`;
-		bgFill = "url(#bgGrad)";
+			bgFill = "url(#bgGrad)";
+		} else {
+			bgFill = bg || "#fff";
+		}
 	} else {
-		bgFill = bg;
+		bgFill = bg || "#fff";
 	}
 
 	return `<?xml version="1.0" encoding="UTF-8"?>
