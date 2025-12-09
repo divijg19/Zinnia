@@ -7,8 +7,8 @@ import {
 	getTranslations,
 	normalizeThemeName,
 } from "./card_helpers.js";
-import { THEMES as IMPORTED_THEMES } from "./themes.js";
-import type { Params, Stats, Theme } from "./types_public.js";
+import { THEMES as IMPORTED_THEMES } from "./themes.ts";
+import type { Params, Stats, Theme } from "./types_public.ts";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 let THEMES: Record<string, Theme> = {};

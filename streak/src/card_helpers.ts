@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import type { Translations } from "./types_public.js";
+import type { Translations } from "./types_public.ts";
 
 let _TRANSLATIONS: Record<string, Translations> = {};
 let _translationsLoaded = false;
@@ -34,9 +34,9 @@ function loadTranslationsSync(): Record<string, Translations> {
 		_TRANSLATIONS = (t1 ||
 			t2 ||
 			(m as unknown as Record<string, Translations>)) as Record<
-				string,
-				Translations
-			>;
+			string,
+			Translations
+		>;
 	} catch {
 		_TRANSLATIONS = {};
 	}

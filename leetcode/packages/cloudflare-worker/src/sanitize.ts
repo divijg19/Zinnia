@@ -81,8 +81,7 @@ export function sanitize(config: Record<string, string>): Config {
 		const light = themes[0]?.trim() ?? "";
 		const dark = themes[1]?.trim() ?? "";
 
-		sanitized.theme =
-			themes.length === 1 || !dark ? light : { light, dark };
+		sanitized.theme = themes.length === 1 || !dark ? light : { light, dark };
 	}
 
 	// Handle border

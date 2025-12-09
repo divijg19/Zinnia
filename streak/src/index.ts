@@ -1,32 +1,32 @@
-export { generateCard, generateErrorCard } from "./card.js";
+export { generateCard, generateErrorCard } from "./card.ts";
 export {
 	getExcludingDaysText,
 	getTranslations,
 	normalizeLocaleCode,
 	normalizeThemeName,
-} from "./card_helpers.js";
-export { COLORS } from "./colors.js";
-export { generateDemoSvg } from "./demo/preview.js";
-export type { Stats } from "./stats.js";
-export { getContributionStats, getWeeklyContributionStats } from "./stats.js";
-export { getTelemetry, incrementPngFallback } from "./telemetry.js";
-export { TRANSLATIONS } from "./translations.js";
-export type { Output, Params } from "./types_public.js";
+} from "./card_helpers.ts";
+export { COLORS } from "./colors.ts";
+export { generateDemoSvg } from "./demo/preview.ts";
+export type { Stats } from "./stats.ts";
+export { getContributionStats, getWeeklyContributionStats } from "./stats.ts";
+export { getTelemetry, incrementPngFallback } from "./telemetry.ts";
+export { TRANSLATIONS } from "./translations.ts";
+export type { Output, Params } from "./types_public.ts";
 
 // Public index for the `streak` module. Consumers should import named
 // exports from this file to access the stable public API surface.
-import { generateCard, generateErrorCard } from "./card.js";
-import { convertHexColors, removeAnimations } from "./card_helpers.js";
-import { fetchContributions } from "./fetcher.js";
-import { DefaultLRU } from "./lru.js";
+import { generateCard, generateErrorCard } from "./card.ts";
+import { convertHexColors, removeAnimations } from "./card_helpers.ts";
+import { fetchContributions } from "./fetcher.ts";
+import { DefaultLRU } from "./lru.ts";
 import {
 	getContributionStats,
 	getWeeklyContributionStats,
 	type Stats,
-} from "./stats.js";
-import { incrementPngFallback } from "./telemetry.js";
-import type { ContributionDay } from "./types.js";
-import type { Output, Params } from "./types_public.js";
+} from "./stats.ts";
+import { incrementPngFallback } from "./telemetry.ts";
+import type { ContributionDay } from "./types.ts";
+import type { Output, Params } from "./types_public.ts";
 
 export async function generateOutput(
 	output: string | Stats,
@@ -156,6 +156,6 @@ export async function renderForUser(
 // Prefer named exports for idiomatic TypeScript imports
 // No default export; use named exports `generateOutput` and `renderForUser`.
 
-export { getCache } from "./cache.js";
+export { getCache } from "./cache.ts";
 // Re-export commonly-needed internals for API integration (single-bundle import)
-export { fetchContributions } from "./fetcher.js";
+export { fetchContributions } from "./fetcher.ts";

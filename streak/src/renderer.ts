@@ -1,4 +1,4 @@
-import type { ContributionDay, RenderOptions } from "./types.js";
+import type { ContributionDay, RenderOptions } from "./types.ts";
 
 export function renderSvg(
 	days: ContributionDay[],

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { buildStreakSvg, escapeXml } from "./svg_builder.js";
+import { buildStreakSvg, escapeXml } from "./svg_builder.ts";
 
 // This module exposes a default handler that can be imported by api/streak.ts
 // It delegates to the existing `renderForUser` if available, otherwise it

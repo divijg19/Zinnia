@@ -104,7 +104,10 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
 			if (token && token.trim().length > 0) {
 				// Diagnostic: log chosen key name when using KV-based rotation
 				try {
-					if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
+					if (
+						process.env.NODE_ENV !== "test" &&
+						process.env.TOKENS_DEBUG === "1"
+					) {
 						// eslint-disable-next-line no-console
 						console.info(`[tokens] getGithubPATAsync -> ${k}`);
 					}
@@ -125,8 +128,7 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
  * Enables correct exhaustion marking by key when an API call fails.
  */
 export async function getGithubPATWithKeyAsync(): Promise<
-	| { key: string; token: string }
-	| undefined
+	{ key: string; token: string } | undefined
 > {
 	try {
 		const store = await getPatStore();
@@ -153,11 +155,14 @@ export async function getGithubPATWithKeyAsync(): Promise<
 			const token = process.env[k];
 			if (token && token.trim().length > 0) {
 				try {
-					if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
+					if (
+						process.env.NODE_ENV !== "test" &&
+						process.env.TOKENS_DEBUG === "1"
+					) {
 						// eslint-disable-next-line no-console
 						console.info(`[tokens] getGithubPATWithKeyAsync -> ${k}`);
 					}
-				} catch { }
+				} catch {}
 				return { key: k, token: token.trim() };
 			}
 		}

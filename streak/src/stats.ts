@@ -1,4 +1,4 @@
-import type { ContributionDay } from "./types.js";
+import type { ContributionDay } from "./types.ts";
 
 export type Stats = {
 	mode: string;

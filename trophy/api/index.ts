@@ -21,7 +21,10 @@ function svgError(message: string, cacheSeconds = 60) {
 }
 
 // Trophy handler supports two modes:
-import { getGithubPATWithKeyAsync, markPatExhaustedAsync } from "../../lib/tokens";
+import {
+	getGithubPATWithKeyAsync,
+	markPatExhaustedAsync,
+} from "../../lib/tokens";
 // - Local (Node/TS SVG renderer): ?mode=local
 // - Proxy (default): fetches upstream SVG and returns it for full feature coverage
 export async function handleWeb(req: Request): Promise<Response> {
@@ -79,8 +82,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 			Object.fromEntries(req.headers as any),
 			{
 				setHeader: (k: string, v: string) => resHeaders.set(k, v),
-				status: (_code: number) => { },
-				send: (_b: string) => { },
+				status: (_code: number) => {},
+				send: (_b: string) => {},
 			} as any,
 			cached.body,
 		);
@@ -126,7 +129,9 @@ export async function handleWeb(req: Request): Promise<Response> {
 	if (!resp.ok) {
 		// If upstream rejects due to auth (401/403), mark selected PAT exhausted
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
-			try { await markPatExhaustedAsync(patInfo.key, 300); } catch { }
+			try {
+				await markPatExhaustedAsync(patInfo.key, 300);
+			} catch {}
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500 && cached?.body) {
@@ -152,8 +157,14 @@ export async function handleWeb(req: Request): Promise<Response> {
 	// Detect auth error strings and mark exhausted when applicable (defensive)
 	if (patInfo?.key) {
 		const lc = body.toLowerCase();
-		if (lc.includes("bad credentials") || lc.includes("rate limit") || lc.includes("unauthorized")) {
-			try { await markPatExhaustedAsync(patInfo.key, 300); } catch { }
+		if (
+			lc.includes("bad credentials") ||
+			lc.includes("rate limit") ||
+			lc.includes("unauthorized")
+		) {
+			try {
+				await markPatExhaustedAsync(patInfo.key, 300);
+			} catch {}
 		}
 	}
 	const headers = new Headers();

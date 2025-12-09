@@ -1,4 +1,4 @@
-import type { Stats } from "./stats.js";
+import type { Stats } from "./stats.ts";
 
 export type Params = Partial<{
 	type: "svg" | "png" | "json";

@@ -1,5 +1,5 @@
 // Auto-generated and normalized
-export const THEMES: import("./types.js").Themes = {
+export const THEMES: import("./types.ts").Themes = {
 	default: {
 		background: "#FFFEFE",
 		border: "#E4E2E2",

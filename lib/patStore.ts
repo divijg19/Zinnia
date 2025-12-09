@@ -170,11 +170,12 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 		const IORedis = require("ioredis");
 		const client = new IORedis(redisUrl);
 		return {
-			incrCounter: async (key: string) => Number(await client.incr(key || RR_COUNTER_KEY)),
+			incrCounter: async (key: string) =>
+				Number(await client.incr(key || RR_COUNTER_KEY)),
 			isExhausted: async (patKey: string) =>
 				Boolean(
 					(await client.get(`${EX_PREFIX}${patKey}`)) ||
-					(await client.get(`ex:${patKey}`)),
+						(await client.get(`ex:${patKey}`)),
 				),
 			setExhausted: async (patKey: string, ttlSeconds = 300) => {
 				await client.set(

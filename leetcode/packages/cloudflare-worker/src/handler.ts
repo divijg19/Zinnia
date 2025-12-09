@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Config, Generator } from "../../core/src";
-import demo from "./demo"
+import demo from "./demo";
 import Header from "./headers";
 import { sanitize } from "./sanitize";
 

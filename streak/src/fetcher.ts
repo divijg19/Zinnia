@@ -1,5 +1,8 @@
-import { getGithubPATWithKeyAsync, markPatExhaustedAsync } from "../../lib/tokens";
-import type { ContributionDay } from "./types.js";
+import {
+	getGithubPATWithKeyAsync,
+	markPatExhaustedAsync,
+} from "../../lib/tokens";
+import type { ContributionDay } from "./types.ts";
 
 // Build GraphQL query for a year's contribution calendar and optional fields
 const yearQuery = (year: number) =>
