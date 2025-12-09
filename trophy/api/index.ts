@@ -145,7 +145,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 
 	const body = await resp.text();
 	// Write cache with meta (ETag placeholder) then return fresh body
-	await writeTrophyCacheWithMeta(upstream.toString(), body, "");
+	// Use a 3-day (259200s) internal TTL to survive upstream outages, regardless of the user's requested cacheSeconds.
+	// This decouples "how long the browser caches" from "how long we keep a backup".
+	const internalTTL = Math.max(cacheSeconds, 259200);
+	await writeTrophyCacheWithMeta(upstream.toString(), body, "", internalTTL);
 	// Detect auth error strings and mark exhausted when applicable (defensive)
 	if (patInfo?.key) {
 		const lc = body.toLowerCase();

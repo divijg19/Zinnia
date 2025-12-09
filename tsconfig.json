@@ -1,7 +1,10 @@
 {
 	"compilerOptions": {
 		// Environment setup & latest features
-		"lib": ["ESNext", "DOM"],
+		"lib": [
+			"ESNext",
+			"DOM"
+		],
 		"target": "ESNext",
 		"module": "Preserve",
 		"moduleDetection": "force",
@@ -14,7 +17,10 @@
 		"verbatimModuleSyntax": false,
 		"noEmit": true,
 		"baseUrl": ".",
-		"typeRoots": ["./types", "./node_modules/@types"],
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
+		],
 		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
@@ -33,6 +39,7 @@
 		"stats/api/**/*.ts",
 		"trophy/src/renderer.ts",
 		"trophy/api/**/*.ts",
+		"streak/src/**/*.ts",
 		"streak/api/**/*.ts",
 		"leetcode/api/**/*.ts",
 		"github/api/**/*.ts",

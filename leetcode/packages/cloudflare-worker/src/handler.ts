@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Config, Generator } from "../../core/src";
-import demo from "./demo";
+import demo from "./demo"
 import Header from "./headers";
 import { sanitize } from "./sanitize";
 
@@ -26,13 +26,12 @@ async function generate(
 			status: 400,
 		});
 	}
-	console.log("sanitized config", JSON.stringify(sanitized, null, 4));
 
-	const cache_time = parseInt(config.cache || "300", 10) ?? 300;
+	const parsed_cache_time = parseInt(config.cache || "300", 10);
+	const cache_time = !Number.isNaN(parsed_cache_time) ? parsed_cache_time : 300;
 	const cache = await caches.open("leetcode");
 
 	const generator = new Generator(cache, header);
-	generator.verbose = true;
 
 	const headers = new Header().add("cors", "svg");
 	headers.set("cache-control", `public, max-age=${cache_time}`);

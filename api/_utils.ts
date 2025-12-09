@@ -153,8 +153,9 @@ export async function writeTrophyCacheWithMeta(
 	url: string,
 	body: string,
 	etag: string,
+	ttlSeconds?: number,
 ) {
-	return cache.writeCacheWithMeta("trophy", url, body, etag);
+	return cache.writeCacheWithMeta("trophy", url, body, etag, ttlSeconds);
 }
 
 export { cache as genericCache };

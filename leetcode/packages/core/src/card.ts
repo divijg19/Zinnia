@@ -68,7 +68,6 @@ export class Generator {
 	): Promise<FetchedData> {
 		this.log("fetching", username);
 		const cache_key = `https://leetcode-stats-card.local/data-${username.toLowerCase()}-us`;
-		console.log("cache_key", cache_key);
 
 		if (cache_key in this.fetches) {
 			return this.fetches[cache_key];

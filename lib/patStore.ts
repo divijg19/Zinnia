@@ -16,7 +16,9 @@ type PatStore = {
 };
 
 const IN_MEMORY_STORE: PatStore = (() => {
-	let counter = 0;
+	// Seed with a random offset between 0 and 1000 to avoid bias toward PAT_1
+	// in serverless environments where memory resets on cold start.
+	let counter = Math.floor(Math.random() * 1000);
 	const exhausted = new Map<string, number>();
 	return {
 		incrCounter: async (_k: string) => ++counter,

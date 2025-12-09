@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
 	ActivityExtension,
 	AnimationExtension,
@@ -66,8 +65,8 @@ export function sanitize(config: Record<string, string>): Config {
 	const sanitized: Config = {
 		username: config.username.trim(),
 		site: "us",
-		width: parseInt(config.width?.trim(), 10) || 500,
-		height: parseInt(config.height?.trim(), 10) || 200,
+		width: parseInt(config.width?.trim() ?? "0", 10) || 500,
+		height: parseInt(config.height?.trim() ?? "0", 10) || 200,
 		css: [],
 		extensions: handleExtension(config),
 		font: normalize(config.font?.trim() || "baloo_2"),
@@ -79,10 +78,11 @@ export function sanitize(config: Record<string, string>): Config {
 	// Handle theme
 	if (config.theme?.trim()) {
 		const themes = config.theme.trim().split(",");
+		const light = themes[0]?.trim() ?? "";
+		const dark = themes[1]?.trim() ?? "";
+
 		sanitized.theme =
-			themes.length === 1 || themes[1] === ""
-				? themes[0].trim()
-				: { light: themes[0].trim(), dark: themes[1].trim() };
+			themes.length === 1 || !dark ? light : { light, dark };
 	}
 
 	// Handle border

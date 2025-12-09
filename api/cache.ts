@@ -85,6 +85,7 @@ export async function writeCacheWithMeta(
 	url: string,
 	body: string,
 	etag: string,
+	ttlSeconds?: number,
 ): Promise<void> {
 	try {
 		const dir = serviceCacheDir(service);
@@ -95,7 +96,7 @@ export async function writeCacheWithMeta(
 		const file = path.join(dir, `${key}.svg`);
 		const metaFile = path.join(dir, `${key}.meta.json`);
 		await fs.writeFile(file, body, "utf8");
-		const meta = { etag, ts: Date.now() };
+		const meta = { etag, ts: Date.now(), ttl: ttlSeconds };
 		await fs.writeFile(metaFile, JSON.stringify(meta), "utf8");
 	} catch (_e) {
 		// best-effort

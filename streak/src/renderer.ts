@@ -31,6 +31,7 @@ export function renderSvg(
 	const startY = 36;
 	for (let i = 0; i < lastDays.length; i++) {
 		const d = lastDays[i];
+		if (!d) continue;
 		const intensity = Math.min(1, d.count / 5);
 		// deterministic color ramp (greenish)
 		const r = Math.round(11 + 60 * (1 - intensity));

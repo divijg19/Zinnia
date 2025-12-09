@@ -34,9 +34,9 @@ function loadTranslationsSync(): Record<string, Translations> {
 		_TRANSLATIONS = (t1 ||
 			t2 ||
 			(m as unknown as Record<string, Translations>)) as Record<
-			string,
-			Translations
-		>;
+				string,
+				Translations
+			>;
 	} catch {
 		_TRANSLATIONS = {};
 	}
@@ -50,7 +50,7 @@ export function normalizeLocaleCode(localeCode: string): string {
 	);
 	if (!m) return "en";
 	let [, language, script, region] = m as string[];
-	language = language.toLowerCase();
+	language = (language || "en").toLowerCase();
 	script = script
 		? script.charAt(0).toUpperCase() + script.slice(1).toLowerCase()
 		: "";
@@ -64,7 +64,7 @@ export function getTranslations(localeCode: string): Translations {
 	const tmap = translations as Record<string, Translations>;
 	let entry: unknown = tmap[normalized];
 	if (!entry) {
-		const langOnly = normalized.split("_")[0];
+		const langOnly = normalized.split("_")[0] ?? "en";
 		entry = tmap[langOnly];
 	}
 	if (typeof entry === "string") {

@@ -139,16 +139,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					if (out.status) res.status(out.status);
 
 					// Persist to local cache (try best-effort)
+					// Use a minimum 3-day retention for internal cache to survive GitHub/Upstream outages
+					const internalTTL = Math.max(
+						resolveCacheSeconds(
+							url,
+							["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+							86400,
+						),
+						259200,
+					);
+
 					try {
-						await cacheLocal.set(
-							localKey,
-							out.body,
-							resolveCacheSeconds(
-								url,
-								["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-								86400,
-							),
-						);
+						await cacheLocal.set(localKey, out.body, internalTTL);
 					} catch {
 						// ignore cache write failures
 					}
@@ -297,7 +299,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		try {
 			resp = await fetchWithRetries(
 				upstream.toString(),
-				3,
+				4,
 				200,
 				cachedMeta?.etag,
 			);
@@ -313,7 +315,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						// ignore telemetry failures
 					}
 					setSvgHeaders(res);
-					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -340,7 +342,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (resp.status === 304) {
 			if (cachedMeta?.body) {
 				setSvgHeaders(res);
-				setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+				setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
 				if (
 					setEtagAndMaybeSend304(
 						req.headers as Record<string, unknown>,
@@ -387,11 +389,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			setCacheHeaders(res, cacheSeconds);
 			try {
 				const etag = cache.computeEtag(body);
+				// Use a 3-day (259200s) internal TTL to survive upstream outages
+				const internalTTL = Math.max(cacheSeconds, 259200);
 				await cache.writeCacheWithMeta(
 					"streak",
 					upstream.toString(),
 					body,
 					etag,
+					internalTTL,
 				);
 			} catch (_e) {
 				// ignore cache write failures

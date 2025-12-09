@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		try {
 			resp = await fetchWithRetries(
 				upstream.toString(),
-				3,
+				4,
 				200,
 				cachedMeta?.etag,
 			);
@@ -123,7 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await readTrophyCache(upstream.toString());
 				if (cached) {
 					setSvgHeaders(res);
-					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -152,7 +152,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					cachedMeta ?? (await readTrophyCacheWithMeta(upstream.toString()));
 				if (cached?.body) {
 					setSvgHeaders(res);
-					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -175,7 +175,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await readTrophyCache(upstream.toString());
 				if (cached) {
 					setSvgHeaders(res);
-					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 86400));
+					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -237,7 +237,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (ct.includes("image/svg")) {
 			try {
 				const etag = computeEtag(body);
-				await writeTrophyCacheWithMeta(upstream.toString(), body, etag);
+				// Use a 3-day (259200s) internal TTL to survive upstream outages
+				const internalTTL = Math.max(cacheSeconds, 259200);
+				await writeTrophyCacheWithMeta(
+					upstream.toString(),
+					body,
+					etag,
+					internalTTL,
+				);
 			} catch (_e) {
 				// ignore
 			}
