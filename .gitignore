@@ -188,3 +188,4 @@ deno.lock
 *.sh
 vercel_token
 benchmarks
+!streak/src/demo/preview.ts
