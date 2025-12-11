@@ -6,7 +6,6 @@
 .github/workflows/ci.yml
 .github/workflows/refresh.yml
 .gitignore
-.husky/.gitignore
 .husky/pre-commit
 .nvmrc
 .vercelignore
@@ -19,6 +18,7 @@ api/leetcode.ts
 api/stats.ts
 api/streak.ts
 api/top-langs.ts
+api/trophy-renderer-static.ts
 api/trophy-renderer-wrapper.ts
 api/trophy.ts
 biome.json

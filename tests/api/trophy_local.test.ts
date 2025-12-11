@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { describe, expect, it, vi } from "vitest";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
@@ -16,12 +17,12 @@ function makeRes() {
 	} as unknown as Record<string, unknown>;
 }
 
-describe("Trophy handler local renderer (watchdog)", () => {
+describe("Trophy handler local renderer (mode=local)", () => {
 	afterEach(() => {
 		restoreMocks();
 	});
 
-	it("renders locally when theme=watchdog and returns SVG", async () => {
+	it("renders locally when mode=local and returns SVG", async () => {
 		const localSvg = "<svg>LOCAL</svg>";
 		vi.resetModules();
 		// Mock api utils lightly
@@ -32,10 +33,13 @@ describe("Trophy handler local renderer (watchdog)", () => {
 		}));
 
 		const trophy = (await import("../../api/trophy.js")).default;
-		const req = makeReq("/api/trophy?username=testuser&theme=watchdog");
+		const req = makeReq("/api/trophy?username=testuser&mode=local");
 		const res = makeRes();
 
-		await trophy(req, res);
+		await trophy(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
 
 		expect(res.setHeader).toHaveBeenCalledWith(
 			"Content-Type",

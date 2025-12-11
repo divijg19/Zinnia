@@ -14,7 +14,7 @@ import {
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "./_utils.js";
-import loadRenderer from "./trophy-renderer-wrapper.js";
+import renderer from "./trophy-renderer-static.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -41,13 +41,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// If theme=watchdog, render locally to support our custom theme
 		filterThemeParam(url);
 		const theme = (url.searchParams.get("theme") || "").toLowerCase();
-		if (theme === "watchdog") {
+		const mode = (url.searchParams.get("mode") || "").toLowerCase();
+		// If explicitly requested, render locally (mode=local). Otherwise proxy upstream.
+		if (mode === "local") {
 			const title = url.searchParams.get("title") || undefined;
 			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
 			let svgOut: string;
 			try {
-				const renderer = await loadRenderer();
-				if (!renderer) throw new Error("renderer not found after load");
 				svgOut = renderer({ username, theme, title, columns });
 			} catch (err: unknown) {
 				try {
@@ -75,7 +75,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					svgOut,
 				)
 			) {
-				// Send the full SVG body with 200 so embedders receive valid content
 				res.status(200);
 				return res.send(svgOut);
 			}
@@ -238,7 +237,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Normal successful SVG passthrough. Persist a copy for later fallbacks.
 		setSvgHeaders(res);
 
-		// If upstream returned a 404 and the body is an SVG, forward it
 		// If upstream returned a 404 and the body is an SVG, forward it
 		// but return 200 so embed consumers (e.g., GitHub README images)
 		// will display the badge instead of showing an error icon.

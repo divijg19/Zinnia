@@ -360,7 +360,7 @@ export const COLORS: { [name: string]: Theme } = {
 		DEFAULT_RANK_TEXT: "#3A3A3A",
 	},
 	watchdog: {
-		BACKGROUND: "45,520806,021D4A",
+		BACKGROUND: "45,#520806,#021D4A",
 		TITLE: "#FE428E",
 		ICON_CIRCLE: "#F8D847",
 		TEXT: "#A9FEF7",
