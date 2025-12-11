@@ -243,8 +243,11 @@ tests/streak/stats_tz.test.ts
 tests/streak/structural.test.ts
 tests/streak/svg-compare.test.ts
 tests/streak/translations.test.ts
+tests/trophy/__snapshots__/renderer.snapshot.test.ts.snap
+tests/trophy/renderer.snapshot.test.ts
 tests/vitest.setup.ts
 tmp/check-cache.ts
+tmp/checkThemes.ts
 tmp/run-render.ts
 tmp/run-smoke.ts
 tmp/run-streak-smoke.ts

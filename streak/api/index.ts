@@ -62,9 +62,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					| undefined;
 				let getCache:
 					| (() => Promise<{
-							get: (k: string) => Promise<string | null>;
-							set: (k: string, v: string, ttl: number) => Promise<void>;
-					  }>)
+						get: (k: string) => Promise<string | null>;
+						set: (k: string, v: string, ttl: number) => Promise<void>;
+					}>)
 					| undefined;
 				let THEMES: Record<string, Record<string, string>> | undefined;
 				if (coreMod) {
@@ -268,8 +268,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				const cacheSeconds =
 					parseInt(
 						process.env.STREAK_CACHE_SECONDS ||
-							process.env.CACHE_SECONDS ||
-							"300",
+						process.env.CACHE_SECONDS ||
+						"300",
 						10,
 					) || 300;
 				try {
@@ -290,6 +290,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				if (inm2 && inm2Norm === etag2) {
 					// Client's ETag matches recent SVG — return the SVG body with 200
 					// to avoid empty 304 responses that break embedders.
+					res.setHeader("X-Cache-Behavior", "cached-body-on-match");
+					res.setHeader("X-Upstream-Status", "local-render");
 					res.status(200);
 					return res.send(svg);
 				}

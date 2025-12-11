@@ -127,6 +127,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
+					res.setHeader("X-Cache-Behavior", "cached-body-on-match");
+					res.setHeader("X-Upstream-Status", "network-failure");
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -158,6 +160,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached?.body) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
+					res.setHeader("X-Cache-Behavior", "cached-body-on-match");
+					res.setHeader("X-Upstream-Status", String(resp.status));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
@@ -183,6 +187,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
+					res.setHeader("X-Cache-Behavior", "cached-body-on-match");
+					res.setHeader("X-Upstream-Status", String(resp.status));
 					if (
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
