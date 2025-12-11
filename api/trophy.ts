@@ -7,19 +7,53 @@ import { filterThemeParam, getUsername } from "../lib/params.js";
 let _renderTrophySVG: ((cfg: any) => string) | null = null;
 const loadRenderer = async () => {
 	if (_renderTrophySVG) return _renderTrophySVG;
+
 	const tryImport = async (base: string) => {
-		try {
-			return await import(`${base}.js`);
-		} catch (_e) {
-			return await import(`${base}.ts`);
+		// Try .js first (compiled), then .ts (source) and also index variants.
+		const candidates = [
+			`${base}.js`,
+			`${base}.ts`,
+			`${base}/index.js`,
+			`${base}/index.ts`,
+		];
+		for (const c of candidates) {
+			try {
+				return await import(c);
+			} catch {
+				/* try next */
+			}
 		}
+		throw new Error(`no module found for ${base}`);
 	};
+
+	// Prefer importing the renderer source directly (exports `renderTrophySVG`).
+	// Only attempt compiled artifacts as a last resort and ensure we extract
+	// the actual `renderTrophySVG` function (some compiled entrypoints export
+	// an HTTP handler as the default instead).
+	const bases = ["../trophy/src/renderer", "../trophy/api/src/renderer"];
+
 	let mod: any = null;
-	try {
-		mod = await tryImport("../trophy/dist/index");
-	} catch {
-		mod = await tryImport("../trophy/src/renderer");
+	for (const b of bases) {
+		try {
+			mod = await tryImport(b);
+			if (mod) break;
+		} catch (_e) {
+			// ignore and try next candidate
+		}
 	}
+
+	// As a last resort, try the compiled API bundle but only use it if it
+	// exposes `renderTrophySVG` explicitly (many bundles export an HTTP
+	// handler as default which is not usable here).
+	if (!mod) {
+		try {
+			const maybe = await tryImport("../trophy/api/dist/index");
+			if (maybe?.renderTrophySVG) mod = maybe;
+		} catch (_e) {
+			/* ignore */
+		}
+	}
+	if (!mod) throw new Error("trophy renderer module not found");
 	_renderTrophySVG = mod.renderTrophySVG || mod.default || mod;
 	return _renderTrophySVG;
 };
