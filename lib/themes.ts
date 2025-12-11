@@ -1,5 +1,5 @@
 export const WATCHDOG = {
-	background: "45,520806,021D4A",
+	background: "45,#520806,#021D4A",
 	border: "E4E2E2",
 	stroke: "E4E2E2",
 	ring: "FE428E",

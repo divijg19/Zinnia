@@ -27,17 +27,8 @@ function normalizeHex(hex?: string | null): string | null {
 	if (!hex) return null;
 	const s = String(hex).trim();
 	if (s.startsWith("url(") || s.startsWith("linear-gradient(")) return s;
-	if (s.includes(",")) {
-		const parts = s.split(",").map((p) => p.trim());
-		if (parts.length >= 3 && !Number.isNaN(Number(parts[0]))) {
-			const angle = parts[0];
-			const raw1 = parts[1] ?? "";
-			const raw2 = parts[2] ?? "";
-			const p1 = raw1.startsWith("#") ? raw1 : `#${raw1}`;
-			const p2 = raw2.startsWith("#") ? raw2 : `#${raw2}`;
-			return `${angle},${p1},${p2}`;
-		}
-	}
+	// if it's already a gradient-like token, return as-is (we'll parse later)
+	if (s.includes(",")) return s;
 	const noHash = s.replace(/^#/, "");
 	if (/^[0-9a-fA-F]{3}$/.test(noHash)) {
 		return `#${noHash
@@ -50,10 +41,32 @@ function normalizeHex(hex?: string | null): string | null {
 	return s;
 }
 
+function parseBackground(bgRaw?: string | null) {
+	const raw = String(bgRaw ?? "").trim();
+	if (!raw) return { defs: "", fill: "#ffffff" };
+
+	// gradient format: "angle,#rrggbb,#rrggbb" or "angle,rrggbb,rrggbb"
+	const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+	if (parts.length >= 3 && !Number.isNaN(Number(parts[0]))) {
+		const angle = Number(parts[0]) % 360;
+		const raw1 = parts[1] ?? "";
+		const raw2 = parts[2] ?? "";
+		const c1 = raw1.startsWith("#") ? raw1 : normalizeHex(raw1) ?? "#000000";
+		const c2 = raw2.startsWith("#") ? raw2 : normalizeHex(raw2) ?? "#000000";
+		const defs = `<defs><linearGradient id="bgGrad" gradientTransform="rotate(${angle})"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>`;
+		return { defs, fill: `url(#bgGrad)` };
+	}
+
+	const color = normalizeHex(raw) ?? "#ffffff";
+	return { defs: "", fill: color };
+}
+
 export function renderTrophySVG(cfg: TrophyConfig): string {
 	const { username, theme, title, columns = 4 } = cfg;
 	const { bg, fg, accent } = getTheme(theme);
-	const bgNorm = normalizeHex(bg) ?? "#ffffff";
+	const bgParsed = parseBackground(bg);
+	const bgNorm = bgParsed.fill ?? "#ffffff";
+	const bgDef = bgParsed.defs ?? "";
 	const fgNorm = normalizeHex(fg) ?? "#000000";
 	const accentNorm = normalizeHex(accent) ?? "#888888";
 
@@ -86,22 +99,7 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
 	}
 
 	// Background handling: either gradient string "angle,#hex,#hex" or simple color
-	let bgDef = "";
-	let bgFill = "";
-	if (bgNorm.includes(",")) {
-		const parts = bgNorm.split(",").map((p) => p.trim());
-		if (parts.length >= 3 && !Number.isNaN(Number(parts[0]))) {
-			const angle = Number(parts[0]) % 360;
-			const startColor = parts[1];
-			const endColor = parts[2];
-			bgDef = `<defs><linearGradient id="bgGrad" gradientTransform="rotate(${angle})"><stop offset="0%" stop-color="${startColor}"/><stop offset="100%" stop-color="${endColor}"/></linearGradient></defs>`;
-			bgFill = `url(#bgGrad)`;
-		} else {
-			bgFill = bgNorm;
-		}
-	} else {
-		bgFill = bgNorm;
-	}
+	const bgFill = bgNorm;
 
 	const safeTitle = String(title ?? `GitHub Profile Trophies`)
 		.replace(/&/g, "&amp;")

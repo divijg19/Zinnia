@@ -189,3 +189,13 @@ deno.lock
 vercel_token
 benchmarks
 !streak/src/demo/preview.ts
+
+# local & tooling
+tmp/
+.husky/
+*.husky
+.husky/*
+.husky
+.DS_Store
+node_modules/
+dist/
