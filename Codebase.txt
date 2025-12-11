@@ -278,6 +278,7 @@ trophy/src/user_info.ts
 trophy/src/utils.ts
 trophy_body.svg
 trophy_headers.txt
+trophy_prod.svg
 tsconfig.json
 types/ambient.d.ts
 types/globals.d.ts
