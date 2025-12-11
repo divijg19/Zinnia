@@ -7,12 +7,20 @@ type TrophyConfig = {
 	columns?: number;
 };
 
-function getTheme(themeName?: string): { bg: string; fg: string; accent: string } {
+function getTheme(themeName?: string): {
+	bg: string;
+	fg: string;
+	accent: string;
+} {
 	const t = COLORS[themeName ?? "flat"] || COLORS.flat;
 	if (!t) {
 		return { bg: "#ffffff", fg: "#000000", accent: "#000000" };
 	}
-	return { bg: String(t.BACKGROUND), fg: String(t.TITLE), accent: String(t.NEXT_RANK_BAR) };
+	return {
+		bg: String(t.BACKGROUND),
+		fg: String(t.TITLE),
+		accent: String(t.NEXT_RANK_BAR),
+	};
 }
 
 function normalizeHex(hex?: string | null): string | null {
@@ -32,7 +40,11 @@ function normalizeHex(hex?: string | null): string | null {
 	}
 	const noHash = s.replace(/^#/, "");
 	if (/^[0-9a-fA-F]{3}$/.test(noHash)) {
-		return `#${noHash.split("").map((c) => c + c).join("").toLowerCase()}`;
+		return `#${noHash
+			.split("")
+			.map((c) => c + c)
+			.join("")
+			.toLowerCase()}`;
 	}
 	if (/^[0-9a-fA-F]{6}$/.test(noHash)) return `#${noHash.toLowerCase()}`;
 	return s;
@@ -91,7 +103,9 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
 		bgFill = bgNorm;
 	}
 
-	const safeTitle = String(title ?? `GitHub Profile Trophies`).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+	const safeTitle = String(title ?? `GitHub Profile Trophies`)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;");
 
 	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trophy for ${username}">\n  <title>Trophies for ${username}</title>\n  ${bgDef}\n  <rect width="100%" height="100%" fill="${bgFill}" />\n\t<g transform="translate(16, 16)">\n\t\t<text x="0" y="24" fill="${fgNorm}" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="600">${safeTitle}</text>\n\t    <text x="0" y="44" fill="${fgNorm}" font-size="12" font-family="Segoe UI, Arial, sans-serif" opacity="0.8">${username}</text>\n  </g>\n  ${trophies.join("\n")}\n</svg>`;
 }

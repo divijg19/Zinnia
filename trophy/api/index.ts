@@ -168,8 +168,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 			Object.fromEntries(req.headers as any),
 			{
 				setHeader: (k: string, v: string) => resHeaders.set(k, v),
-				status: (_code: number) => { },
-				send: (_b: string) => { },
+				status: (_code: number) => {},
+				send: (_b: string) => {},
 			} as any,
 			cached.body,
 		);
@@ -239,7 +239,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch { }
+			} catch {}
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500) {
@@ -292,7 +292,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch { }
+			} catch {}
 		}
 	}
 	const headers = new Headers();
