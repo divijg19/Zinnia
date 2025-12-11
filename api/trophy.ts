@@ -14,7 +14,7 @@ import {
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "./_utils.js";
-import renderTrophySVG from "./trophy-renderer-wrapper.js";
+import loadRenderer from "./trophy-renderer-wrapper.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -46,9 +46,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
 			let svgOut: string;
 			try {
-				svgOut = renderTrophySVG({ username, theme, title, columns });
-			} catch (err) {
-				console.error("trophy: renderer threw", err);
+				const renderer = await loadRenderer();
+				if (!renderer) throw new Error("renderer not found after load");
+				svgOut = renderer({ username, theme, title, columns });
+			} catch (err: unknown) {
+				try {
+					console.error(
+						"trophy: renderer threw",
+						err instanceof Error ? err.message : String(err),
+						err instanceof Error ? err.stack : undefined,
+					);
+				} catch (_) {
+					/* ignore logging errors */
+				}
 				return sendErrorSvg(
 					req,
 					res,
