@@ -1,7 +1,29 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
-import { renderTrophySVG } from "../trophy/src/renderer.js";
+
+// Lazy-load the trophy renderer so runtime bundlers can resolve either
+// a compiled `dist` artifact or the local `src` during development.
+let _renderTrophySVG: ((cfg: any) => string) | null = null;
+const loadRenderer = async () => {
+	if (_renderTrophySVG) return _renderTrophySVG;
+	const tryImport = async (base: string) => {
+		try {
+			return await import(`${base}.js`);
+		} catch (_e) {
+			return await import(`${base}.ts`);
+		}
+	};
+	let mod: any = null;
+	try {
+		mod = await tryImport("../trophy/dist/index");
+	} catch {
+		mod = await tryImport("../trophy/src/renderer");
+	}
+	_renderTrophySVG = mod.renderTrophySVG || mod.default || mod;
+	return _renderTrophySVG;
+};
+
 import {
 	computeEtag,
 	readTrophyCache,
@@ -43,7 +65,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (theme === "watchdog") {
 			const title = url.searchParams.get("title") || undefined;
 			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
-			const svgOut = renderTrophySVG({ username, theme, title, columns });
+			let renderer: any;
+			try {
+				renderer = await loadRenderer();
+				if (!renderer) throw new Error("renderer not found");
+			} catch (e) {
+				console.error("trophy: failed to load renderer", e);
+				return sendErrorSvg(
+					req,
+					res,
+					"Trophy renderer not available",
+					"TROPHY_INTERNAL",
+				);
+			}
+			const svgOut = renderer({ username, theme, title, columns });
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
 			if (

@@ -246,14 +246,6 @@ tests/streak/translations.test.ts
 tests/trophy/__snapshots__/renderer.snapshot.test.ts.snap
 tests/trophy/renderer.snapshot.test.ts
 tests/vitest.setup.ts
-tmp/check-cache.ts
-tmp/checkThemes.ts
-tmp/run-render.ts
-tmp/run-smoke.ts
-tmp/run-streak-smoke.ts
-tmp/seed-cache.ts
-tmp/streak-demo.svg
-tmp/trophy-smoke.svg
 trophy/CONTRIBUTING.md
 trophy/LICENSE
 trophy/README.md
@@ -283,6 +275,8 @@ trophy/src/trophy.ts
 trophy/src/trophy_list.ts
 trophy/src/user_info.ts
 trophy/src/utils.ts
+trophy_body.svg
+trophy_headers.txt
 tsconfig.json
 types/ambient.d.ts
 types/globals.d.ts
