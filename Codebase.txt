@@ -19,6 +19,7 @@ api/leetcode.ts
 api/stats.ts
 api/streak.ts
 api/top-langs.ts
+api/trophy-renderer-wrapper.ts
 api/trophy.ts
 biome.json
 bun.lock
