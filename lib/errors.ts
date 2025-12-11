@@ -60,7 +60,13 @@ export function sendErrorSvg(
 		// ignore header failures
 	}
 	res.status(200);
-	if (setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body))
-		return res.send("");
+	if (
+		setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
+	) {
+		// Ensure embedders receive a full SVG body (some clients treat 304 without
+		// body as an error). Reset status to 200 and send the body.
+		res.status(200);
+		return res.send(body);
+	}
 	return res.send(body);
 }

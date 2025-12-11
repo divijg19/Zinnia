@@ -244,7 +244,11 @@ tests/streak/structural.test.ts
 tests/streak/svg-compare.test.ts
 tests/streak/translations.test.ts
 tests/vitest.setup.ts
+tmp/check-cache.ts
 tmp/run-render.ts
+tmp/run-smoke.ts
+tmp/run-streak-smoke.ts
+tmp/seed-cache.ts
 tmp/streak-demo.svg
 tmp/trophy-smoke.svg
 trophy/CONTRIBUTING.md

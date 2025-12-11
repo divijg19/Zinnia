@@ -110,8 +110,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 								res,
 								cached,
 							)
-						)
-							return res.send("");
+						) {
+							// Send cached body with 200 so embedders get valid SVG
+							res.status(200);
+							return res.send(cached);
+						}
 						setSvgHeaders(res);
 						setFallbackCacheHeaders(
 							res,
@@ -166,8 +169,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 								res,
 								String(out.body),
 							)
-						)
-							return res.send("");
+						) {
+							res.status(200);
+							return res.send(String(out.body));
+						}
 					} catch {
 						// ignore etag failures
 					}
@@ -322,8 +327,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res,
 							cached,
 						)
-					)
-						return res.send("");
+					) {
+						res.status(200);
+						return res.send(cached);
+					}
 					return res.send(cached);
 				}
 			} catch (_e2) {
@@ -349,8 +356,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						res,
 						String(cachedMeta.body),
 					)
-				)
-					return res.send("");
+				) {
+					res.status(200);
+					return res.send(cachedMeta.body);
+				}
 				return res.send(cachedMeta.body);
 			}
 			// fall through to reading body
@@ -379,8 +388,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						res,
 						String(body),
 					)
-				)
-					return res.send("");
+				) {
+					res.status(200);
+					return res.send(body);
+				}
 				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
 			}
@@ -407,8 +418,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res,
 					String(body),
 				)
-			)
-				return res.send("");
+			) {
+				res.status(200);
+				return res.send(body);
+			}
 			return res.send(body);
 		}
 		// record upstream error metric and expose upstream status for diagnosis

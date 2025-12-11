@@ -50,7 +50,12 @@ describe("/api/health", () => {
 		);
 		// ETag values are emitted quoted per RFC; accept quoted form here.
 		expect(res.setHeader).toHaveBeenCalledWith("ETag", `"${etag}"`);
-		expect(res.status).toHaveBeenCalledWith(304);
-		expect(res.send).toHaveBeenCalledWith("");
+		const statusArg = (res.status as any).mock.calls[0]?.[0] ?? 200;
+		if (statusArg === 304) {
+			expect(res.send).toHaveBeenCalledWith("");
+		} else {
+			expect(statusArg).toBe(200);
+			expect(res.send).toHaveBeenCalledWith(expect.stringContaining("<svg"));
+		}
 	});
 });

@@ -141,8 +141,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res,
 					svgOut,
 				)
-			)
-				return res.send("");
+			) {
+				// Some embedders treat a 304 without a body as an error. Send
+				// the full SVG body with 200 so embedders reliably render it.
+				res.status(200);
+				return res.send(svgOut);
+			}
 			return res.send(svgOut);
 		} catch (e) {
 			const error = e as Error;

@@ -1,5 +1,14 @@
 import crypto from "node:crypto";
-import type { VercelResponse } from "@vercel/node";
+
+// Minimal response-like interface used by handlers across runtimes (Vercel,
+// mocked ResponseLike in streak, lightweight Response wrappers). This keeps
+// header-setting code generic so helper functions can be reused without
+// importing heavy runtime types in packages that define their own Response
+// shapes.
+export type ResponseLike = {
+	setHeader: (name: string, value: string) => unknown;
+	status?: (code: number) => unknown;
+};
 
 /**
  * Resolve cache seconds using a per-request ?cache override, env fallbacks, and safe bounds.
@@ -30,7 +39,7 @@ export function resolveCacheSeconds(
 /**
  * Apply a standard Cache-Control policy for SVG endpoints.
  */
-export function setCacheHeaders(res: VercelResponse, seconds: number) {
+export function setCacheHeaders(res: ResponseLike, seconds: number) {
 	res.setHeader(
 		"Cache-Control",
 		`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
@@ -40,7 +49,7 @@ export function setCacheHeaders(res: VercelResponse, seconds: number) {
 /**
  * Ensure SVG response headers are correct for GitHub embeds and proxies.
  */
-export function setSvgHeaders(res: VercelResponse) {
+export function setSvgHeaders(res: ResponseLike) {
 	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	res.setHeader("X-Content-Type-Options", "nosniff");
 	// Ensure caches and proxies vary on encoding so compressed responses are
@@ -52,7 +61,7 @@ export function setSvgHeaders(res: VercelResponse) {
  * Use for short-lived/transient responses (errors, upstream 404s, local fallbacks).
  * Keeps TTL small so clients revalidate quickly when upstream recovers.
  */
-export function setShortCacheHeaders(res: VercelResponse, seconds = 60) {
+export function setShortCacheHeaders(res: ResponseLike, seconds = 60) {
 	const s = Math.max(0, Math.min(seconds, 3600));
 	res.setHeader(
 		"Cache-Control",
@@ -67,7 +76,7 @@ export function setShortCacheHeaders(res: VercelResponse, seconds = 60) {
  * serve longer to reduce visible outages, but mark them as fallbacks so
  * clients and observability can detect degraded responses.
  */
-export function setFallbackCacheHeaders(res: VercelResponse, seconds: number) {
+export function setFallbackCacheHeaders(res: ResponseLike, seconds: number) {
 	const s = Math.max(60, Math.min(seconds, 604800));
 	// Allow a reasonable stale-while-revalidate so caches can serve old copy
 	// while revalidating upstream.
@@ -166,7 +175,7 @@ export { cache as genericCache };
  */
 export function setEtagAndMaybeSend304(
 	reqHeaders: Record<string, unknown>,
-	res: VercelResponse,
+	res: ResponseLike,
 	body: string,
 ): boolean {
 	const etag = computeEtag(body);
@@ -182,8 +191,14 @@ export function setEtagAndMaybeSend304(
 		// Normalize: remove weak prefix W/, strip surrounding quotes, then compare.
 		const norm = String(inmValue).replace(/^W\//i, "").replace(/^"|"$/g, "");
 		if (norm === etag) {
-			res.status(304);
-			// It is typical to omit body for 304
+			// Prefer to signal a 304-match by setting status if available.
+			// Some runtimes (mini ResponseLike) may not implement `status`.
+			try {
+				if (typeof res.status === "function") res.status(304);
+			} catch {
+				// ignore
+			}
+			// Caller may choose to send a full body instead of an empty 304.
 			return true;
 		}
 	}

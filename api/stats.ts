@@ -72,8 +72,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		res.status(200);
 		if (
 			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-		)
-			return res.send("");
+		) {
+			// Some embedders treat a 304 without body as an error. Send the
+			// full body with 200 to ensure badges render correctly.
+			res.status(200);
+			return res.send(body);
+		}
 		return res.send(body);
 	} catch (_err) {
 		return sendErrorSvg(req, res, "stats: internal error", "STATS_INTERNAL");

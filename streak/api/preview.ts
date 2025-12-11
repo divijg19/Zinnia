@@ -1,4 +1,6 @@
 // Serve a demo preview SVG using the TypeScript demo preview module.
+
+import { setShortCacheHeaders, setSvgHeaders } from "../../api/_utils.js";
 import type { RequestLike, ResponseLike } from "../src/server_types";
 
 export default async function handler(req: RequestLike, res: ResponseLike) {
@@ -21,9 +23,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 		const gen = previewMod.generateDemoSvg ?? previewMod.default;
 		const svg = await gen(paramsObj);
 
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
 		// short cache for demo
-		res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60");
+		setShortCacheHeaders(res, 60);
 		res.status(200);
 		return res.send(svg);
 	} catch (e: unknown) {

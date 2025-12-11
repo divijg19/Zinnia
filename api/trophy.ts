@@ -52,8 +52,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res,
 					svgOut,
 				)
-			)
-				return res.send("");
+			) {
+				// Send the full SVG body with 200 so embedders receive valid content
+				res.status(200);
+				return res.send(svgOut);
+			}
 			return res.send(svgOut);
 		}
 		// Read existing cached metadata (etag) to send If-None-Match.
@@ -130,8 +133,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res,
 							cached,
 						)
-					)
-						return res.send("");
+					) {
+						res.status(200);
+						return res.send(cached);
+					}
 					return res.send(cached);
 				}
 			} catch (_e2) {
@@ -159,8 +164,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res,
 							String(cached.body),
 						)
-					)
-						return res.send("");
+					) {
+						res.status(200);
+						return res.send(cached.body);
+					}
 					return res.send(cached.body);
 				}
 			} catch (_e) {
@@ -182,8 +189,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res,
 							cached,
 						)
-					)
-						return res.send("");
+					) {
+						res.status(200);
+						return res.send(cached);
+					}
 					return res.send(cached);
 				}
 			} catch (_e) {
@@ -217,8 +226,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						res,
 						String(body),
 					)
-				)
-					return res.send("");
+				) {
+					res.status(200);
+					return res.send(body);
+				}
 				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
 			}
@@ -254,8 +265,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res,
 					String(body),
 				)
-			)
-				return res.send("");
+			) {
+				res.status(200);
+				return res.send(body);
+			}
 			return res.send(body);
 		}
 		return sendErrorSvg(

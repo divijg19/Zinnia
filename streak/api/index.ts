@@ -1,16 +1,19 @@
 // Streak proxy: fetch SVG from upstream service so we stay Node-only in this monorepo
 // and keep embeds compatible. Supports both ?user= and ?username=.
+
+import {
+	setCacheHeaders,
+	setShortCacheHeaders,
+	setSvgHeaders,
+} from "../../api/_utils.js";
 import type { RequestLike, ResponseLike } from "../src/server_types";
 import type { Stats } from "../src/stats";
 import type { ContributionDay } from "../src/types";
 
 function sendSvgError(res: ResponseLike, message: string, cacheSeconds = 60) {
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
-	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-	res.setHeader(
-		"Cache-Control",
-		`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=300`,
-	);
+	setSvgHeaders(res);
+	setShortCacheHeaders(res, cacheSeconds);
 	res.status(200);
 	return res.send(body);
 }
@@ -223,12 +226,14 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					).toString();
 					const inmNorm = inm.replace(/^W\//i, "").replace(/^"|"$/g, "");
 					if (inm && inmNorm === etag) {
-						res.status(304);
-						return res.send("");
+						// Client's ETag matches cached payload — return the cached
+						// SVG body with 200 so embedders receive valid content.
+						res.status(200);
+						return res.send(cached);
 					}
 
 					// Cache hit: return cached payload
-					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+					setSvgHeaders(res);
 					res.setHeader("X-Cache-Status", "hit");
 					res.status(200);
 					return res.send(cached);
@@ -283,15 +288,14 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				).toString();
 				const inm2Norm = inm2.replace(/^W\//i, "").replace(/^"|"$/g, "");
 				if (inm2 && inm2Norm === etag2) {
-					res.status(304);
-					return res.send("");
+					// Client's ETag matches recent SVG — return the SVG body with 200
+					// to avoid empty 304 responses that break embedders.
+					res.status(200);
+					return res.send(svg);
 				}
 
-				res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-				res.setHeader(
-					"Cache-Control",
-					`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-				);
+				setSvgHeaders(res);
+				setCacheHeaders(res, cacheSeconds);
 				res.setHeader("X-Cache-Status", "miss");
 				res.status(200);
 				return res.send(svg);
@@ -346,12 +350,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 		if (!resp.ok) {
 			const body = await resp.text();
 			if (ct.includes("image/svg")) {
-				res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+				setSvgHeaders(res);
 				// Short cache so consumers recheck upstream soon
-				res.setHeader(
-					"Cache-Control",
-					`public, max-age=${Math.min(cacheSeconds, 60)}, s-maxage=${Math.min(cacheSeconds, 60)}`,
-				);
+				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
 				res.setHeader("X-Upstream-Status", String(resp.status));
 				// bridged 404: do not set extra debug headers to keep responses clean
 				res.status(200);
@@ -360,11 +361,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 			return sendSvgError(res, `Upstream streak returned ${resp.status}`);
 		}
 		const body = await resp.text();
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-		res.setHeader(
-			"Cache-Control",
-			`public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
-		);
+		setSvgHeaders(res);
+		setCacheHeaders(res, cacheSeconds);
 		return res.send(body);
 	} catch (_err) {
 		return sendSvgError(res, "streak: internal error");

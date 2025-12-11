@@ -1,3 +1,4 @@
+import { setShortCacheHeaders, setSvgHeaders } from "../../api/_utils.js";
 import { createHeaders } from "../packages/cloudflare-worker/src/headers.js";
 import { sanitize } from "../packages/cloudflare-worker/src/sanitize.js";
 import { Generator } from "../packages/core/src/card.js";
@@ -110,7 +111,8 @@ export default async function handler(req: any, res: any) {
 		const text = await webResp.text();
 		return res.send(text);
 	} catch (_err) {
-		res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+		setSvgHeaders(res);
+		setShortCacheHeaders(res, 60);
 		res.status(200);
 		return res.send(
 			`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="leetcode: internal error"><title>leetcode: internal error</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">leetcode: internal error</text></svg>`,

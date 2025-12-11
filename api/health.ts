@@ -33,8 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const body = svg(text);
 		if (
 			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-		)
-			return res.send("");
+		) {
+			// Send full body with 200 to avoid embedders treating empty 304 as error
+			res.status(200);
+			return res.send(body);
+		}
 		return res.send(body);
 	} catch (_e) {
 		setSvgHeaders(res);
@@ -44,8 +47,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const body = svg("OK");
 		if (
 			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-		)
-			return res.send("");
+		) {
+			res.status(200);
+			return res.send(body);
+		}
 		return res.send(body);
 	}
 }
