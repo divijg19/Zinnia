@@ -19,7 +19,6 @@ api/stats.ts
 api/streak.ts
 api/top-langs.ts
 api/trophy-renderer-static.ts
-api/trophy-renderer-wrapper.ts
 api/trophy.ts
 biome.json
 bun.lock
@@ -276,9 +275,6 @@ trophy/src/trophy.ts
 trophy/src/trophy_list.ts
 trophy/src/user_info.ts
 trophy/src/utils.ts
-trophy_body.svg
-trophy_headers.txt
-trophy_prod.svg
 tsconfig.json
 types/ambient.d.ts
 types/globals.d.ts
