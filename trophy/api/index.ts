@@ -305,6 +305,27 @@ export async function handleWeb(req: Request): Promise<Response> {
 		clearTimeout(timeout);
 	}
 
+	// Basic diagnostics: log upstream status and content-type for troubleshooting
+	try {
+		const ctDbg = resp.headers.get("content-type") || "";
+		console.warn(`trophy: upstream=${upstream.toString()} status=${resp.status} content-type=${ctDbg}`);
+	} catch { }
+
+	// If upstream returned a non-OK but content-type is SVG, bridge it so embedders render the SVG
+	try {
+		const ct = resp.headers.get("content-type") || "";
+		if (!resp.ok && ct.toLowerCase().includes("image/svg")) {
+			const bodyText = await resp.text();
+			const headers = new Headers();
+			setSvgHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any);
+			setShortCacheHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any, Math.min(cacheSeconds, 60));
+			headers.set("X-Upstream-Status", String(resp.status));
+			return new Response(bodyText, { status: 200, headers });
+		}
+	} catch (e) {
+		console.warn("trophy: error while attempting to bridge non-OK SVG", String(e));
+	}
+
 	if (!resp.ok) {
 		// If upstream rejects due to auth (401/403), mark selected PAT exhausted
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
