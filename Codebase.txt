@@ -91,6 +91,7 @@ lib/http.ts
 lib/params.ts
 lib/patStore.ts
 lib/telemetry.ts
+lib/theme-helpers.ts
 lib/themes.ts
 lib/tokens.ts
 package.json
@@ -198,13 +199,14 @@ tests/api/api_utils.test.ts
 tests/api/health.test.ts
 tests/api/status/up.test.ts
 tests/api/streak.test.ts
-tests/api/streak_gradients.test.ts
 tests/api/streak_index_cache.test.ts
-tests/api/streak_radial_gradients.test.ts
 tests/api/trophy_404.test.ts
 tests/api/trophy_client_304.test.ts
 tests/api/trophy_handler.test.ts
 tests/api/trophy_local.test.ts
+tests/api/watchdog_embed.test.ts
+tests/api/watchdog_gradient_preserve.test.ts
+tests/api/watchdog_metadata.test.ts
 tests/lib/patStore.prefix.test.ts
 tests/lib/patStore.upstash.test.ts
 tests/lib/tokens.async.fallback.test.ts
@@ -233,6 +235,7 @@ tests/stats/utils.test.js
 tests/streak/bundle_shape.test.ts
 tests/streak/compare.integration.test.ts
 tests/streak/compare.test.ts
+tests/streak/gradients.test.ts
 tests/streak/lru.test.ts
 tests/streak/options.test.ts
 tests/streak/public_api.test.ts
@@ -243,6 +246,7 @@ tests/streak/stats_tz.test.ts
 tests/streak/structural.test.ts
 tests/streak/svg-compare.test.ts
 tests/streak/translations.test.ts
+tests/streak/watchdog_gradient.test.ts
 tests/trophy/__snapshots__/renderer.snapshot.test.ts.snap
 tests/trophy/renderer.snapshot.test.ts
 tests/vitest.setup.ts

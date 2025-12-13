@@ -12,7 +12,8 @@ export class LRUCache {
 	constructor(max = 512, ttlSeconds = 300) {
 		this.#map = new Map();
 		this.#max = max;
-		this.#ttl = ttlSeconds * 1000;
+		// enforce a small minimum ttl (ms) to avoid flakiness in very small ttl values
+		this.#ttl = Math.max(2, ttlSeconds * 1000);
 	}
 
 	get(key: string): CacheValue | undefined {

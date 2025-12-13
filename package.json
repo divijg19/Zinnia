@@ -27,7 +27,7 @@
 		"@vitest/coverage-v8": "^4.0.15",
 		"esbuild": "^0.27.1",
 		"typescript": "^5.9.3",
-		"vercel": "^50.0.0",
+		"vercel": "^50.0.1",
 		"vitest": "^4.0.15",
 		"prettier": "^3.7.4",
 		"@prettier/plugin-php": "^0.24.0",
@@ -45,6 +45,7 @@
 		"emoji-name-map": "^2.0.3",
 		"github-username-regex": "^1.0.0",
 		"word-wrap": "^1.2.5",
-		"sharp": "^0.34.5"
+		"sharp": "^0.34.5",
+		"linkedom": "^0.18.12"
 	}
 }

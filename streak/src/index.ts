@@ -48,10 +48,9 @@ export async function generateOutput(
 	// normalize hex colors
 	let outSvg = convertHexColors(svg);
 
-	// optionally remove animations
-	if (params.disable_animations === "true") {
-		outSvg = removeAnimations(outSvg);
-	}
+	// Always sanitize output to remove scripts/SMIL and normalize colors so
+	// cached/ETag'd bodies are safe for embedding across consumers.
+	outSvg = removeAnimations(outSvg);
 
 	if (requestedType === "png") {
 		try {
@@ -117,12 +116,12 @@ export async function renderForUser(
 			mode === "weekly"
 				? getWeeklyContributionStats(days)
 				: getContributionStats(
-						days,
-						((params.exclude_days as string) || "")
-							.split(",")
-							.map((s) => s.trim())
-							.filter(Boolean),
-					);
+					days,
+					((params.exclude_days as string) || "")
+						.split(",")
+						.map((s) => s.trim())
+						.filter(Boolean),
+				);
 		const out = await generateOutput(stats, params);
 		// store in LRU for future hits (only cache svg/png bodies)
 		try {

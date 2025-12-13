@@ -15,7 +15,7 @@ export function mockApiUtilsFactory({
 	readSpy?: any;
 	computeEtag?: (b: string) => string;
 } = {}) {
-	const writeImpl = writeSpy ?? vi.fn(async () => {});
+	const writeImpl = writeSpy ?? vi.fn(async () => { });
 	const readImpl = readSpy ?? vi.fn(async () => readBody);
 	const readMetaImpl = vi.fn(async () =>
 		readMeta
@@ -66,11 +66,6 @@ export function mockApiUtilsFactory({
 				"light",
 				"dark",
 				"onedark",
-				"dracula",
-				"radical",
-				"tokyonight",
-				"merko",
-				"github_dark",
 			]),
 			filterThemeParam: (url: URL, key = "theme") => {
 				const raw = (url as unknown as URL).searchParams.get(key);

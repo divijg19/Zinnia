@@ -32,9 +32,8 @@ describe("streak/api/index handler (TS renderer + cache)", () => {
 
 		await handler(req, res);
 
-		expect(headerValue(res, "Content-Type")).toBe(
-			"image/svg+xml; charset=utf-8",
-		);
+		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
+		assertSvgHeadersOnRes(res);
 		// Accept either an exact cached hit or a generated SVG fallback
 		expect(res.send).toHaveBeenCalled();
 		const cacheStatus = headerValue(res, "X-Cache-Status");
