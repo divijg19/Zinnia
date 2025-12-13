@@ -33,7 +33,13 @@ async function loadTrophyModule(): Promise<any> {
 	throw new Error("Trophy module not found (tried dist and src paths)");
 }
 
-function svgError(message: string, cacheSeconds = 60) {
+// Default cache: 48 hours (in seconds) unless overridden via env
+const DEFAULT_TROPHY_CACHE = parseInt(process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "172800", 10) || 172800;
+const TROPHY_FETCH_RETRY_COUNT = parseInt(process.env.TROPHY_FETCH_RETRY_COUNT || "3", 10) || 3;
+const TROPHY_FETCH_RETRY_DELAY_MS = parseInt(process.env.TROPHY_FETCH_RETRY_DELAY_MS || "2000", 10) || 2000;
+const TROPHY_FETCH_TIMEOUT_MS = parseInt(process.env.TROPHY_FETCH_TIMEOUT_MS || "10000", 10) || 10000;
+
+function svgError(message: string, cacheSeconds = DEFAULT_TROPHY_CACHE) {
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
 	return new Response(body, {
 		status: 200,
@@ -256,29 +262,54 @@ export async function handleWeb(req: Request): Promise<Response> {
 		}
 	}
 
-	// Upstream fetch with timeout protection
-	const ctrl = new AbortController();
-	const timeout = setTimeout(() => ctrl.abort("timeout"), 10_000);
-	let resp: Response;
-	try {
-		resp = await fetch(upstream.toString(), {
-			headers: { "User-Agent": "zinnia/1.0 (+trophy)" },
-			signal: ctrl.signal,
-		});
-	} catch (_e) {
-		clearTimeout(timeout);
+	// Upstream fetch with retry + timeout protection
+	let resp: Response | undefined;
+	let lastErr: unknown;
+	for (let attempt = 0; attempt < TROPHY_FETCH_RETRY_COUNT; attempt++) {
+		const ctrl = new AbortController();
+		const timeout = setTimeout(() => ctrl.abort("timeout"), TROPHY_FETCH_TIMEOUT_MS);
+		try {
+			resp = await fetch(upstream.toString(), {
+				headers: { "User-Agent": "zinnia/1.0 (+trophy)" },
+				signal: ctrl.signal,
+			});
+			clearTimeout(timeout);
+			// If we received a successful response, stop retrying
+			if (resp.ok) break;
+			// If response is server error or rate-limit temporary, attempt retry
+			if (resp.status >= 500 || resp.status === 429) {
+				lastErr = `status ${resp.status}`;
+				// continue to retry after delay
+			} else {
+				// non-retriable status (4xx other than 429) — stop retrying
+				break;
+			}
+		} catch (e) {
+			lastErr = e;
+			clearTimeout(timeout);
+			// continue to retry
+		}
+
+		if (attempt < TROPHY_FETCH_RETRY_COUNT - 1) {
+			await new Promise((r) => setTimeout(r, TROPHY_FETCH_RETRY_DELAY_MS));
+		}
+	}
+
+	// If fetch ended with exception and no response, handle fallback
+	if (!resp) {
 		// Serve cached last-known-good if present
 		if (cached?.body) {
 			const h = new Headers();
 			setSvgHeaders({
 				setHeader: (k: string, v: string) => h.set(k, v),
 			} as any);
+			// Use longer fallback TTL when serving last-known-good
 			setFallbackCacheHeaders(
 				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
-				cacheSeconds,
+				Math.max(cacheSeconds, 3600),
 			);
 			console.warn(
-				`trophy: upstream fetch failed for ${username}; serving cached fallback`,
+				`trophy: upstream fetch failed for ${username}; serving cached fallback: ${String(lastErr)}`,
 			);
 			return new Response(cached.body, { headers: h });
 		}
@@ -301,8 +332,6 @@ export async function handleWeb(req: Request): Promise<Response> {
 			}
 		}
 		return svgError("Upstream trophy fetch failed");
-	} finally {
-		clearTimeout(timeout);
 	}
 
 	// Basic diagnostics: log upstream status and content-type for troubleshooting
@@ -318,7 +347,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 			const bodyText = await resp.text();
 			const headers = new Headers();
 			setSvgHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any);
-			setShortCacheHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any, Math.min(cacheSeconds, 60));
+			// respect configured default cache instead of forcing 60s
+			setShortCacheHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any, Math.min(cacheSeconds, DEFAULT_TROPHY_CACHE));
 			headers.set("X-Upstream-Status", String(resp.status));
 			return new Response(bodyText, { status: 200, headers });
 		}
