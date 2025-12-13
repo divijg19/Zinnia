@@ -7,12 +7,31 @@ import {
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "../../api/_utils";
-import { Card } from "../src/card";
-import { Logger } from "../src/Helpers/Logger.ts";
-import { renderTrophySVG } from "../src/renderer";
-import { GithubApiService } from "../src/Services/GithubApiService";
-import { COLORS, type Theme } from "../src/theme";
-import type { UserInfo } from "../src/user_info";
+import {
+	getGithubPATWithKeyAsync,
+	markPatExhaustedAsync,
+} from "../../lib/tokens";
+
+// Dynamically load the trophy module (prefer dist JS, fall back to src)
+async function loadTrophyModule(): Promise<any> {
+	const candidates = [
+		new URL("../trophy/dist/index.js", import.meta.url).href,
+		new URL("../trophy/dist/renderer.js", import.meta.url).href,
+		new URL("../trophy/src/renderer.js", import.meta.url).href,
+		new URL("../trophy/src/renderer.ts", import.meta.url).href,
+		new URL("../trophy/src/index.js", import.meta.url).href,
+		new URL("../trophy/src/index.ts", import.meta.url).href,
+	];
+	for (const p of candidates) {
+		try {
+			const mod = await import(p);
+			return mod;
+		} catch {
+			// try next
+		}
+	}
+	throw new Error("Trophy module not found (tried dist and src paths)");
+}
 
 function svgError(message: string, cacheSeconds = 60) {
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
@@ -30,15 +49,25 @@ async function renderLocalTrophy(
 	token: string,
 	params: URLSearchParams,
 ): Promise<string> {
+	const mod = await loadTrophyModule();
+	const GithubApiService =
+		mod.GithubApiService ??
+		mod.default?.GithubApiService ??
+		mod.Services?.GithubApiService;
+	const Card = mod.Card ?? mod.default?.Card;
+	const COLORS = mod.COLORS ?? mod.default?.COLORS;
+
+	if (!GithubApiService || !Card || !COLORS)
+		throw new Error("trophy runtime API incomplete");
+
 	const service = new GithubApiService(token);
 	const userInfoOrError = await service.requestUserInfo(username);
-
 	if (userInfoOrError instanceof Error) {
 		throw userInfoOrError;
 	}
 
 	const themeName = params.get("theme") || "flat";
-	const theme = (COLORS[themeName] || COLORS.flat) as Theme;
+	const theme = COLORS[themeName] || COLORS.flat;
 
 	const titles = (params.get("title") || "").split(",").filter(Boolean);
 	const ranks = (params.get("rank") || "").split(",").filter(Boolean);
@@ -54,21 +83,17 @@ async function renderLocalTrophy(
 		ranks,
 		column,
 		row,
-		110, // panelSize default
+		110,
 		marginW,
 		marginH,
 		noBg,
 		noFrame,
 	);
 
-	return card.render(userInfoOrError as UserInfo, theme);
+	return card.render(userInfoOrError, theme);
 }
 
 // Trophy handler supports two modes:
-import {
-	getGithubPATWithKeyAsync,
-	markPatExhaustedAsync,
-} from "../../lib/tokens";
 // - Local (Node/TS SVG renderer): ?mode=local
 // - Proxy (default): fetches upstream SVG and returns it for full feature coverage
 export async function handleWeb(req: Request): Promise<Response> {
@@ -77,7 +102,6 @@ export async function handleWeb(req: Request): Promise<Response> {
 	if (!username) {
 		return svgError("Missing ?username=...");
 	}
-
 	const mode = (url.searchParams.get("mode") || "proxy").toLowerCase();
 	const cacheSeconds =
 		parseInt(
@@ -103,10 +127,38 @@ export async function handleWeb(req: Request): Promise<Response> {
 				const theme = url.searchParams.get("theme") || undefined;
 				const title = url.searchParams.get("title") || undefined;
 				const columns = Number(url.searchParams.get("columns") || "4") || 4;
-				Logger.warn(
-					`trophy: local mode - no token available, using stub renderer for ${username}`,
-				);
-				const svg = renderTrophySVG({ username, theme, title, columns });
+				// load runtime renderer for stub generation
+				try {
+					const mod = await loadTrophyModule();
+					const renderTrophySVG =
+						mod.renderTrophySVG ?? mod.default?.renderTrophySVG;
+					const Logger = mod.Logger ?? mod.default?.Logger;
+					if (Logger?.warn)
+						Logger.warn(
+							`trophy: local mode - no token available, using stub renderer for ${username}`,
+						);
+					if (renderTrophySVG) {
+						const svg = renderTrophySVG({ username, theme, title, columns });
+						return new Response(svg, {
+							headers: new Headers({
+								"Content-Type": "image/svg+xml; charset=utf-8",
+								"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+							}),
+						});
+					}
+				} catch {
+					// fall through to simple stub below
+				}
+				// Fallback simple stub
+				try {
+					const mod = await loadTrophyModule();
+					const Logger = mod.Logger ?? mod.default?.Logger;
+					if (Logger?.warn)
+						Logger.warn(
+							`trophy: local mode - no token available, using stub renderer for ${username}`,
+						);
+				} catch { }
+				const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60"><rect width="100%" height="100%" fill="#111827"/></svg>`;
 				return new Response(svg, {
 					headers: new Headers({
 						"Content-Type": "image/svg+xml; charset=utf-8",
@@ -117,7 +169,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 
 			const svg = await renderLocalTrophy(
 				username,
-				patInfo.token,
+				patInfo?.token ?? "",
 				url.searchParams,
 			);
 			return new Response(svg, {
@@ -128,13 +180,32 @@ export async function handleWeb(req: Request): Promise<Response> {
 			});
 		} catch (_e) {
 			// Fallback to stub renderer on error
-			Logger.warn(
-				`trophy: local mode - renderLocalTrophy errored for ${username}, falling back to stub`,
-			);
-			const theme = url.searchParams.get("theme") || undefined;
-			const title = url.searchParams.get("title") || undefined;
-			const columns = Number(url.searchParams.get("columns") || "4") || 4;
-			const svg = renderTrophySVG({ username, theme, title, columns });
+			try {
+				const mod = await loadTrophyModule();
+				const Logger = mod.Logger ?? mod.default?.Logger;
+				if (Logger?.warn)
+					Logger.warn(
+						`trophy: local mode - renderLocalTrophy errored for ${username}, falling back to stub`,
+					);
+				const renderTrophySVG =
+					mod.renderTrophySVG ?? mod.default?.renderTrophySVG;
+				const theme = url.searchParams.get("theme") || undefined;
+				const title = url.searchParams.get("title") || undefined;
+				const columns = Number(url.searchParams.get("columns") || "4") || 4;
+				if (renderTrophySVG) {
+					const svg = renderTrophySVG({ username, theme, title, columns });
+					return new Response(svg, {
+						headers: new Headers({
+							"Content-Type": "image/svg+xml; charset=utf-8",
+							"Cache-Control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=86400`,
+						}),
+					});
+				}
+			} catch {
+				// ignore
+			}
+			// simple fallback stub
+			const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60"><rect width="100%" height="100%" fill="#111827"/></svg>`;
 			return new Response(svg, {
 				headers: new Headers({
 					"Content-Type": "image/svg+xml; charset=utf-8",
@@ -145,7 +216,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 	}
 
 	// Default: Proxy to upstream for rich/complete rendering with cache fallback
-	const upstream = new URL("https://github-profile-trophy.vercel.app/");
+	const upstream = new URL("https://zinnia-rho.vercel.app/");
 	for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 
 	if (patInfo) {
@@ -168,10 +239,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 			Object.fromEntries(req.headers as any),
 			{
 				setHeader: (k: string, v: string) => resHeaders.set(k, v),
-				status: (_code: number) => {},
-				send: (_b: string) => {},
+				status: (_code: number) => { },
+				send: (_b: string) => { },
 			} as any,
-			cached.body,
+			cached.body ?? "",
 		);
 		if (did304) {
 			setFallbackCacheHeaders(
@@ -206,7 +277,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 				{ setHeader: (k: string, v: string) => h.set(k, v) } as any,
 				cacheSeconds,
 			);
-			Logger.warn(
+			console.warn(
 				`trophy: upstream fetch failed for ${username}; serving cached fallback`,
 			);
 			return new Response(cached.body, { headers: h });
@@ -216,7 +287,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 			try {
 				const svg = await renderLocalTrophy(
 					username,
-					patInfo.token,
+					patInfo?.token ?? "",
 					url.searchParams,
 				);
 				return new Response(svg, {
@@ -239,7 +310,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch {}
+			} catch { }
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500) {
@@ -259,7 +330,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 				try {
 					const svg = await renderLocalTrophy(
 						username,
-						patInfo.token,
+						patInfo?.token ?? "",
 						url.searchParams,
 					);
 					return new Response(svg, {
@@ -292,7 +363,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch {}
+			} catch { }
 		}
 	}
 	const headers = new Headers();

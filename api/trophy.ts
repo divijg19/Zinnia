@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"UNKNOWN",
 			);
 		}
-		const upstream = new URL("https://github-profile-trophy.vercel.app/");
+		const upstream = new URL("https://zinnia-rho.vercel.app/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 		const cacheSeconds = resolveCacheSeconds(
 			url,
@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
 			let svgOut: string;
 			try {
-				svgOut = renderer({ username, theme, title, columns });
+				svgOut = await renderer({ username, theme, title, columns });
 			} catch (err: unknown) {
 				try {
 					console.error(
