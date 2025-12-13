@@ -11,6 +11,21 @@ import type { Stats } from "../src/stats";
 import type { ContributionDay } from "../src/types";
 
 function sendSvgError(res: ResponseLike, message: string, cacheSeconds = 60) {
+	// Attempt to render a themed error card using local renderer if available
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		const cardMod = require("../src/card");
+		if (cardMod && typeof cardMod.generateErrorCard === "function") {
+			const body = cardMod.generateErrorCard(message, {});
+			setSvgHeaders(res);
+			setShortCacheHeaders(res, cacheSeconds);
+			res.status(200);
+			return res.send(body);
+		}
+	} catch {
+		// ignore and fall back to simple static SVG
+	}
+
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
 	setSvgHeaders(res);
 	setShortCacheHeaders(res, cacheSeconds);
@@ -33,8 +48,11 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 		const useTs = !(_useTsEnv === "0" || _useTsEnv === "false");
 		if (useTs) {
 			try {
-				// Try to import a bundled `streak/dist/index.js` first (prod),
-				// then fall back to local source `streak/src` for dev.
+				// If STREAK_USE_TS is explicitly enabled (`"1"` or `"true"`),
+				// prefer local source imports so tests and dev mocks take effect.
+				const explicitUseTs =
+					_useTsEnv === "1" || String(_useTsEnv).toLowerCase() === "true";
+
 				const tryImport = async (base: string) => {
 					try {
 						return await import(`${base}.js`);
@@ -42,11 +60,16 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						return await import(`${base}.ts`);
 					}
 				};
-				let coreMod: unknown;
-				try {
-					coreMod = await tryImport("../dist/index");
-				} catch {
-					coreMod = null;
+
+				let coreMod: unknown = null;
+				// Prefer source modules when explicitly requested (STREAK_USE_TS=1),
+				// otherwise try the bundled `dist` first for production behavior.
+				if (!explicitUseTs) {
+					try {
+						coreMod = await tryImport("../dist/index");
+					} catch {
+						coreMod = null;
+					}
 				}
 				let fetchContributions:
 					| ((user: string) => Promise<ContributionDay[]>)
@@ -57,14 +80,12 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				let getWeeklyContributionStats:
 					| ((days: ContributionDay[]) => Stats)
 					| undefined;
-				let generateCard:
-					| ((stats: Stats, params: Record<string, string>) => string)
-					| undefined;
+				// `generateOutput` is preferred; individual `generateCard` is not used here.
 				let getCache:
 					| (() => Promise<{
-							get: (k: string) => Promise<string | null>;
-							set: (k: string, v: string, ttl: number) => Promise<void>;
-					  }>)
+						get: (k: string) => Promise<string | null>;
+						set: (k: string, v: string, ttl: number) => Promise<void>;
+					}>)
 					| undefined;
 				let THEMES: Record<string, Record<string, string>> | undefined;
 				if (coreMod) {
@@ -84,11 +105,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 							getWeeklyContributionStats = c.getWeeklyContributionStats as (
 								days: ContributionDay[],
 							) => Stats;
-						if (typeof c.generateCard === "function")
-							generateCard = c.generateCard as (
-								stats: Stats,
-								params: Record<string, string>,
-							) => string;
 						if (typeof c.getCache === "function")
 							getCache = c.getCache as () => Promise<{
 								get: (k: string) => Promise<string | null>;
@@ -110,11 +126,12 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					} catch {
 						THEMES = {};
 					}
-				} else {
-					// fall back to per-module imports for dev
+				}
+
+				if (!coreMod) {
+					// fall back to per-module imports for dev (or when explicitly asked)
 					const fetcherMod = await tryImport("../src/fetcher");
 					const statsMod = await tryImport("../src/stats");
-					const cardMod = await tryImport("../src/card");
 					const themesMod = await tryImport("../src/themes");
 					const cacheMod = await tryImport("../src/cache");
 					if (fetcherMod && typeof fetcherMod === "object") {
@@ -135,14 +152,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 								days: ContributionDay[],
 							) => Stats;
 					}
-					if (cardMod && typeof cardMod === "object") {
-						const cmod = cardMod as Record<string, unknown>;
-						if (typeof cmod.generateCard === "function")
-							generateCard = cmod.generateCard as (
-								stats: Stats,
-								params: Record<string, string>,
-							) => string;
-					}
+					// `generateCard` may exist in older bundles but we prefer `generateOutput`.
 					if (cacheMod && typeof cacheMod === "object") {
 						const cacheM = cacheMod as Record<string, unknown>;
 						if (typeof cacheM.getCache === "function")
@@ -186,10 +196,27 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				try {
 					const themeName = (url.searchParams.get("theme") || "").toString();
 					if (themeName && THEMES && THEMES[themeName]) {
-						for (const [k, v] of Object.entries(
-							THEMES[themeName] as Record<string, string>,
-						)) {
-							if (!(k in paramsObj)) paramsObj[k] = v as string;
+						// normalize legacy snake_case keys using shared helper
+						// eslint-disable-next-line @typescript-eslint/no-var-requires
+						const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
+						const normalized = normalizeThemeKeys(
+							THEMES[themeName] as Record<string, string | undefined>,
+						);
+						// If the theme provides a gradient background token (comma-separated),
+						// explicitly preserve it on `background` so downstream rendering
+						// receives the raw token instead of only individual solid-color keys.
+						try {
+							const bgVal = normalized.background;
+							if (typeof bgVal === "string" && bgVal.includes(",")) {
+								if (!("background" in paramsObj)) paramsObj.background = bgVal;
+							}
+						} catch {
+							// ignore
+						}
+						for (const [k, v] of Object.entries(normalized)) {
+							// Do not overwrite an explicit background param if present.
+							if (k === "background") continue;
+							if (!(k in paramsObj) && v !== undefined) paramsObj[k] = v as string;
 						}
 					}
 				} catch (_e) {
@@ -259,48 +286,80 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					stats = getContributionStats(days as ContributionDay[]);
 				}
 
-				if (typeof generateCard !== "function") {
-					throw new Error("streak: generateCard not available");
+				// Prefer the module's `generateOutput` which handles sanitization
+				// and optional PNG conversion. This centralizes output creation
+				// so ETag/cache decisions use the final body.
+				let out: { contentType: string; body: string | Buffer } | null = null;
+				try {
+					if (coreMod && typeof coreMod === "object" && typeof (coreMod as Record<string, unknown>).generateOutput === "function") {
+						out = await (coreMod as Record<string, any>).generateOutput(stats, paramsObj) as {
+							contentType: string;
+							body: string | Buffer;
+						};
+					} else {
+						// fall back to importing the local index module which exports generateOutput
+						const idx = await import("../src/index");
+						if (idx && typeof idx.generateOutput === "function") {
+							out = await idx.generateOutput(stats, paramsObj) as {
+								contentType: string;
+								body: string | Buffer;
+							};
+						}
+					}
+				} catch (e) {
+					// If module-level rendering fails, surface an error and fall back
+					// to upstream behavior below.
+					console.error("streak: module generateOutput failed", e instanceof Error ? e.message : String(e));
+					out = null;
 				}
-				const svg = generateCard(stats, paramsObj);
 
-				// best-effort cache for STREAK_CACHE_SECONDS or 5 minutes
+				if (!out) throw new Error("streak: generateOutput not available");
+
 				const cacheSeconds =
 					parseInt(
 						process.env.STREAK_CACHE_SECONDS ||
-							process.env.CACHE_SECONDS ||
-							"300",
+						process.env.CACHE_SECONDS ||
+						"300",
 						10,
 					) || 300;
-				try {
-					void cache.set(cacheKey, svg, cacheSeconds);
-				} catch (_e) {
-					// ignore cache failures
-				}
 
-				// Compute ETag and honor If-None-Match
-				const etag2 = computeEtag(svg);
-				res.setHeader("ETag", `"${etag2}"`);
-				const inm2 = (
-					req.headers["if-none-match"] ||
-					req.headers["If-None-Match"] ||
-					""
-				).toString();
-				const inm2Norm = inm2.replace(/^W\//i, "").replace(/^"|"$/g, "");
-				if (inm2 && inm2Norm === etag2) {
-					// Client's ETag matches recent SVG — return the SVG body with 200
-					// to avoid empty 304 responses that break embedders.
-					res.setHeader("X-Cache-Behavior", "cached-body-on-match");
-					res.setHeader("X-Upstream-Status", "local-render");
+				// Only cache/svg-etag for SVG bodies (keep PNGs as-is)
+				if (out.contentType === "image/svg+xml" && typeof out.body === "string") {
+					try {
+						void cache.set(cacheKey, out.body, cacheSeconds);
+					} catch { }
+
+					const etag2 = computeEtag(out.body);
+					res.setHeader("ETag", `"${etag2}"`);
+					const inm2 = (
+						req.headers["if-none-match"] ||
+						req.headers["If-None-Match"] ||
+						""
+					).toString();
+					const inm2Norm = inm2.replace(/^W\//i, "").replace(/^"|"$/g, "");
+					if (inm2 && inm2Norm === etag2) {
+						res.setHeader("X-Cache-Behavior", "cached-body-on-match");
+						res.setHeader("X-Upstream-Status", "local-render");
+						res.status(200);
+						return res.send(out.body);
+					}
+
+					setSvgHeaders(res);
+					setCacheHeaders(res, cacheSeconds);
+					res.setHeader("X-Cache-Status", "miss");
 					res.status(200);
-					return res.send(svg);
+					return res.send(out.body);
 				}
 
-				setSvgHeaders(res);
+				// For PNG or other content types, send directly with appropriate headers
+				try {
+					if (out.contentType === "image/png") res.setHeader("Content-Type", "image/png");
+					else if (out.contentType) res.setHeader("Content-Type", out.contentType);
+				} catch { }
 				setCacheHeaders(res, cacheSeconds);
 				res.setHeader("X-Cache-Status", "miss");
 				res.status(200);
-				return res.send(svg);
+				return res.send(out.body as any);
 			} catch (e: unknown) {
 				// If TS path fails, expose a debug header and fall back to upstream proxy.
 				let msg: string;

@@ -55,6 +55,9 @@ export function setSvgHeaders(res: ResponseLike) {
 	// Ensure caches and proxies vary on encoding so compressed responses are
 	// correctly served.
 	res.setHeader("Vary", "Accept-Encoding");
+	// Allow cross-origin embedding for README/GitHub embeds and third-party
+	// consumers that request images directly.
+	res.setHeader("Access-Control-Allow-Origin", "*");
 }
 
 /**
@@ -112,11 +115,6 @@ export const ALLOWED_THEMES = new Set<string>([
 	"light",
 	"dark",
 	"onedark",
-	"dracula",
-	"radical",
-	"tokyonight",
-	"merko",
-	"github_dark",
 ]);
 
 /** Remove unsupported theme values; keep if allowlisted. */

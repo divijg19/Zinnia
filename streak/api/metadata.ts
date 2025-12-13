@@ -14,7 +14,25 @@ export default async function handler(_req: RequestLike, res: ResponseLike) {
 		const themesMod = await tryImport("../src/themes");
 		const translationsMod = await tryImport("../src/translations");
 
-		const THEMES = themesMod.THEMES ?? themesMod.default ?? themesMod;
+		const rawThemes = themesMod.THEMES ?? themesMod.default ?? themesMod;
+		const THEMES: Record<string, Record<string, string>> = {};
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
+			for (const [k, v] of Object.entries(rawThemes || {})) {
+				if (v && typeof v === "object") {
+					const raw = v as Record<string, string | undefined>;
+					const norm = normalizeThemeKeys(raw);
+					// ensure string values for JSON output
+					const out: Record<string, string> = {};
+					for (const [nk, nv] of Object.entries(norm)) if (nv !== undefined) out[nk] = String(nv);
+					THEMES[k] = out;
+				}
+			}
+		} catch {
+			// fallback: expose rawThemes if normalization fails
+			Object.assign(THEMES, rawThemes || {});
+		}
 		const TRANSLATIONS =
 			translationsMod.TRANSLATIONS ??
 			translationsMod.default ??

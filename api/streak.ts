@@ -8,6 +8,8 @@ import {
 	incrementUpstreamError,
 } from "../lib/telemetry.js";
 import { WATCHDOG } from "../lib/themes.js";
+import { getCache as getCacheLocal, renderForUser } from "../streak/src/index";
+import vercelHandler from "../streak/src/vercel_handler";
 import {
 	resolveCacheSeconds,
 	setCacheHeaders,
@@ -20,36 +22,15 @@ import * as cache from "./cache.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		// Delegate to the streak-provided vercel handler when available.
-		// Disabled by default; enable by setting `STREAK_DELEGATE_VERCEL_HANDLER=1`.
+		// If enabled, delegate to the streak Vercel adapter (statically imported).
+		// This keeps the delegation path deterministic and removes fragile
+		// dynamic import fallbacks.
 		if (process.env.STREAK_DELEGATE_VERCEL_HANDLER === "1") {
 			try {
-				const tryImport = async (base: string) => {
-					try {
-						return await import(`${base}.js`);
-					} catch (_e) {
-						return await import(`${base}.ts`);
-					}
-				};
-				let vh: any = null;
-				try {
-					vh = await tryImport("../streak/dist/vercel_handler");
-				} catch {
-					try {
-						vh = await tryImport("../streak/src/vercel_handler");
-					} catch {
-						vh = null;
-					}
-				}
-				if (vh && typeof vh.default === "function") {
-					return await vh.default(
-						req as unknown as VercelRequest,
-						res as unknown as VercelResponse,
-					);
-				}
+				return await vercelHandler(req as unknown as VercelRequest, res as unknown as VercelResponse);
 			} catch (delegErr) {
-				// delegation failed — fall back to built-in logic below
 				console.warn("streak: vercel handler delegation failed", delegErr);
+				// fall through to built-in logic
 			}
 		}
 
@@ -75,22 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const useTs = !(_useTsEnv === "0" || _useTsEnv === "false");
 		if (useTs) {
 			try {
-				// Try to import a bundled `streak/dist/index.js` first (prod),
-				// then fall back to local source `streak/src` for dev.
-				const tryImport = async (base: string) => {
-					try {
-						return await import(`${base}.js`);
-					} catch (_e) {
-						return await import(`${base}.ts`);
-					}
-				};
-				let idx: any;
-				try {
-					idx = await tryImport("../streak/dist/index");
-				} catch {
-					idx = await tryImport("../streak/src/index");
-				}
-				const { renderForUser, getCache: getCacheLocal } = idx;
+				// Canonical: use the TypeScript source renderer directly.
 				const cacheLocal = await getCacheLocal();
 
 				const paramsObj = Object.fromEntries(url.searchParams);
@@ -108,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							setEtagAndMaybeSend304(
 								req.headers as Record<string, unknown>,
 								res,
-								cached,
+								String(cached),
 							)
 						) {
 							// Send cached body with 200 so embedders get valid SVG
@@ -153,7 +119,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					);
 
 					try {
-						await cacheLocal.set(localKey, out.body, internalTTL);
+						if (typeof out.body === "string") {
+							await cacheLocal.set(localKey, out.body, internalTTL);
+						}
 					} catch {
 						// ignore cache write failures
 					}
@@ -325,7 +293,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						setEtagAndMaybeSend304(
 							req.headers as Record<string, unknown>,
 							res,
-							cached,
+							String(cached),
 						)
 					) {
 						res.status(200);

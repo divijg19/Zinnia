@@ -45,7 +45,8 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		expect(headerValue(res, "Content-Type")).toMatch(/^image\/svg\+xml/);
+		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
+		assertSvgHeadersOnRes(res);
 		// Accept either the exact upstream body or the local fallback SVG
 		const sent0 = res.send.mock.calls[0][0] as string;
 		if (sent0 === "<svg>OK</svg>") {
@@ -112,7 +113,8 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		expect(headerValue(res, "Content-Type")).toMatch(/^image\/svg\+xml/);
+		const { assertSvgHeadersOnRes: assert2 } = await import("../_assertHeaders");
+		assert2(res);
 		// When upstream permanently fails we prefer to serve a cached
 		// last-known-good SVG if available; otherwise return a standardized
 		// error SVG. Accept either behavior in tests (cached fallback or error).

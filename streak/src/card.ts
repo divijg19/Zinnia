@@ -6,6 +6,7 @@ import {
 	getExcludingDaysText,
 	getTranslations,
 	normalizeThemeName,
+	parseBackgroundToken,
 } from "./card_helpers.js";
 import { THEMES as IMPORTED_THEMES } from "./themes.ts";
 import type { Params, Stats, Theme } from "./types_public.ts";
@@ -72,7 +73,7 @@ function loadThemesSync(): Record<string, Theme> {
 			_themesLoaded = true;
 			return THEMES;
 		}
-	} catch {}
+	} catch { }
 
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -100,19 +101,25 @@ function loadThemesSync(): Record<string, Theme> {
 						if (!altKeys.includes("background") && altKeys.length > 0)
 							candidate = altCandidate;
 					}
-				} catch {}
+				} catch { }
 
 				const recovered: Record<string, Theme> = {};
 				for (const k of Object.keys(mod || {})) {
 					const v = (mod as unknown as Record<string, Theme>)[k];
 					if (v && typeof v === "object") {
-						const vk = Object.keys(v as Record<string, string | undefined>);
+						const raw = v as Record<string, string | undefined>;
+						// normalize legacy snake_case keys to canonical names
+						// use shared helper to keep behavior consistent across modules
+						// eslint-disable-next-line @typescript-eslint/no-var-requires
+						const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
+						const normalized = normalizeThemeKeys(raw);
+						const vk = Object.keys(normalized);
 						if (
 							vk.includes("background") ||
 							vk.includes("border") ||
 							vk.includes("stroke")
 						) {
-							recovered[k] = v as Theme;
+							recovered[k] = normalized as Theme;
 						}
 					}
 				}
@@ -127,7 +134,7 @@ function loadThemesSync(): Record<string, Theme> {
 		if (process.env.DEBUG_THEMES) {
 			try {
 				console.debug("loadThemesSync require failed", String(e));
-			} catch {}
+			} catch { }
 		}
 	}
 
@@ -286,13 +293,13 @@ function getRequestedTheme(params: Params): ThemeWithGradient {
 							chosen = t[k];
 							break;
 						}
-					} catch {}
+					} catch { }
 				}
 			}
 			if (chosen && typeof chosen === "object")
 				baseTheme = { ...baseTheme, ...(chosen as Record<string, string>) };
 		}
-	} catch {}
+	} catch { }
 
 	const result: ThemeWithGradient = { ...baseTheme } as ThemeWithGradient;
 
@@ -337,52 +344,12 @@ function getRequestedTheme(params: Params): ThemeWithGradient {
 			result.background = `url(#gradient)`;
 			result._backgroundGradientId = cached.id;
 		} else {
-			const parts = String(bg)
-				.split(",")
-				.map((p) => p.trim())
-				.filter(Boolean);
-			const head = (parts[0] || "").toLowerCase();
-			const colorTokens = (arr: string[]) =>
-				arr.map((c) => (c?.startsWith("#") ? c : `#${c}`));
-
-			let id = "bggrad-";
-			try {
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
-				const crypto = require("node:crypto");
-				const h = crypto
-					.createHash("sha1")
-					.update(String(bg), "utf8")
-					.digest("hex");
-				id += h.slice(0, 8);
-			} catch {
-				id += Math.random().toString(16).slice(2, 10);
-			}
-
-			if (head === "radial") {
-				const colors = colorTokens(parts.slice(1));
-				const stops = colors.map((col, i) => {
-					const offset = Math.round((i / Math.max(1, colors.length - 1)) * 100);
-					return `<stop offset='${offset}%' stop-color='${col}'/>`;
-				});
-				const def = `<radialGradient id='${id}' gradientUnits='userSpaceOnUse' cx='50%' cy='50%' r='50%'>${stops.join("\n")}</radialGradient>`;
-				result.backgroundGradient = def;
-				result.background = `url(#gradient)`; // generic token for tests
-				result._backgroundGradientId = id;
-				GRADIENT_CACHE.set(bg, { id, def });
-			} else {
-				let angleRaw = parts[0] || "0";
-				angleRaw = angleRaw.replace(/deg$/i, "");
-				const angle = Number.parseFloat(angleRaw) || 0;
-				const colors = colorTokens(parts.slice(1));
-				const stops = colors.map((col, i) => {
-					const offset = Math.round((i / Math.max(1, colors.length - 1)) * 100);
-					return `<stop offset='${offset}%' stop-color='${col}'/>`;
-				});
-				const def = `<linearGradient id='${id}' gradientUnits='userSpaceOnUse' gradientTransform='rotate(${angle})'>${stops.join("\n")}</linearGradient>`;
-				result.backgroundGradient = def;
+			const parsed = parseBackgroundToken(bg);
+			if (parsed) {
+				result.backgroundGradient = parsed.def;
 				result.background = `url(#gradient)`;
-				result._backgroundGradientId = id;
-				GRADIENT_CACHE.set(bg, { id, def });
+				result._backgroundGradientId = parsed.id;
+				GRADIENT_CACHE.set(bg, { id: parsed.id, def: parsed.def });
 			}
 		}
 	}
@@ -392,46 +359,19 @@ function getRequestedTheme(params: Params): ThemeWithGradient {
 	try {
 		const pbg = params?.background;
 		if (typeof pbg === "string" && pbg.includes(",")) {
-			const parts = String(pbg)
-				.split(",")
-				.map((p) => p.trim())
-				.filter(Boolean);
-			const head = (parts[0] || "").toLowerCase();
-			const colorTokens = (arr: string[]) =>
-				arr.map((c) => (c?.startsWith("#") ? c : `#${c}`));
-			let id = "bggrad-";
-			try {
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
-				const crypto = require("node:crypto");
-				const h = crypto
-					.createHash("sha1")
-					.update(String(pbg), "utf8")
-					.digest("hex");
-				id += h.slice(0, 8);
-			} catch {
-				id += Math.random().toString(16).slice(2, 10);
-			}
-			if (head === "radial") {
-				const colors = colorTokens(parts.slice(1));
-				const stops = colors.map((col, i) => {
-					const offset = Math.round((i / Math.max(1, colors.length - 1)) * 100);
-					return `<stop offset='${offset}%' stop-color='${col}'/>`;
-				});
-				result.backgroundGradient = `<radialGradient id='${id}' gradientUnits='userSpaceOnUse' cx='50%' cy='50%' r='50%'>${stops.join("\n")}</radialGradient>`;
+			const cached = GRADIENT_CACHE.get(pbg);
+			if (cached) {
+				result.backgroundGradient = cached.def;
 				result.background = `url(#gradient)`;
-				result._backgroundGradientId = id;
+				result._backgroundGradientId = cached.id;
 			} else {
-				let angleRaw = parts[0] || "0";
-				angleRaw = angleRaw.replace(/deg$/i, "");
-				const angle = Number.parseFloat(angleRaw) || 0;
-				const colors = colorTokens(parts.slice(1));
-				const stops = colors.map((col, i) => {
-					const offset = Math.round((i / Math.max(1, colors.length - 1)) * 100);
-					return `<stop offset='${offset}%' stop-color='${col}'/>`;
-				});
-				result.backgroundGradient = `<linearGradient id='${id}' gradientUnits='userSpaceOnUse' gradientTransform='rotate(${angle})'>${stops.join("\n")}</linearGradient>`;
-				result.background = `url(#gradient)`;
-				result._backgroundGradientId = id;
+				const parsed = parseBackgroundToken(pbg);
+				if (parsed) {
+					result.backgroundGradient = parsed.def;
+					result.background = `url(#gradient)`;
+					result._backgroundGradientId = parsed.id;
+					GRADIENT_CACHE.set(pbg, { id: parsed.id, def: parsed.def });
+				}
 			}
 		}
 	} catch {

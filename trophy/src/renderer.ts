@@ -1,3 +1,7 @@
+import {
+	normalizeHexToken,
+	parseBackgroundToken,
+} from "../../lib/theme-helpers.ts";
 import { COLORS } from "./theme.ts";
 
 type TrophyConfig = {
@@ -24,37 +28,27 @@ function getTheme(themeName?: string): {
 }
 
 function normalizeHex(hex?: string | null): string | null {
-	if (!hex) return null;
-	const s = String(hex).trim();
-	if (s.startsWith("url(") || s.startsWith("linear-gradient(")) return s;
-	// if it's already a gradient-like token, return as-is (we'll parse later)
-	if (s.includes(",")) return s;
-	const noHash = s.replace(/^#/, "");
-	if (/^[0-9a-fA-F]{3}$/.test(noHash)) {
-		return `#${noHash
-			.split("")
-			.map((c) => c + c)
-			.join("")
-			.toLowerCase()}`;
-	}
-	if (/^[0-9a-fA-F]{6}$/.test(noHash)) return `#${noHash.toLowerCase()}`;
-	return s;
+	return normalizeHexToken(hex);
 }
 
 function parseBackground(bgRaw?: string | null) {
 	const raw = String(bgRaw ?? "").trim();
 	if (!raw) return { defs: "", fill: "#ffffff" };
 
-	// gradient format: "angle,#rrggbb,#rrggbb" or "angle,rrggbb,rrggbb"
-	const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
-	if (parts.length >= 3 && !Number.isNaN(Number(parts[0]))) {
-		const angle = Number(parts[0]) % 360;
-		const raw1 = parts[1] ?? "";
-		const raw2 = parts[2] ?? "";
-		const c1 = raw1.startsWith("#") ? raw1 : normalizeHex(raw1) ?? "#000000";
-		const c2 = raw2.startsWith("#") ? raw2 : normalizeHex(raw2) ?? "#000000";
-		const defs = `<defs><linearGradient id="bgGrad" gradientTransform="rotate(${angle})"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>`;
-		return { defs, fill: `url(#bgGrad)` };
+	// If it's a gradient-like token, delegate to shared parser
+	if (raw.includes(",")) {
+		const parsed = parseBackgroundToken(raw);
+		if (parsed) {
+			// preserve legacy id `bgGrad` for trophy snapshots/compat
+			const legacyId = "bgGrad";
+			let defWithLegacyId = parsed.def.replace(parsed.id, legacyId);
+			// remove gradientUnits for legacy snapshot formatting
+			defWithLegacyId = defWithLegacyId.replace(/ gradientUnits=['"][^'"]+['"]/i, "");
+			// normalize quotes to double quotes and collapse newlines/spaces for snapshot stability
+			defWithLegacyId = defWithLegacyId.replace(/'/g, '"').replace(/\n\s*/g, "");
+			const defs = `<defs>${defWithLegacyId}</defs>`;
+			return { defs, fill: `url(#${legacyId})` };
+		}
 	}
 
 	const color = normalizeHex(raw) ?? "#ffffff";

@@ -34,7 +34,7 @@ describe("Trophy handler ETag & cache behavior", () => {
 	it("writes cache on upstream 200 and serves body", async () => {
 		const upstreamBody = "<svg>UPSTREAM-OK</svg>";
 		// Mock the api utils to capture writes and avoid fs I/O
-		const writeSpy = vi.fn(async () => {});
+		const writeSpy = vi.fn(async () => { });
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
 		setGlobalFetchMock(
@@ -51,16 +51,11 @@ describe("Trophy handler ETag & cache behavior", () => {
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
 		const res = makeRes();
 
-		await trophy(req, res);
+		await trophy(req as unknown as any, res as unknown as any);
 
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"Content-Type",
-			"image/svg+xml; charset=utf-8",
-		);
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"X-Content-Type-Options",
-			"nosniff",
-		);
+		// Ensure standard SVG headers are present
+		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
+		assertSvgHeadersOnRes(res);
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
 		expect(writeSpy).toHaveBeenCalled();
 	});
@@ -84,16 +79,11 @@ describe("Trophy handler ETag & cache behavior", () => {
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
 		const res = makeRes();
-		await trophy(req, res);
+		await trophy(req as unknown as any, res as unknown as any);
 
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"Content-Type",
-			"image/svg+xml; charset=utf-8",
-		);
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"X-Content-Type-Options",
-			"nosniff",
-		);
+		// Ensure standard SVG headers are present
+		const { assertSvgHeadersOnRes: assert2 } = await import("../_assertHeaders");
+		assert2(res);
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
 		// cached responses are marked as fallback
 		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
@@ -118,16 +108,11 @@ describe("Trophy handler ETag & cache behavior", () => {
 		const trophy = (await import("../../api/trophy.js")).default;
 		const res = makeRes();
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
-		await trophy(req, res);
+		await trophy(req as unknown as any, res as unknown as any);
 
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"Content-Type",
-			"image/svg+xml; charset=utf-8",
-		);
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"X-Content-Type-Options",
-			"nosniff",
-		);
+		// Ensure standard SVG headers are present
+		const { assertSvgHeadersOnRes: assert3 } = await import("../_assertHeaders");
+		assert3(res);
 		// fallback served
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
 		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
