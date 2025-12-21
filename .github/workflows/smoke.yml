@@ -41,7 +41,7 @@ jobs:
                   required_failed=0
 
                   for e in "${endpoints[@]}"; do
-                      url=${e%%:*}
+                      url=${e%:*}
                       required=${e##*:}
                       echo "Checking $url (required=${required})"
                       status=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 "$url") || status=000
