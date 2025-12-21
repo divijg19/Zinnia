@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	clearGlobalFetchMock,
-	makeFetchResolved,
-	setGlobalFetchMock,
-} from "../_globalFetchMock";
+import { clearGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
 function makeReq(urlPath: string) {
@@ -29,23 +25,21 @@ describe("Trophy handler ETag & cache behavior", () => {
 
 	afterEach(async () => {
 		restoreMocks();
+		// reset any injected renderer
+		try {
+			const mod = await import("../../api/trophy-renderer-static.js");
+			mod.__testResetRenderer?.();
+		} catch { }
 	});
 
-	it("writes cache on upstream 200 and serves body", async () => {
-		const upstreamBody = "<svg>UPSTREAM-OK</svg>";
-		// Mock the api utils to capture writes and avoid fs I/O
-		const writeSpy = vi.fn(async () => {});
+	it("renders via local renderer and writes cache", async () => {
+		const body = "<svg>LOCAL-OK</svg>";
+		const writeSpy = vi.fn(async () => { });
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
-		setGlobalFetchMock(
-			makeFetchResolved({
-				status: 200,
-				headers: {
-					get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
-				},
-				text: async () => upstreamBody,
-			}),
-		);
+
+		const rendererMod = await import("../../api/trophy-renderer-static.js");
+		rendererMod.__testSetRenderer(() => body);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
@@ -53,72 +47,9 @@ describe("Trophy handler ETag & cache behavior", () => {
 
 		await trophy(req as unknown as any, res as unknown as any);
 
-		// Ensure standard SVG headers are present
 		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
 		assertSvgHeadersOnRes(res);
-		expect(res.send).toHaveBeenCalledWith(upstreamBody);
+		expect(res.send).toHaveBeenCalledWith(body);
 		expect(writeSpy).toHaveBeenCalled();
-	});
-
-	it("serves cached body on upstream 304", async () => {
-		const upstreamBody = "<svg>CACHED</svg>";
-		// Mock readTrophyCacheWithMeta to return cached body/etag and upstream 304
-		vi.resetModules();
-		vi.doMock(
-			"../../api/_utils",
-			mockApiUtilsFactory({ readMeta: { body: upstreamBody, etag: "etag-1" } }),
-		);
-		setGlobalFetchMock(
-			makeFetchResolved({
-				status: 304,
-				headers: { get: () => null },
-				text: async () => "",
-			}),
-		);
-
-		const trophy = (await import("../../api/trophy.js")).default;
-		const req = makeReq("/api/trophy?username=testuser&theme=light");
-		const res = makeRes();
-		await trophy(req as unknown as any, res as unknown as any);
-
-		// Ensure standard SVG headers are present
-		const { assertSvgHeadersOnRes: assert2 } = await import(
-			"../_assertHeaders"
-		);
-		assert2(res);
-		expect(res.send).toHaveBeenCalledWith(upstreamBody);
-		// cached responses are marked as fallback
-		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
-	});
-
-	it("falls back to cached body on upstream 500", async () => {
-		const upstreamBody = "<svg>FALLBACK</svg>";
-		// Mock readTrophyCache to return fallback body and upstream returns 500
-		vi.resetModules();
-		vi.doMock(
-			"../../api/_utils",
-			mockApiUtilsFactory({ readBody: upstreamBody }),
-		);
-		setGlobalFetchMock(
-			makeFetchResolved({
-				status: 500,
-				headers: { get: () => "image/svg+xml" },
-				text: async () => "<svg>ERR</svg>",
-			}),
-		);
-
-		const trophy = (await import("../../api/trophy.js")).default;
-		const res = makeRes();
-		const req = makeReq("/api/trophy?username=testuser&theme=light");
-		await trophy(req as unknown as any, res as unknown as any);
-
-		// Ensure standard SVG headers are present
-		const { assertSvgHeadersOnRes: assert3 } = await import(
-			"../_assertHeaders"
-		);
-		assert3(res);
-		// fallback served
-		expect(res.send).toHaveBeenCalledWith(upstreamBody);
-		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "fallback");
 	});
 });

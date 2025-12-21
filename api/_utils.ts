@@ -168,6 +168,38 @@ export async function writeTrophyCacheWithMeta(
 export { cache as genericCache };
 
 /**
+ * Cache adapter to provide a simple get/set interface backed by the
+ * service+url filesystem cache. This helps unify handlers that expect a
+ * key-based cache (like streak) with the url-based cache used by trophy.
+ */
+export type CacheAdapter = {
+	get: (key: string) => Promise<string | null>;
+	set: (key: string, value: string, ttlSeconds?: number) => Promise<void>;
+};
+
+export function getCacheAdapterForService(service: string): CacheAdapter {
+	return {
+		get: async (key: string) => {
+			try {
+				// Use the arbitrary key as the cache "url" so computeKeyFromUrl
+				// yields a stable filename.
+				return await cache.readCache(service, String(key));
+			} catch {
+				return null;
+			}
+		},
+		set: async (key: string, value: string, ttlSeconds?: number) => {
+			try {
+				const etag = computeEtag(String(value));
+				await cache.writeCacheWithMeta(service, String(key), value, etag, ttlSeconds);
+			} catch {
+				// best-effort
+			}
+		},
+	};
+}
+
+/**
  * Set ETag and honor If-None-Match. Returns true if a 304 was sent and
  * the caller should stop further writes.
  */

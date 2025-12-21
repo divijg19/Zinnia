@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
+// fetch mocks unused in this test (renderer injection used instead)
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 
 function makeReq(urlPath: string) {
@@ -22,30 +22,22 @@ describe("Trophy handler upstream 404 svg passthrough", () => {
 		restoreMocks();
 	});
 
-	it("forwards upstream 404 SVG and keeps badge embeddable", async () => {
-		const upstreamBody = "<svg>NOTFOUND</svg>";
+	it("returns rendered SVG from local renderer", async () => {
+		const body = "<svg>NOTFOUND</svg>";
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({}));
-		setGlobalFetchMock(
-			makeFetchResolved({
-				status: 404,
-				headers: {
-					get: (k: string) => (k === "content-type" ? "image/svg+xml" : null),
-				},
-				text: async () => upstreamBody,
-			}),
-		);
+
+		const rendererMod = await import("../../api/trophy-renderer-static.js");
+		rendererMod.__testSetRenderer(() => body);
 
 		const trophy = (await import("../../api/trophy.js")).default;
 		const req = makeReq("/api/trophy?username=testuser&theme=light");
 		const res = makeRes();
-		await trophy(req, res);
+		await trophy(req as unknown as any, res as unknown as any);
 
-		// handler exposes the original upstream status but returns 200 so
-		// embed consumers display the SVG instead of a broken image.
-		expect(res.setHeader).toHaveBeenCalledWith("X-Upstream-Status", "404");
-		expect(res.send).toHaveBeenCalledWith(upstreamBody);
-		// transient responses for upstream 404s
-		expect(res.setHeader).toHaveBeenCalledWith("X-Cache-Status", "transient");
+		// ensure SVG headers and body are returned
+		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
+		assertSvgHeadersOnRes(res);
+		expect(res.send).toHaveBeenCalledWith(body);
 	});
 });
