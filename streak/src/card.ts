@@ -73,7 +73,7 @@ function loadThemesSync(): Record<string, Theme> {
 			_themesLoaded = true;
 			return THEMES;
 		}
-	} catch { }
+	} catch {}
 
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -101,7 +101,7 @@ function loadThemesSync(): Record<string, Theme> {
 						if (!altKeys.includes("background") && altKeys.length > 0)
 							candidate = altCandidate;
 					}
-				} catch { }
+				} catch {}
 
 				const recovered: Record<string, Theme> = {};
 				for (const k of Object.keys(mod || {})) {
@@ -111,7 +111,9 @@ function loadThemesSync(): Record<string, Theme> {
 						// normalize legacy snake_case keys to canonical names
 						// use shared helper to keep behavior consistent across modules
 						// eslint-disable-next-line @typescript-eslint/no-var-requires
-						const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
+						const {
+							normalizeThemeKeys,
+						} = require("../../lib/theme-helpers.ts");
 						const normalized = normalizeThemeKeys(raw);
 						const vk = Object.keys(normalized);
 						if (
@@ -134,7 +136,7 @@ function loadThemesSync(): Record<string, Theme> {
 		if (process.env.DEBUG_THEMES) {
 			try {
 				console.debug("loadThemesSync require failed", String(e));
-			} catch { }
+			} catch {}
 		}
 	}
 
@@ -293,13 +295,13 @@ function getRequestedTheme(params: Params): ThemeWithGradient {
 							chosen = t[k];
 							break;
 						}
-					} catch { }
+					} catch {}
 				}
 			}
 			if (chosen && typeof chosen === "object")
 				baseTheme = { ...baseTheme, ...(chosen as Record<string, string>) };
 		}
-	} catch { }
+	} catch {}
 
 	const result: ThemeWithGradient = { ...baseTheme } as ThemeWithGradient;
 

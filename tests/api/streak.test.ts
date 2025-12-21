@@ -113,7 +113,9 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		const { assertSvgHeadersOnRes: assert2 } = await import("../_assertHeaders");
+		const { assertSvgHeadersOnRes: assert2 } = await import(
+			"../_assertHeaders"
+		);
 		assert2(res);
 		// When upstream permanently fails we prefer to serve a cached
 		// last-known-good SVG if available; otherwise return a standardized

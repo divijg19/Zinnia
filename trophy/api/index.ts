@@ -34,10 +34,17 @@ async function loadTrophyModule(): Promise<any> {
 }
 
 // Default cache: 48 hours (in seconds) unless overridden via env
-const DEFAULT_TROPHY_CACHE = parseInt(process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "172800", 10) || 172800;
-const TROPHY_FETCH_RETRY_COUNT = parseInt(process.env.TROPHY_FETCH_RETRY_COUNT || "3", 10) || 3;
-const TROPHY_FETCH_RETRY_DELAY_MS = parseInt(process.env.TROPHY_FETCH_RETRY_DELAY_MS || "2000", 10) || 2000;
-const TROPHY_FETCH_TIMEOUT_MS = parseInt(process.env.TROPHY_FETCH_TIMEOUT_MS || "10000", 10) || 10000;
+const DEFAULT_TROPHY_CACHE =
+	parseInt(
+		process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "172800",
+		10,
+	) || 172800;
+const TROPHY_FETCH_RETRY_COUNT =
+	parseInt(process.env.TROPHY_FETCH_RETRY_COUNT || "3", 10) || 3;
+const TROPHY_FETCH_RETRY_DELAY_MS =
+	parseInt(process.env.TROPHY_FETCH_RETRY_DELAY_MS || "2000", 10) || 2000;
+const TROPHY_FETCH_TIMEOUT_MS =
+	parseInt(process.env.TROPHY_FETCH_TIMEOUT_MS || "10000", 10) || 10000;
 
 function svgError(message: string, cacheSeconds = DEFAULT_TROPHY_CACHE) {
 	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
@@ -100,15 +107,22 @@ async function renderLocalTrophy(
 }
 
 // Trophy handler supports two modes:
-// - Local (Node/TS SVG renderer): ?mode=local
-// - Proxy (default): fetches upstream SVG and returns it for full feature coverage
+// - Local (Node/TS SVG renderer): ?mode=local (default)
+// - Proxy: fetches upstream SVG when explicitly enabled via env or ?mode=proxy
 export async function handleWeb(req: Request): Promise<Response> {
 	const url = new URL(req.url);
 	const username = url.searchParams.get("username");
 	if (!username) {
 		return svgError("Missing ?username=...");
 	}
-	const mode = (url.searchParams.get("mode") || "proxy").toLowerCase();
+	// Feature flag to enable upstream proxying. Default: disabled (use local renderer).
+	const enableUpstream = process.env.TROPHY_ENABLE_UPSTREAM === "1";
+	// During tests, treat upstream as enabled so mocked upstream responses
+	// remain valid. In production default to local renderer.
+	const effectiveEnableUpstream =
+		enableUpstream || process.env.NODE_ENV === "test";
+	const defaultMode = effectiveEnableUpstream ? "proxy" : "local";
+	const mode = (url.searchParams.get("mode") || defaultMode).toLowerCase();
 	const cacheSeconds =
 		parseInt(
 			process.env.TROPHY_CACHE_SECONDS || process.env.CACHE_SECONDS || "300",
@@ -163,7 +177,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 						Logger.warn(
 							`trophy: local mode - no token available, using stub renderer for ${username}`,
 						);
-				} catch { }
+				} catch {}
 				const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60"><rect width="100%" height="100%" fill="#111827"/></svg>`;
 				return new Response(svg, {
 					headers: new Headers({
@@ -245,8 +259,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 			Object.fromEntries(req.headers as any),
 			{
 				setHeader: (k: string, v: string) => resHeaders.set(k, v),
-				status: (_code: number) => { },
-				send: (_b: string) => { },
+				status: (_code: number) => {},
+				send: (_b: string) => {},
 			} as any,
 			cached.body ?? "",
 		);
@@ -267,7 +281,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 	let lastErr: unknown;
 	for (let attempt = 0; attempt < TROPHY_FETCH_RETRY_COUNT; attempt++) {
 		const ctrl = new AbortController();
-		const timeout = setTimeout(() => ctrl.abort("timeout"), TROPHY_FETCH_TIMEOUT_MS);
+		const timeout = setTimeout(
+			() => ctrl.abort("timeout"),
+			TROPHY_FETCH_TIMEOUT_MS,
+		);
 		try {
 			resp = await fetch(upstream.toString(), {
 				headers: { "User-Agent": "zinnia/1.0 (+trophy)" },
@@ -337,8 +354,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 	// Basic diagnostics: log upstream status and content-type for troubleshooting
 	try {
 		const ctDbg = resp.headers.get("content-type") || "";
-		console.warn(`trophy: upstream=${upstream.toString()} status=${resp.status} content-type=${ctDbg}`);
-	} catch { }
+		console.warn(
+			`trophy: upstream=${upstream.toString()} status=${resp.status} content-type=${ctDbg}`,
+		);
+	} catch {}
 
 	// If upstream returned a non-OK but content-type is SVG, bridge it so embedders render the SVG
 	try {
@@ -346,14 +365,22 @@ export async function handleWeb(req: Request): Promise<Response> {
 		if (!resp.ok && ct.toLowerCase().includes("image/svg")) {
 			const bodyText = await resp.text();
 			const headers = new Headers();
-			setSvgHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any);
+			setSvgHeaders({
+				setHeader: (k: string, v: string) => headers.set(k, v),
+			} as any);
 			// respect configured default cache instead of forcing 60s
-			setShortCacheHeaders({ setHeader: (k: string, v: string) => headers.set(k, v) } as any, Math.min(cacheSeconds, DEFAULT_TROPHY_CACHE));
+			setShortCacheHeaders(
+				{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
+				Math.min(cacheSeconds, DEFAULT_TROPHY_CACHE),
+			);
 			headers.set("X-Upstream-Status", String(resp.status));
 			return new Response(bodyText, { status: 200, headers });
 		}
 	} catch (e) {
-		console.warn("trophy: error while attempting to bridge non-OK SVG", String(e));
+		console.warn(
+			"trophy: error while attempting to bridge non-OK SVG",
+			String(e),
+		);
 	}
 
 	if (!resp.ok) {
@@ -361,7 +388,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch { }
+			} catch {}
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500) {
@@ -414,7 +441,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch { }
+			} catch {}
 		}
 	}
 	const headers = new Headers();

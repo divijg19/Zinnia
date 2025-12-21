@@ -23,11 +23,12 @@ import * as cache from "./cache.js";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		// If enabled, delegate to the streak Vercel adapter (statically imported).
-		// This keeps the delegation path deterministic and removes fragile
-		// dynamic import fallbacks.
 		if (process.env.STREAK_DELEGATE_VERCEL_HANDLER === "1") {
 			try {
-				return await vercelHandler(req as unknown as VercelRequest, res as unknown as VercelResponse);
+				return await vercelHandler(
+					req as unknown as VercelRequest,
+					res as unknown as VercelResponse,
+				);
 			} catch (delegErr) {
 				console.warn("streak: vercel handler delegation failed", delegErr);
 				// fall through to built-in logic
@@ -46,9 +47,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"UNKNOWN",
 			);
 		}
-		const upstream = new URL("https://streak-stats.demolab.com/");
-		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
-		upstream.searchParams.set("user", user);
+
+		// Upstream fallback controlled via env. Default: disabled.
+		const enableUpstream = process.env.STREAK_ENABLE_UPSTREAM === "1";
+		let upstream: URL | null = null;
+		if (enableUpstream) {
+			upstream = new URL(
+				process.env.STREAK_UPSTREAM || "https://streak-stats.demolab.com/",
+			);
+			for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
+			upstream.searchParams.set("user", user);
+		}
 
 		// If the TS renderer is enabled, try local implementation first.
 		// Default to true unless explicitly disabled with `STREAK_USE_TS=0|false`.
@@ -56,12 +65,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const useTs = !(_useTsEnv === "0" || _useTsEnv === "false");
 		if (useTs) {
 			try {
-				// Canonical: use the TypeScript source renderer directly.
 				const cacheLocal = await getCacheLocal();
 
 				const paramsObj = Object.fromEntries(url.searchParams);
 				const localKey = `streak:local:${user}:${JSON.stringify(paramsObj)}`;
-				// Try in-memory/Upstash cache first (streak/src/cache)
 				try {
 					const cached = await cacheLocal.get(localKey);
 					if (cached) {
@@ -77,7 +84,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 								String(cached),
 							)
 						) {
-							// Send cached body with 200 so embedders get valid SVG
 							res.status(200);
 							return res.send(cached);
 						}
@@ -107,8 +113,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					);
 					if (out.status) res.status(out.status);
 
-					// Persist to local cache (try best-effort)
-					// Use a minimum 3-day retention for internal cache to survive GitHub/Upstream outages
 					const internalTTL = Math.max(
 						resolveCacheSeconds(
 							url,
@@ -126,7 +130,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						// ignore cache write failures
 					}
 
-					// Compute and set ETag, honor If-None-Match
 					try {
 						const etag = cache.computeEtag(String(out.body));
 						if (etag) res.setHeader("ETag", `"${etag}"`);
@@ -168,7 +171,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						);
 						return res.send(out.body as string);
 					}
-					// default to svg
 					setSvgHeaders(res);
 					setCacheHeaders(
 						res,
@@ -181,18 +183,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					return res.send(out.body as string);
 				} catch (e) {
 					console.error("streak: renderer output error", e);
-					// fallthrough to default behavior
+					// fallthrough to fallback/upstream
 				}
 			} catch (e) {
 				console.error("streak: ts renderer error", e);
-				// fall through to upstream proxy
+				if (!enableUpstream) {
+					return sendErrorSvg(
+						req,
+						res,
+						"Streak local renderer failed",
+						"STREAK_INTERNAL",
+					);
+				}
 			}
 		}
+
 		// Map theme=watchdog to explicit color params supported by upstream
 		filterThemeParam(url);
 		const theme = (url.searchParams.get("theme") || "").toLowerCase();
-		if (theme === "watchdog") {
-			// Remove theme to avoid overriding our colors upstream
+		if (theme === "watchdog" && upstream) {
 			upstream.searchParams.delete("theme");
 			const wd = WATCHDOG as Record<string, string>;
 			for (const [k, v] of Object.entries({
@@ -211,23 +220,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (!upstream.searchParams.has(k)) upstream.searchParams.set(k, v);
 			}
 		}
+
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
+
 		// Read existing cached metadata (etag) to send If-None-Match and to
 		// enable serving a cached fallback on upstream failures.
 		let cachedMeta: { body: string; etag?: string; ts?: number } | null = null;
 		try {
-			cachedMeta = await cache.readCacheWithMeta("streak", upstream.toString());
+			if (upstream)
+				cachedMeta = await cache.readCacheWithMeta(
+					"streak",
+					upstream.toString(),
+				);
 		} catch (_e) {
 			/* ignore */
 		}
 
 		// Fetch upstream with retries (network errors and 5xx will retry).
-		// Accept an optional If-None-Match value so we can send conditional
-		// requests to upstream when we have cached metadata.
 		async function fetchWithRetries(
 			urlStr: string,
 			attempts = 3,
@@ -244,12 +257,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						"User-Agent": "zinnia/1.0 (+streak)",
 					};
 					if (ifNoneMatch) headers["If-None-Match"] = ifNoneMatch;
-					const r = await fetch(urlStr, {
-						headers,
-						signal: ctrl.signal,
-					});
+					const r = await fetch(urlStr, { headers, signal: ctrl.signal });
 					lastResp = r;
-					// treat 5xx as retryable
 					if (r.status >= 500) {
 						lastErr = new Error(`upstream status ${r.status}`);
 					} else {
@@ -270,6 +279,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		let resp: Response;
 		try {
+			if (!upstream) {
+				return sendErrorSvg(
+					req,
+					res,
+					"Upstream streak proxy disabled",
+					"STREAK_UPSTREAM_STATUS",
+				);
+			}
 			resp = await fetchWithRetries(
 				upstream.toString(),
 				4,
@@ -279,13 +296,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		} catch (_e) {
 			// Network-level failure after retries: try cached SVG before failing
 			try {
-				const cached = await cache.readCache("streak", upstream.toString());
+				const cached = upstream
+					? await cache.readCache("streak", upstream.toString())
+					: null;
 				if (cached) {
-					// record that we served a cached fallback due to upstream/network failure
 					try {
 						incrementFallbackServed();
 					} catch {
-						// ignore telemetry failures
+						/* ignore telemetry failures */
 					}
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
@@ -313,7 +331,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const ct = resp.headers.get("content-type") || "";
 
-		// Handle 304 Not Modified: serve cached body if available
 		if (resp.status === 304) {
 			if (cachedMeta?.body) {
 				setSvgHeaders(res);
@@ -332,26 +349,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				}
 				return res.send(cachedMeta.body);
 			}
-			// fall through to reading body
 		}
 
 		const body = await resp.text();
 		setSvgHeaders(res);
 		if (ct.includes("image/svg")) {
-			// If upstream returned 404 with an SVG payload, forward the
-			// payload and preserve the 404 status for clients.
 			if (resp.status === 404) {
-				// Use a short cache TTL for upstream 404s so clients recheck soon.
 				setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
-				// To keep badges embeddable (e.g., GitHub README images), return
-				// a 200 status while exposing the original upstream status via
-				// a diagnostic header. Clients embedding via <img> will then
-				// display the SVG instead of showing an "Error Fetching Resource".
 				res.setHeader("X-Upstream-Status", String(resp.status));
-				// Explicitly return 200 so embedders which treat non-2xx as
-				// errors will still render the SVG.
 				res.status(200);
-				// bridged 404s are indicated via X-Upstream-Status; avoid extra debug headers
 				if (
 					setEtagAndMaybeSend304(
 						req.headers as Record<string, unknown>,
@@ -362,19 +368,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res.status(200);
 					return res.send(body);
 				}
-				// intentionally return 200 so embed consumers receive the SVG
 				return res.send(body);
 			}
-			// On successful upstream SVG, persist a cached copy to help
-			// future fallbacks and conditional requests.
 			setCacheHeaders(res, cacheSeconds);
 			try {
 				const etag = cache.computeEtag(body);
-				// Use a 3-day (259200s) internal TTL to survive upstream outages
 				const internalTTL = Math.max(cacheSeconds, 259200);
 				await cache.writeCacheWithMeta(
 					"streak",
-					upstream.toString(),
+					upstream?.toString(),
 					body,
 					etag,
 					internalTTL,
@@ -394,7 +396,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 			return res.send(body);
 		}
-		// record upstream error metric and expose upstream status for diagnosis
+
 		try {
 			incrementUpstreamError();
 		} catch {

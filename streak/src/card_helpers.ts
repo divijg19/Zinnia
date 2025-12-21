@@ -40,7 +40,12 @@ function loadTranslationsSync(): Record<string, Translations> {
 			| Record<string, Translations>
 			| undefined;
 		const t2 = m.default as unknown as Record<string, Translations> | undefined;
-		_TRANSLATIONS = (t1 || t2 || (m as unknown as Record<string, Translations>)) as Record<string, Translations>;
+		_TRANSLATIONS = (t1 ||
+			t2 ||
+			(m as unknown as Record<string, Translations>)) as Record<
+			string,
+			Translations
+		>;
 	} catch {
 		_TRANSLATIONS = {};
 	}
@@ -201,13 +206,23 @@ export function removeAnimations(svg: string): string {
 				if (document) {
 					// remove style blocks that might contain animations
 					const styles = document.querySelectorAll("style");
-					styles.forEach((n: any) => { n.remove(); });
+					styles.forEach((n: any) => {
+						n.remove();
+					});
 
 					// remove scripts and SMIL animation elements
-					const badTags = ["script", "animate", "animateTransform", "animateMotion", "set"];
+					const badTags = [
+						"script",
+						"animate",
+						"animateTransform",
+						"animateMotion",
+						"set",
+					];
 					for (const t of badTags) {
 						const nodes = document.getElementsByTagName(t);
-						Array.from(nodes).forEach((n: any) => { n.remove(); });
+						Array.from(nodes).forEach((n: any) => {
+							n.remove();
+						});
 					}
 
 					// remove inline event handlers and javascript: hrefs/xlink:hrefs
@@ -217,7 +232,11 @@ export function removeAnimations(svg: string): string {
 							const name = String(a.name || "").toLowerCase();
 							const val = String(a.value || "");
 							if (name.startsWith("on")) el.removeAttribute(a.name);
-							if ((name === "href" || name === "xlink:href") && /^javascript:/i.test(val)) el.removeAttribute(a.name);
+							if (
+								(name === "href" || name === "xlink:href") &&
+								/^javascript:/i.test(val)
+							)
+								el.removeAttribute(a.name);
 							if (name.startsWith("xmlns:")) el.removeAttribute(a.name);
 						}
 					});
@@ -234,7 +253,10 @@ export function removeAnimations(svg: string): string {
 					const els = document.querySelectorAll("*[style]");
 					els.forEach((el: any) => {
 						const s = el.getAttribute("style") || "";
-						el.setAttribute("style", s.replace(/opacity:\s*0;/gi, "opacity: 1;"));
+						el.setAttribute(
+							"style",
+							s.replace(/opacity:\s*0;/gi, "opacity: 1;"),
+						);
 					});
 
 					// Preserve optional XML declaration if present
@@ -246,8 +268,7 @@ export function removeAnimations(svg: string): string {
 					return decl + inner;
 				}
 			}
-		} catch {
-		}
+		} catch {}
 	}
 
 	// --- Regex fallback sanitizer (best-effort) ---

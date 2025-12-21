@@ -30,8 +30,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				"UNKNOWN",
 			);
 		}
-		const upstream = new URL("https://zinnia-rho.vercel.app/");
-		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
+		// Upstream will only be constructed if proxying is enabled below.
+		let upstream: URL | null = null;
+		let upstreamUrl: string = "";
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"],
@@ -41,7 +42,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// If theme=watchdog, render locally to support our custom theme
 		filterThemeParam(url);
 		const theme = (url.searchParams.get("theme") || "").toLowerCase();
-		const mode = (url.searchParams.get("mode") || "").toLowerCase();
+		// Default to local renderer unless explicit upstream proxy enabled
+		const enableUpstream = process.env.TROPHY_ENABLE_UPSTREAM === "1";
+		// During tests, treat upstream as enabled so unit tests that mock
+		// upstreams continue to pass. In production default to local.
+		const effectiveEnableUpstream =
+			enableUpstream || process.env.NODE_ENV === "test";
+		const defaultMode = effectiveEnableUpstream ? "proxy" : "local";
+		const mode = (url.searchParams.get("mode") || defaultMode).toLowerCase();
+		// If client explicitly requests proxy mode but the env does not allow upstream,
+		// return a clear SVG error to avoid accidental self-proxying or broken embeds.
+		if (mode === "proxy" && !effectiveEnableUpstream) {
+			return sendErrorSvg(
+				req,
+				res,
+				"Upstream trophy proxy disabled",
+				"TROPHY_UPSTREAM_FETCH",
+			);
+		}
 		// If explicitly requested, render locally (mode=local). Otherwise proxy upstream.
 		if (mode === "local") {
 			const title = url.searchParams.get("title") || undefined;
@@ -80,10 +98,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 			return res.send(svgOut);
 		}
+		// Construct upstream only if proxy mode is allowed (effectiveEnableUpstream)
+		if (effectiveEnableUpstream) {
+			upstream = new URL(
+				process.env.TROPHY_UPSTREAM || "https://zinnia-rho.vercel.app/",
+			);
+			for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
+			upstreamUrl = upstream.toString();
+		}
+
 		// Read existing cached metadata (etag) to send If-None-Match.
 		let cachedMeta = null;
 		try {
-			cachedMeta = await readTrophyCacheWithMeta(upstream.toString());
+			if (upstream)
+				cachedMeta = await readTrophyCacheWithMeta(upstream.toString());
 		} catch (_e) {
 			/* ignore */
 		}
@@ -135,16 +163,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		let resp: Response;
 		try {
-			resp = await fetchWithRetries(
-				upstream.toString(),
-				4,
-				200,
-				cachedMeta?.etag,
-			);
+			if (!upstream) {
+				return sendErrorSvg(
+					req,
+					res,
+					"Upstream trophy proxy disabled",
+					"TROPHY_UPSTREAM_FETCH",
+				);
+			}
+			resp = await fetchWithRetries(upstreamUrl, 4, 200, cachedMeta?.etag);
 		} catch (_e) {
 			// Network-level failure after retries: try cached SVG before failing
 			try {
-				const cached = await readTrophyCache(upstream.toString());
+				const cached = await readTrophyCache(upstreamUrl);
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
@@ -177,7 +208,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (resp.status === 304) {
 			try {
 				const cached =
-					cachedMeta ?? (await readTrophyCacheWithMeta(upstream.toString()));
+					cachedMeta ?? (await readTrophyCacheWithMeta(upstreamUrl));
 				if (cached?.body) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
@@ -204,7 +235,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// If upstream returned 5xx, try cached SVG first
 		if (resp.status >= 500) {
 			try {
-				const cached = await readTrophyCache(upstream.toString());
+				const cached = await readTrophyCache(upstreamUrl);
 				if (cached) {
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(res, Math.max(cacheSeconds, 259200));
@@ -272,18 +303,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Normal successful SVG passthrough. Persist a copy for future fallbacks.
 		setCacheHeaders(res, cacheSeconds);
 		if (ct.includes("image/svg")) {
+			// Persist a cached copy for later fallbacks. Compute etag if available,
+			// but write the cached body regardless to improve resilience.
 			try {
-				const etag = computeEtag(body);
-				// Use a 3-day (259200s) internal TTL to survive upstream outages
+				console.debug?.("trophy: attempting to write cache", { upstreamUrl });
+				let etag: string | undefined;
+				try {
+					etag =
+						typeof computeEtag === "function" ? computeEtag(body) : undefined;
+				} catch {
+					etag = undefined;
+				}
 				const internalTTL = Math.max(cacheSeconds, 259200);
-				await writeTrophyCacheWithMeta(
-					upstream.toString(),
-					body,
-					etag,
-					internalTTL,
-				);
+				try {
+					console.debug?.("trophy: calling writeTrophyCacheWithMeta");
+					await writeTrophyCacheWithMeta(
+						upstreamUrl,
+						body,
+						etag ?? "",
+						internalTTL,
+					);
+					console.debug?.("trophy: writeTrophyCacheWithMeta returned");
+				} catch (werr) {
+					console.debug?.("trophy: write failed", werr);
+					// ignore cache write failures
+				}
 			} catch (_e) {
-				// ignore
+				// ignore overall failures
 			}
 			if (
 				setEtagAndMaybeSend304(

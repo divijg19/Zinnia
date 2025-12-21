@@ -46,6 +46,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 		// Default to true unless explicitly disabled with `STREAK_USE_TS=0|false`.
 		const _useTsEnv = process.env.STREAK_USE_TS;
 		const useTs = !(_useTsEnv === "0" || _useTsEnv === "false");
+		// Only allow falling back to upstream when explicitly enabled.
+		// Default: do not fall back to upstream — surface local renderer errors.
+		const enableUpstream = process.env.STREAK_ENABLE_UPSTREAM === "1";
 		if (useTs) {
 			try {
 				// If STREAK_USE_TS is explicitly enabled (`"1"` or `"true"`),
@@ -83,9 +86,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				// `generateOutput` is preferred; individual `generateCard` is not used here.
 				let getCache:
 					| (() => Promise<{
-						get: (k: string) => Promise<string | null>;
-						set: (k: string, v: string, ttl: number) => Promise<void>;
-					}>)
+							get: (k: string) => Promise<string | null>;
+							set: (k: string, v: string, ttl: number) => Promise<void>;
+					  }>)
 					| undefined;
 				let THEMES: Record<string, Record<string, string>> | undefined;
 				if (coreMod) {
@@ -198,7 +201,9 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					if (themeName && THEMES && THEMES[themeName]) {
 						// normalize legacy snake_case keys using shared helper
 						// eslint-disable-next-line @typescript-eslint/no-var-requires
-						const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
+						const {
+							normalizeThemeKeys,
+						} = require("../../lib/theme-helpers.ts");
 						const normalized = normalizeThemeKeys(
 							THEMES[themeName] as Record<string, string | undefined>,
 						);
@@ -216,7 +221,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						for (const [k, v] of Object.entries(normalized)) {
 							// Do not overwrite an explicit background param if present.
 							if (k === "background") continue;
-							if (!(k in paramsObj) && v !== undefined) paramsObj[k] = v as string;
+							if (!(k in paramsObj) && v !== undefined)
+								paramsObj[k] = v as string;
 						}
 					}
 				} catch (_e) {
@@ -291,8 +297,16 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				// so ETag/cache decisions use the final body.
 				let out: { contentType: string; body: string | Buffer } | null = null;
 				try {
-					if (coreMod && typeof coreMod === "object" && typeof (coreMod as Record<string, unknown>).generateOutput === "function") {
-						out = await (coreMod as Record<string, any>).generateOutput(stats, paramsObj) as {
+					if (
+						coreMod &&
+						typeof coreMod === "object" &&
+						typeof (coreMod as Record<string, unknown>).generateOutput ===
+							"function"
+					) {
+						out = (await (coreMod as Record<string, any>).generateOutput(
+							stats,
+							paramsObj,
+						)) as {
 							contentType: string;
 							body: string | Buffer;
 						};
@@ -300,7 +314,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						// fall back to importing the local index module which exports generateOutput
 						const idx = await import("../src/index");
 						if (idx && typeof idx.generateOutput === "function") {
-							out = await idx.generateOutput(stats, paramsObj) as {
+							out = (await idx.generateOutput(stats, paramsObj)) as {
 								contentType: string;
 								body: string | Buffer;
 							};
@@ -309,7 +323,10 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				} catch (e) {
 					// If module-level rendering fails, surface an error and fall back
 					// to upstream behavior below.
-					console.error("streak: module generateOutput failed", e instanceof Error ? e.message : String(e));
+					console.error(
+						"streak: module generateOutput failed",
+						e instanceof Error ? e.message : String(e),
+					);
 					out = null;
 				}
 
@@ -318,16 +335,19 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				const cacheSeconds =
 					parseInt(
 						process.env.STREAK_CACHE_SECONDS ||
-						process.env.CACHE_SECONDS ||
-						"300",
+							process.env.CACHE_SECONDS ||
+							"300",
 						10,
 					) || 300;
 
 				// Only cache/svg-etag for SVG bodies (keep PNGs as-is)
-				if (out.contentType === "image/svg+xml" && typeof out.body === "string") {
+				if (
+					out.contentType === "image/svg+xml" &&
+					typeof out.body === "string"
+				) {
 					try {
 						void cache.set(cacheKey, out.body, cacheSeconds);
-					} catch { }
+					} catch {}
 
 					const etag2 = computeEtag(out.body);
 					res.setHeader("ETag", `"${etag2}"`);
@@ -353,15 +373,18 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 
 				// For PNG or other content types, send directly with appropriate headers
 				try {
-					if (out.contentType === "image/png") res.setHeader("Content-Type", "image/png");
-					else if (out.contentType) res.setHeader("Content-Type", out.contentType);
-				} catch { }
+					if (out.contentType === "image/png")
+						res.setHeader("Content-Type", "image/png");
+					else if (out.contentType)
+						res.setHeader("Content-Type", out.contentType);
+				} catch {}
 				setCacheHeaders(res, cacheSeconds);
 				res.setHeader("X-Cache-Status", "miss");
 				res.status(200);
 				return res.send(out.body as any);
 			} catch (e: unknown) {
-				// If TS path fails, expose a debug header and fall back to upstream proxy.
+				// If TS path fails, log the error. Only fall back to upstream
+				// if `STREAK_ENABLE_UPSTREAM=1` is set; otherwise return an SVG error.
 				let msg: string;
 				if (e instanceof Error) msg = e.message;
 				else if (typeof e === "string") msg = e;
@@ -373,10 +396,17 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					}
 				}
 				console.error("streak: ts renderer failed", msg);
+				if (!enableUpstream) {
+					return sendSvgError(res, "Streak local renderer failed", 60);
+				}
 			}
 		}
 
 		// --- Fallback: keep existing upstream proxy behavior ---
+		// If upstream fallback is not enabled, return an SVG error instead
+		if (!enableUpstream) {
+			return sendSvgError(res, "Upstream streak proxy disabled");
+		}
 		const upstream = new URL("https://streak-stats.demolab.com/");
 		for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 		// Normalize parameter name expected by upstream
