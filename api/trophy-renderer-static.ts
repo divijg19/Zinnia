@@ -1,55 +1,80 @@
-// Prefer runtime-built `dist` renderer in production; fall back to `src` for dev/tests.
+// Prefer `src` during development/tests and `dist` in production.
 let cached: ((opts: any) => string) | null = null;
+let injected: ((opts: any) => string) | null = null;
+
+export function __testSetRenderer(fn: (opts: any) => string) {
+	injected = fn;
+}
+
+export function __testResetRenderer() {
+	injected = null;
+	cached = null;
+}
 
 async function loadRenderer(): Promise<(opts: any) => string> {
+	if (injected) return injected;
 	if (cached) return cached;
-	// Try plain module specifiers first (Vitest mocks/doMock intercept these),
-	// then fall back to URL.href imports which are necessary in some runtimes.
+	// Prefer src paths first so tests and source deployments resolve consistently.
 	const specCandidates = [
+		"../trophy/src/renderer",
+		"../trophy/src/index",
+		"../trophy/src/renderer.js",
+		"../trophy/src/index.js",
 		"../trophy/dist/index.js",
 		"../trophy/dist/renderer.js",
-		"../trophy/src/renderer",
-		"../trophy/src/renderer.js",
-		"../trophy/src/renderer.ts",
-		"../trophy/src/index.js",
-		"../trophy/src/index.ts",
 	];
+
+	const failures: Array<{ spec: string; err: string }> = [];
 	for (const spec of specCandidates) {
 		try {
 			const mod = await import(spec);
-			const fn =
-				mod.renderTrophySVG ?? mod.default?.renderTrophySVG ?? mod.default;
+			const fn = mod.renderTrophySVG ?? mod.default?.renderTrophySVG ?? mod.default;
 			if (typeof fn === "function") {
 				cached = fn;
 				return fn;
+			} else {
+				failures.push({ spec, err: "no renderer export found" });
 			}
-		} catch {
-			// try next
+		} catch (e) {
+			try {
+				const em = e?.toString?.() ?? String(e);
+				failures.push({ spec, err: em });
+			} catch {
+				failures.push({ spec, err: "unknown import error" });
+			}
 		}
 	}
-	// Fallback: attempt imports using absolute file URLs (some deploy runtimes require this)
+
+	// Attempt absolute file URLs as last resort
 	const hrefCandidates = [
-		new URL("../trophy/dist/index.js", import.meta.url).href,
-		new URL("../trophy/dist/renderer.js", import.meta.url).href,
 		new URL("../trophy/src/renderer.js", import.meta.url).href,
-		new URL("../trophy/src/renderer.ts", import.meta.url).href,
 		new URL("../trophy/src/index.js", import.meta.url).href,
-		new URL("../trophy/src/index.ts", import.meta.url).href,
+		new URL("../trophy/dist/index.js", import.meta.url).href,
 	];
 	for (const h of hrefCandidates) {
 		try {
 			const mod = await import(h);
-			const fn =
-				mod.renderTrophySVG ?? mod.default?.renderTrophySVG ?? mod.default;
+			const fn = mod.renderTrophySVG ?? mod.default?.renderTrophySVG ?? mod.default;
 			if (typeof fn === "function") {
 				cached = fn;
 				return fn;
+			} else {
+				failures.push({ spec: h, err: "no renderer export found" });
 			}
-		} catch {
-			// try next
+		} catch (e) {
+			try {
+				const em = e?.toString?.() ?? String(e);
+				failures.push({ spec: h, err: em });
+			} catch {
+				failures.push({ spec: h, err: "unknown import error" });
+			}
 		}
 	}
-	throw new Error("trophy renderer not found (tried dist and src paths)");
+
+	try {
+		console.warn("trophy: renderer not found; attempted candidates:", failures.map((f) => `${f.spec}: ${f.err}`));
+	} catch { }
+	throw new Error("trophy renderer not found (tried src and dist paths)");
 }
 
 export default async function renderWrapper(opts: any): Promise<string> {
