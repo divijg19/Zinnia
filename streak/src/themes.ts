@@ -104,4 +104,4 @@ export const THEMES: import("./types.ts").Themes = {
 		dates: "#38BDAE",
 		excludeDaysLabel: "#38BDAE",
 	},
-}
+};

@@ -73,13 +73,15 @@ Replace YOUR-DOMAIN with your deployed Vercel domain. Both direct and /api paths
 	- `<img src="https://zinnia-rho.vercel.app/api/stats?username=divijg19&theme=watchdog&cache=86400" />`
 - Top Languages
 	- `<img src="https://zinnia-rho.vercel.app/api/top-langs?username=divijg19&layout=compact&theme=watchdog&cache=86400" />`
-- Streak
-	- `<img src="https://zinnia-rho.vercel.app/api/streak?user=divijg19&theme=watchdog&cache=86400" />`
+ - Streak (local TS renderer by default; upstream proxy opt-in via `STREAK_ENABLE_UPSTREAM`)
+ 	- `<img src="https://zinnia-rho.vercel.app/api/streak?user=divijg19&theme=watchdog&cache=86400" />`
 - Trophy
-	- Upstream (default proxy):
+	- Local Node/TS (default):
 		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=watchdog&cache=86400" />`
-	- Local Node/TS (watchdog supported):
-		- `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=watchdog&columns=6&cache=86400" />`
+	- Upstream proxy (opt-in):
+		- To enable proxying to the original upstream set `TROPHY_ENABLE_UPSTREAM=1` in your environment
+		  or pass `?mode=proxy` when `TROPHY_ENABLE_UPSTREAM` allows it.
+		- Example (if enabled): `<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&mode=proxy&cache=86400" />`
 - LeetCode (US)
 	- `<img src="https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&theme=watchdog&cache=86400" />`
 - GitHub (placeholder)

@@ -25,7 +25,8 @@ export default async function handler(_req: RequestLike, res: ResponseLike) {
 					const norm = normalizeThemeKeys(raw);
 					// ensure string values for JSON output
 					const out: Record<string, string> = {};
-					for (const [nk, nv] of Object.entries(norm)) if (nv !== undefined) out[nk] = String(nv);
+					for (const [nk, nv] of Object.entries(norm))
+						if (nv !== undefined) out[nk] = String(nv);
 					THEMES[k] = out;
 				}
 			}

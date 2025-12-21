@@ -34,7 +34,7 @@ describe("Trophy handler ETag & cache behavior", () => {
 	it("writes cache on upstream 200 and serves body", async () => {
 		const upstreamBody = "<svg>UPSTREAM-OK</svg>";
 		// Mock the api utils to capture writes and avoid fs I/O
-		const writeSpy = vi.fn(async () => { });
+		const writeSpy = vi.fn(async () => {});
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
 		setGlobalFetchMock(
@@ -82,7 +82,9 @@ describe("Trophy handler ETag & cache behavior", () => {
 		await trophy(req as unknown as any, res as unknown as any);
 
 		// Ensure standard SVG headers are present
-		const { assertSvgHeadersOnRes: assert2 } = await import("../_assertHeaders");
+		const { assertSvgHeadersOnRes: assert2 } = await import(
+			"../_assertHeaders"
+		);
 		assert2(res);
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);
 		// cached responses are marked as fallback
@@ -111,7 +113,9 @@ describe("Trophy handler ETag & cache behavior", () => {
 		await trophy(req as unknown as any, res as unknown as any);
 
 		// Ensure standard SVG headers are present
-		const { assertSvgHeadersOnRes: assert3 } = await import("../_assertHeaders");
+		const { assertSvgHeadersOnRes: assert3 } = await import(
+			"../_assertHeaders"
+		);
 		assert3(res);
 		// fallback served
 		expect(res.send).toHaveBeenCalledWith(upstreamBody);

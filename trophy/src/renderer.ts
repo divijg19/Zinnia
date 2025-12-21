@@ -43,9 +43,14 @@ function parseBackground(bgRaw?: string | null) {
 			const legacyId = "bgGrad";
 			let defWithLegacyId = parsed.def.replace(parsed.id, legacyId);
 			// remove gradientUnits for legacy snapshot formatting
-			defWithLegacyId = defWithLegacyId.replace(/ gradientUnits=['"][^'"]+['"]/i, "");
+			defWithLegacyId = defWithLegacyId.replace(
+				/ gradientUnits=['"][^'"]+['"]/i,
+				"",
+			);
 			// normalize quotes to double quotes and collapse newlines/spaces for snapshot stability
-			defWithLegacyId = defWithLegacyId.replace(/'/g, '"').replace(/\n\s*/g, "");
+			defWithLegacyId = defWithLegacyId
+				.replace(/'/g, '"')
+				.replace(/\n\s*/g, "");
 			const defs = `<defs>${defWithLegacyId}</defs>`;
 			return { defs, fill: `url(#${legacyId})` };
 		}

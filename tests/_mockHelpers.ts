@@ -15,7 +15,7 @@ export function mockApiUtilsFactory({
 	readSpy?: any;
 	computeEtag?: (b: string) => string;
 } = {}) {
-	const writeImpl = writeSpy ?? vi.fn(async () => { });
+	const writeImpl = writeSpy ?? vi.fn(async () => {});
 	const readImpl = readSpy ?? vi.fn(async () => readBody);
 	const readMetaImpl = vi.fn(async () =>
 		readMeta
@@ -61,12 +61,7 @@ export function mockApiUtilsFactory({
 				}
 				return null;
 			},
-			ALLOWED_THEMES: new Set([
-				"watchdog",
-				"light",
-				"dark",
-				"onedark",
-			]),
+			ALLOWED_THEMES: new Set(["watchdog", "light", "dark", "onedark"]),
 			filterThemeParam: (url: URL, key = "theme") => {
 				const raw = (url as unknown as URL).searchParams.get(key);
 				if (!raw) return;
