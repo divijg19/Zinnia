@@ -31,7 +31,7 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 ### Testing & CI
 - Run all tests with:
 	```pwsh
-	npm test
+	bun run test
 	```
 - Typecheck:
 	```pwsh
@@ -45,7 +45,7 @@ This repository is a monorepo for GitHub profile visualizations, stats, streaks,
 - Testing notes (where to add tests)
 
 - Tests are organized per area to reuse package-level configs:
-	- `npm run test` runs the full test matrix under Vitest (root `tests/` plus package-local tests).
+	- `bun run test` runs the full test matrix under Vitest (root `tests/` plus package-local tests).
 	- Tests are consolidated under the repository `tests/` directory; package-local tests that require specialized setup remain in `leetcode/test`.
 	- If you need to run a single package's tests, use the package `test` script which delegates to Vitest with the shared root config.
 
