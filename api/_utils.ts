@@ -191,7 +191,13 @@ export function getCacheAdapterForService(service: string): CacheAdapter {
 		set: async (key: string, value: string, ttlSeconds?: number) => {
 			try {
 				const etag = computeEtag(String(value));
-				await cache.writeCacheWithMeta(service, String(key), value, etag, ttlSeconds);
+				await cache.writeCacheWithMeta(
+					service,
+					String(key),
+					value,
+					etag,
+					ttlSeconds,
+				);
 			} catch {
 				// best-effort
 			}

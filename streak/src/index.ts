@@ -74,8 +74,11 @@ export async function generateOutput(
 				// ignore telemetry errors
 			}
 			try {
-				console.warn("streak: PNG conversion failed, serving SVG fallback:", e?.toString?.() ?? String(e));
-			} catch { }
+				console.warn(
+					"streak: PNG conversion failed, serving SVG fallback:",
+					e?.toString?.() ?? String(e),
+				);
+			} catch {}
 			return { contentType: "image/svg+xml", body: outSvg };
 		}
 	}
@@ -119,12 +122,12 @@ export async function renderForUser(
 			mode === "weekly"
 				? getWeeklyContributionStats(days)
 				: getContributionStats(
-					days,
-					((params.exclude_days as string) || "")
-						.split(",")
-						.map((s) => s.trim())
-						.filter(Boolean),
-				);
+						days,
+						((params.exclude_days as string) || "")
+							.split(",")
+							.map((s) => s.trim())
+							.filter(Boolean),
+					);
 		const out = await generateOutput(stats, params);
 		// store in LRU for future hits (only cache svg/png bodies)
 		try {

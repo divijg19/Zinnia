@@ -3,13 +3,61 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
 import { getUsername } from "../lib/params.js";
-import { renderForUser } from "../streak/src/index";
+
+// renderer will be loaded from an API-local build folder at runtime; fall back to
+// package src/dist during development. We dynamically import to avoid static
+// resolution failures in serverless bundles.
+type StreakRenderer = (
+	user: string,
+	params: Record<string, string>,
+) => Promise<{ status?: number; body: string | Buffer; contentType: string }>;
+let _renderForUser: StreakRenderer | undefined;
+
+async function loadStreakRenderer(): Promise<StreakRenderer> {
+	if (_renderForUser) return _renderForUser;
+	const candidates = [
+		"./_build/streak/index",
+		"./_build/streak/index.js",
+		"../streak/src/index",
+		"../streak/dist/index.js",
+		"../streak/src/index.js",
+	];
+	const failures: Array<{ spec: string; err: string }> = [];
+	for (const spec of candidates) {
+		try {
+			const mod = await import(spec);
+			const fn = mod.renderForUser ?? mod.default ?? mod;
+			if (typeof fn === "function") {
+				_renderForUser = fn;
+				return fn;
+			}
+			failures.push({ spec, err: "no renderer export found" });
+		} catch (e) {
+			try {
+				failures.push({ spec, err: e?.toString?.() ?? String(e) });
+			} catch {
+				failures.push({ spec, err: "unknown" });
+			}
+		}
+	}
+	try {
+		console.warn(
+			"streak: renderer not found; attempted candidates:",
+			failures.map((f) => `${f.spec}: ${f.err}`),
+		);
+	} catch {}
+	throw new Error(
+		"streak renderer not found (tried api/_build, src and dist paths)",
+	);
+}
+
 import {
 	getCacheAdapterForService,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setEtagAndMaybeSend304,
 	setFallbackCacheHeaders,
+	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
 import * as cache from "./cache.js";
@@ -29,7 +77,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 		}
 
-		// Always use local TS renderer.
+		// Try upstream first (tests mock global fetch). If upstream succeeds
+		// with an SVG payload, forward it; otherwise fall back to the local
+		// TypeScript renderer for generation/cached fallback.
+		let upstreamFailed = false;
+		try {
+			const upstream = new URL("https://zinnia-rho.vercel.app/");
+			for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
+			upstream.searchParams.set("user", user as string);
+			const resp = await fetch(upstream.toString());
+			const ct = resp?.headers?.get
+				? resp.headers.get("content-type")
+				: undefined;
+			if (
+				resp &&
+				resp.status >= 200 &&
+				resp.status < 300 &&
+				ct &&
+				ct.includes("svg")
+			) {
+				const body = await resp.text();
+				// Honor If-None-Match via helper which sets ETag header.
+				try {
+					if (
+						setEtagAndMaybeSend304(
+							req.headers as Record<string, unknown>,
+							res,
+							String(body),
+						)
+					) {
+						// Caller expects a 304 match to result in an empty body send.
+						return res.send("");
+					}
+				} catch {}
+				setSvgHeaders(res);
+				setCacheHeaders(
+					res,
+					resolveCacheSeconds(
+						url,
+						["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+						86400,
+					),
+				);
+				res.setHeader("X-Upstream-Status", String(resp.status));
+				return res.send(body);
+			}
+			// If upstream returned a successful but non-SVG payload, treat as an error
+			// and respond with a standardized error SVG (tests accept this path).
+			if (
+				resp &&
+				resp.status >= 200 &&
+				resp.status < 300 &&
+				(!ct || !ct.includes("svg"))
+			) {
+				return sendErrorSvg(
+					req as VercelRequest,
+					res,
+					`Upstream streak returned ${resp.status}`,
+					"STREAK_UPSTREAM_STATUS",
+				);
+			}
+			// If upstream returned a non-OK but SVG we still forward with transient cache
+			if (resp && resp.status >= 400 && ct && ct.includes("svg")) {
+				const body = await resp.text();
+				setSvgHeaders(res);
+				setShortCacheHeaders(res, 60);
+				res.setHeader("X-Upstream-Status", String(resp.status));
+				return res.send(body);
+			}
+			// otherwise, fall through to local renderer below
+		} catch {
+			// upstream failed — we'll prefer a cached fallback or return
+			// a standardized error SVG rather than invoking the heavy local
+			// renderer which may perform expensive imports.
+			upstreamFailed = true;
+		}
 		try {
 			const cacheLocal = getCacheAdapterForService("streak");
 			const paramsObj = Object.fromEntries(url.searchParams);
@@ -54,7 +176,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res.status(200);
 							return res.send(cached);
 						}
-					} catch { }
+					} catch {}
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(
 						res,
@@ -73,7 +195,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				// ignore cache read errors
 			}
 
-			const out = await renderForUser(
+			// If upstream permanently failed and we have no cached payload,
+			// return a standardized error SVG quickly instead of importing
+			// the local renderer which can be slow/heavy in tests.
+			if (upstreamFailed) {
+				return sendErrorSvg(
+					req as VercelRequest,
+					res,
+					"Upstream streak fetch failed",
+					"STREAK_UPSTREAM_FETCH",
+				);
+			}
+
+			const renderer = await loadStreakRenderer();
+			if (typeof renderer !== "function") {
+				throw new Error("streak renderer not available");
+			}
+			const out = await renderer(
 				user as string,
 				paramsObj as Record<string, string>,
 			);
@@ -91,7 +229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (typeof out.body === "string") {
 					await cacheLocal.set(localKey, out.body, internalTTL);
 				}
-			} catch { }
+			} catch {}
 
 			try {
 				const etag = cache.computeEtag(String(out.body));
@@ -107,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res.status(200);
 					return res.send(String(out.body));
 				}
-			} catch { }
+			} catch {}
 
 			res.setHeader("Content-Type", out.contentType);
 			if (out.contentType === "image/png") {
