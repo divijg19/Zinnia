@@ -15,12 +15,19 @@ import {
 // Dynamically load the trophy module (prefer dist JS, fall back to src)
 async function loadTrophyModule(): Promise<any> {
 	const candidates = [
-		new URL("../trophy/dist/index.js", import.meta.url).href,
-		new URL("../trophy/dist/renderer.js", import.meta.url).href,
-		new URL("../trophy/src/renderer.js", import.meta.url).href,
-		new URL("../trophy/src/renderer.ts", import.meta.url).href,
-		new URL("../trophy/src/index.js", import.meta.url).href,
-		new URL("../trophy/src/index.ts", import.meta.url).href,
+		// Prefer runtime-bundled artifacts produced into api/_build during CI/deploy
+		new URL("../../api/_build/trophy/renderer.js", import.meta.url).href,
+		new URL("../../api/_build/trophy/index.js", import.meta.url).href,
+		// Prefer compiled trophy package dist
+		new URL("./dist/index.js", import.meta.url).href,
+		new URL("./dist/renderer.js", import.meta.url).href,
+		// Fallbacks to older locations
+		new URL("../dist/index.js", import.meta.url).href,
+		new URL("../dist/renderer.js", import.meta.url).href,
+		new URL("../src/renderer.js", import.meta.url).href,
+		new URL("../src/renderer.ts", import.meta.url).href,
+		new URL("../src/index.js", import.meta.url).href,
+		new URL("../src/index.ts", import.meta.url).href,
 	];
 	for (const p of candidates) {
 		try {
@@ -63,6 +70,9 @@ async function renderLocalTrophy(
 	params: URLSearchParams,
 ): Promise<string> {
 	const mod = await loadTrophyModule();
+	// If the compiled trophy API bundle exposes a convenience `renderLocalTrophy`, prefer it.
+	const direct = mod.renderLocalTrophy ?? mod.default?.renderLocalTrophy;
+	if (direct) return await direct(username, token, params);
 	const GithubApiService =
 		mod.GithubApiService ??
 		mod.default?.GithubApiService ??
@@ -177,7 +187,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 						Logger.warn(
 							`trophy: local mode - no token available, using stub renderer for ${username}`,
 						);
-				} catch {}
+				} catch { }
 				const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60"><rect width="100%" height="100%" fill="#111827"/></svg>`;
 				return new Response(svg, {
 					headers: new Headers({
@@ -259,8 +269,8 @@ export async function handleWeb(req: Request): Promise<Response> {
 			Object.fromEntries(req.headers as any),
 			{
 				setHeader: (k: string, v: string) => resHeaders.set(k, v),
-				status: (_code: number) => {},
-				send: (_b: string) => {},
+				status: (_code: number) => { },
+				send: (_b: string) => { },
 			} as any,
 			cached.body ?? "",
 		);
@@ -357,7 +367,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		console.warn(
 			`trophy: upstream=${upstream.toString()} status=${resp.status} content-type=${ctDbg}`,
 		);
-	} catch {}
+	} catch { }
 
 	// If upstream returned a non-OK but content-type is SVG, bridge it so embedders render the SVG
 	try {
@@ -388,7 +398,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		if ((resp.status === 401 || resp.status === 403) && patInfo?.key) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch {}
+			} catch { }
 		}
 		// On 404, pass through a short error; on 5xx serve cached if present
 		if (resp.status >= 500) {
@@ -441,7 +451,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 		) {
 			try {
 				await markPatExhaustedAsync(patInfo.key, 300);
-			} catch {}
+			} catch { }
 		}
 	}
 	const headers = new Headers();
