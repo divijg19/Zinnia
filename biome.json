@@ -21,9 +21,9 @@
 			"!**/.vercel",
 			"!bun.lock",
 			"!package.json",
-			"!api/_build/**",
-			"!trophy/dist/**",
-			"!streak/dist/**"
+			"!api/_build",
+			"!trophy/dist",
+			"!streak/dist"
 		],
 		"maxSize": 1048576
 	},

@@ -87,18 +87,23 @@ export async function fetchContributions(
 	if (!patInfo) {
 		// Fallback: try to scrape the public GitHub contributions calendar
 		try {
-			const resp = await fetch(`https://github.com/users/${username}/contributions`);
+			const resp = await fetch(
+				`https://github.com/users/${username}/contributions`,
+			);
 			if (!resp.ok) throw new Error("public-contributions-fetch-failed");
 			const text = await resp.text();
 			const days: ContributionDay[] = [];
 			// Match <rect ... data-date="YYYY-MM-DD" ... data-count="N" ...>
-			const re = /<rect[^>]*data-date=\"([0-9-]+)\"[^>]*data-count=\"([0-9]+)\"[^>]*>/g;
-			let m: RegExpExecArray | null;
-			while ((m = re.exec(text)) !== null) {
-				const date = m[1];
-				const countStr = m[2];
-				if (!date || !countStr) continue;
-				days.push({ date, count: Number(countStr) });
+			const re =
+				/<rect[^>]*data-date="([0-9-]+)"[^>]*data-count="([0-9]+)"[^>]*>/g;
+			let match: RegExpExecArray | null = re.exec(text);
+			while (match !== null) {
+				const date = match[1];
+				const countStr = match[2];
+				if (date && countStr) {
+					days.push({ date, count: Number(countStr) });
+				}
+				match = re.exec(text);
 			}
 			if (days.length > 0) {
 				days.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
