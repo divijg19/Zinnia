@@ -20,8 +20,12 @@
 			"!**/leetcode/packages/**/src/**/demo",
 			"!**/.vercel",
 			"!bun.lock",
-			"!package.json"
-		]
+			"!package.json",
+			"!api/_build/**",
+			"!trophy/dist/**",
+			"!streak/dist/**"
+		],
+		"maxSize": 1048576
 	},
 	"formatter": {
 		"enabled": true,

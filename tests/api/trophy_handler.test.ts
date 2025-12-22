@@ -29,12 +29,12 @@ describe("Trophy handler ETag & cache behavior", () => {
 		try {
 			const mod = await import("../../api/trophy-renderer-static.js");
 			mod.__testResetRenderer?.();
-		} catch { }
+		} catch {}
 	});
 
 	it("renders via local renderer and writes cache", async () => {
 		const body = "<svg>LOCAL-OK</svg>";
-		const writeSpy = vi.fn(async () => { });
+		const writeSpy = vi.fn(async () => {});
 		vi.resetModules();
 		vi.doMock("../../api/_utils", mockApiUtilsFactory({ writeSpy }));
 

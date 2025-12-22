@@ -179,6 +179,9 @@ _vendor_backup/
 **/src/**/demo/**
 **/packages/**/src/**/demo/**
 
+# API build outputs used at deploy-time; generated, don't commit
+api/_build/**
+
 # Vercel helper files
 .vercelignore
 

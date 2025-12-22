@@ -19,7 +19,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const url = new URL(req.url as string, `${proto}://${host}`);
 		const username = getUsername(url, ["username"]);
 		if (!username) {
-			return sendErrorSvg(req, res, "Missing or invalid ?username=...", "UNKNOWN");
+			return sendErrorSvg(
+				req,
+				res,
+				"Missing or invalid ?username=...",
+				"UNKNOWN",
+			);
 		}
 
 		// upstream proxying removed — always use local TypeScript renderer.
@@ -40,11 +45,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					err instanceof Error ? err.message : String(err),
 					err instanceof Error ? err.stack : undefined,
 				);
-			} catch { }
-			return sendErrorSvg(req, res, "Trophy renderer not available", "TROPHY_INTERNAL");
+			} catch {}
+			return sendErrorSvg(
+				req,
+				res,
+				"Trophy renderer not available",
+				"TROPHY_INTERNAL",
+			);
 		}
 
-		const cacheSeconds = resolveCacheSeconds(url, ["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"], 86400);
+		const cacheSeconds = resolveCacheSeconds(
+			url,
+			["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"],
+			86400,
+		);
 		setSvgHeaders(res);
 		setCacheHeaders(res, cacheSeconds);
 
@@ -52,19 +66,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		try {
 			let etag: string | undefined;
 			try {
-				etag = typeof computeEtag === "function" ? computeEtag(svgOut) : undefined;
+				etag =
+					typeof computeEtag === "function" ? computeEtag(svgOut) : undefined;
 			} catch {
 				etag = undefined;
 			}
 			const internalTTL = Math.max(cacheSeconds, 259200);
 			try {
-				await writeTrophyCacheWithMeta(url.toString(), svgOut, etag ?? "", internalTTL);
+				await writeTrophyCacheWithMeta(
+					url.toString(),
+					svgOut,
+					etag ?? "",
+					internalTTL,
+				);
 			} catch {
 				// ignore
 			}
-		} catch { }
+		} catch {}
 
-		if (setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, svgOut)) {
+		if (
+			setEtagAndMaybeSend304(
+				req.headers as Record<string, unknown>,
+				res,
+				svgOut,
+			)
+		) {
 			res.status(200);
 			return res.send(svgOut);
 		}
@@ -73,4 +99,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		return sendErrorSvg(req, res, "trophy: internal error", "TROPHY_INTERNAL");
 	}
 }
-

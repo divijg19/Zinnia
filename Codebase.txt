@@ -5,6 +5,7 @@
 .gitattributes
 .github/workflows/ci.yml
 .github/workflows/refresh.yml
+.github/workflows/smoke.yml
 .gitignore
 .husky/pre-commit
 .nvmrc
