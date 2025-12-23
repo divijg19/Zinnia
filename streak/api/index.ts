@@ -61,7 +61,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					try {
 						// eslint-disable-next-line no-console
 						console.debug("streak/api: test-mode: about to import loader");
-					} catch { }
+					} catch {}
 				}
 				const loaderMod = await import("../../lib/canonical/loader");
 				const renderer = await loaderMod.loadStreakRenderer();
@@ -74,7 +74,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					try {
 						// eslint-disable-next-line no-console
 						console.debug("streak/api: test-mode: loaded renderer from loader");
-					} catch { }
+					} catch {}
 				}
 
 				const paramsObj = Object.fromEntries(url.searchParams);
@@ -93,7 +93,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						try {
 							// eslint-disable-next-line no-console
 							console.debug("streak/api: test-mode: about to import cache");
-						} catch { }
+						} catch {}
 					}
 					const cacheMod = await import("../src/cache");
 					if (cacheMod && typeof cacheMod.getCache === "function") {
@@ -106,7 +106,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 									"streak/api: test-mode: cache.getCache error",
 									String(err),
 								);
-							} catch { }
+							} catch {}
 						}
 					}
 					if (
@@ -120,7 +120,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 							console.debug(
 								"streak/api: test-mode: finished cache import/init",
 							);
-						} catch { }
+						} catch {}
 					}
 				} catch (err) {
 					try {
@@ -129,7 +129,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 							"streak/api: test-mode: import cache failed",
 							String(err),
 						);
-					} catch { }
+					} catch {}
 					/* ignore */
 				}
 
@@ -160,8 +160,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				const cacheSeconds =
 					parseInt(
 						process.env.STREAK_CACHE_SECONDS ||
-						process.env.CACHE_SECONDS ||
-						"300",
+							process.env.CACHE_SECONDS ||
+							"300",
 						10,
 					) || 300;
 
@@ -171,7 +171,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				) {
 					try {
 						void localCache.set(cacheKey, out.body, cacheSeconds);
-					} catch { }
+					} catch {}
 					const etag2 = computeEtag(out.body);
 					res.setHeader("ETag", `"${etag2}"`);
 					const inm2 = (
@@ -198,7 +198,7 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						res.setHeader("Content-Type", "image/png");
 					else if (out.contentType)
 						res.setHeader("Content-Type", out.contentType);
-				} catch { }
+				} catch {}
 				setCacheHeaders(res, cacheSeconds);
 				res.setHeader("X-Cache-Status", "miss");
 				res.status(200);
