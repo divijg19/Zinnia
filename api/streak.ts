@@ -15,47 +15,20 @@ let _renderForUser: StreakRenderer | undefined;
 
 async function loadStreakRenderer(): Promise<StreakRenderer> {
 	if (_renderForUser) return _renderForUser;
-	const candidates = [
-		// file-URL candidates relative to this module (works in ESM bundles)
-		new URL("./_build/streak/index.js", import.meta.url).href,
-		new URL("./_build/streak/index", import.meta.url).href,
-		new URL("../streak/dist/index.js", import.meta.url).href,
-		new URL("../streak/src/index.js", import.meta.url).href,
-		// fallback to package-style resolution
-		"streak/dist/index.js",
-		"streak",
-	];
-	const failures: Array<{ spec: string; err: string }> = [];
-	for (const spec of candidates) {
-		try {
-			const mod = await import(spec as any);
-			try {
-				const keys = Object.keys(mod || {});
-				console.warn(`streak: imported ${spec} - exports: ${keys.join(",")}`);
-			} catch { }
-			const fn = mod.renderForUser ?? mod.default?.renderForUser ?? mod.default ?? mod;
-			if (typeof fn === "function") {
-				_renderForUser = fn as StreakRenderer;
-				return fn as StreakRenderer;
-			}
-			failures.push({ spec: spec as string, err: "no renderer export found" });
-		} catch (e) {
-			try {
-				failures.push({ spec: spec as string, err: e?.toString?.() ?? String(e) });
-			} catch {
-				failures.push({ spec: spec as string, err: "unknown" });
-			}
-		}
-	}
 	try {
+		const loader = await import("../lib/canonical/loader");
+		const fn = await loader.loadStreakRenderer();
+		_renderForUser = fn as StreakRenderer;
+		return _renderForUser;
+	} catch (e) {
+		// If the centralized loader fails, surface diagnostic and rethrow so
+		// existing callers fall back to upstream or error SVGs as before.
 		console.warn(
-			"streak: renderer not found; attempted candidates:",
-			failures.map((f) => `${f.spec}: ${f.err}`),
+			"streak: centralized loader failed",
+			e instanceof Error ? e.message : String(e),
 		);
-	} catch { }
-	throw new Error(
-		"streak renderer not found (tried api/_build, src and dist paths)",
-	);
+		throw e;
+	}
 }
 
 import {

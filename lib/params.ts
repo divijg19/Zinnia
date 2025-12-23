@@ -4,7 +4,7 @@ import {
 	getUsername as _getUsername,
 	isValidUsername as _isValidUsername,
 	resolveCacheSeconds as _resolveCacheSeconds,
-} from "../api/_utils.js";
+} from "./canonical/http_cache";
 
 export const isValidUsername = _isValidUsername;
 export const getUsername = _getUsername;

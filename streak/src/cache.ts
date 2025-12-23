@@ -41,7 +41,15 @@ async function upstashCall(
 		},
 		body,
 	});
-	if (!res.ok) throw new Error(`upstash request failed: ${res.status}`);
+	if (!res.ok) {
+		// Try to capture response text for diagnostics but limit size
+		let text = "";
+		try {
+			text = (await res.text()).slice(0, 200);
+		} catch {}
+		const msg = `upstash request failed: ${res.status}${text ? `:${text}` : ""}`;
+		throw new Error(msg);
+	}
 	const j = await res.json();
 	return j?.result ?? null;
 }
@@ -80,7 +88,11 @@ async function createUpstashCache(): Promise<Cache | null> {
 				const r = await upstashCall(url, token, "GET", key);
 				if (r === null || r === undefined) return null;
 				return String(r);
-			} catch (_e) {
+			} catch (e) {
+				try {
+					if (process.env.UPSTASH_DEBUG === "1")
+						console.warn("streak: upstash GET failed", String(e));
+				} catch {}
 				return null;
 			}
 		},
@@ -95,11 +107,19 @@ async function createUpstashCache(): Promise<Cache | null> {
 						key,
 						String(Math.max(1, Math.floor(ttlSeconds))),
 					);
-				} catch (_e) {
+				} catch (e) {
+					try {
+						if (process.env.UPSTASH_DEBUG === "1")
+							console.warn("streak: upstash EXPIRE failed", String(e));
+					} catch {}
 					// ignore expire failures
 				}
-			} catch (_e) {
-				// ignore
+			} catch (e) {
+				try {
+					if (process.env.UPSTASH_DEBUG === "1")
+						console.warn("streak: upstash SET failed", String(e));
+				} catch {}
+				// do not rethrow — fall back to in-memory caching
 			}
 		},
 	};

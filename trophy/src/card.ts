@@ -22,6 +22,9 @@ export class Card {
 	}
 	render(userInfo: UserInfo, theme: Theme): string {
 		const trophyList = new TrophyList(userInfo);
+		// DEBUG: print trophy list length to help diagnose empty renders (temporary)
+		// eslint-disable-next-line no-console
+		console.log("DEBUG: Card.render trophyList.length=", trophyList.length);
 
 		trophyList.filterByHidden();
 

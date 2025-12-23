@@ -130,9 +130,13 @@ You can also define per-Environment values (Production/Preview/Development) as n
 Some endpoints require higher GitHub API limits to avoid rate limiting:
 
 - PATs (required for real data on stats/top-langs)
-	- PAT_1: GitHub Personal Access Token (classic) with public_repo scope is sufficient
-	- Optional rotation: PAT_2, PAT_3, ... (the stats service will pick among available tokens)
-	- Without a PAT, the endpoints still return a valid SVG with guidance text so GitHub embeds don’t break.
+	- PATs mapping (this deployment):
+		- `PAT_1`: stats & top-langs
+		- `PAT_2`: leetcode
+		- `PAT_3`: trophy
+		- `PAT_4`: streak
+		- `PAT_5`: optional fallback (global round-robin)
+	- Each value should be a GitHub Personal Access Token with `public_repo` (or equivalent) scope. Endpoints still return a guidance SVG without a PAT but will be rate-limited.
 
 -- Optional upstream tokens
 	- Trophy upstream auth: If callers supply a `token` query param, the Trophy endpoint will use it. Otherwise the service uses centralized PAT rotation (`PAT_1..PAT_5`) to provide upstream auth and will mark exhausted keys on 401/403. Trophy mode is controlled by the `?mode=` query parameter (e.g. `?mode=local`).

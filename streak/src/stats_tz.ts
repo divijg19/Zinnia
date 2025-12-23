@@ -29,9 +29,11 @@ function contributionDayToLocalKey(
 	dayIsoUtc: string,
 	timeZone: string,
 ): string {
-	// Interpret contribution day as UTC midnight
-	const utcMidnight = new Date(`${dayIsoUtc}T00:00:00Z`);
-	return toLocalDateKey(utcMidnight, timeZone);
+	// Interpret contribution day as the UTC end-of-day to ensure contributions
+	// that occur late in UTC correctly map to the next local calendar day
+	// for timezones ahead of UTC (e.g., Asia/Tokyo).
+	const utcEnd = new Date(`${dayIsoUtc}T23:59:59Z`);
+	return toLocalDateKey(utcEnd, timeZone);
 }
 
 function shiftDateKey(
@@ -61,11 +63,14 @@ export function computeStreaks(
 
 	const todayKey = toLocalDateKey(new Date(), timeZone);
 
-	// current streak: walk backwards from todayKey
+	// Determine whether today's contributions should be considered part of the
+	// current streak. Be explicit: only include `todayKey` if there is a
+	// contribution recorded for it. Otherwise start counting from yesterday so
+	// the reported `currentStreak` represents the most recent consecutive run.
+	const includeToday = daysWithContrib.has(todayKey);
 	let currentStreak = 0;
-	let cursor = todayKey;
-	// If there's no data for today but time now in user's tz is before the end of day,
-	// we still treat today as possible part of the streak only if there's a contribution.
+	let cursor = includeToday ? todayKey : shiftDateKey(todayKey, -1, timeZone);
+
 	while (true) {
 		if (daysWithContrib.has(cursor)) {
 			currentStreak++;
@@ -74,10 +79,16 @@ export function computeStreaks(
 			break;
 		}
 	}
-	const currentStreakEnd = currentStreak > 0 ? todayKey : undefined;
+
+	const currentStreakEnd =
+		currentStreak > 0
+			? includeToday
+				? todayKey
+				: shiftDateKey(todayKey, -1, timeZone)
+			: undefined;
 	const currentStreakStart =
 		currentStreak > 0
-			? shiftDateKey(todayKey, 1 - currentStreak, timeZone)
+			? shiftDateKey(currentStreakEnd as string, 1 - currentStreak, timeZone)
 			: undefined;
 
 	// longest streak: scan sorted keys

@@ -5,7 +5,7 @@ import {
 	setCacheHeaders as _setCacheHeaders,
 	setEtagAndMaybeSend304 as _setEtagAndMaybeSend304,
 	setSvgHeaders as _setSvgHeaders,
-} from "../api/_utils.ts";
+} from "./canonical/http_cache";
 
 export const resolveCacheSeconds = _resolveCacheSeconds;
 export const setCacheHeaders = _setCacheHeaders;

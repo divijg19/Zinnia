@@ -32,38 +32,19 @@ export const getNextRankBar = (
 	color: string,
 ): string => {
 	const maxWidth = 80;
+	// sanitize title to produce safe CSS identifiers and ids
+	let safeTitle = String(title).replace(/[^A-Za-z0-9_-]/g, "");
+	if (!safeTitle) safeTitle = "trophy";
+	const animName = `${safeTitle}RankAnimation`;
+	const progressId = `${safeTitle}-rank-progress`;
+	const toWidth = Number((maxWidth * percentage).toFixed(3));
+	// emit CSS with spaces and semicolons to match golden formatting
+	const style = `@keyframes ${animName} { from { width: 0px; } to { width: ${toWidth}px; } } #${progressId}{ animation: ${animName} 1s forwards ease-in-out; }`;
 	return `
-    <style>
-    @keyframes ${title}RankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: ${maxWidth * percentage}px;
-      }
-    }
-    #${title}-rank-progress{
-      animation: ${title}RankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="${maxWidth}"
-      height="3.2"
-      opacity="0.3"
-      fill="${color}"
-    />
-    <rect
-      id="${title}-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="${color}"
-    />
-  `;
+      <style> ${style} </style>
+      <rect x="15" y="101" rx="1" width="${maxWidth}" height="3.2" opacity="0.3" fill="${color}" />
+      <rect id="${progressId}" x="15" y="101" rx="1" height="3.2" fill="${color}" />
+    `;
 };
 
 const getSmallTrophyIcon = (
@@ -148,11 +129,11 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
   ${backgroundIcon}
   ${optionRankIcon}
   <defs>
-    <linearGradient id="${rank}" gradientTransform="rotate(45)">
+    <linearGradient id="rank-${rank}" gradientTransform="rotate(45)">
     ${gradationColor}
     </linearGradient>
   </defs>
-  <svg x="28" y="20" width="100" height="100" viewBox="0 0 30 30" fill="url(#${rank})" xmlns="http://www.w3.org/2000/svg">
+  <svg x="28" y="20" width="100" height="100" viewBox="0 0 30 30" fill="url(#rank-${rank})" xmlns="http://www.w3.org/2000/svg">
     ${icon}
   </svg>
   `;

@@ -15,36 +15,15 @@ export function __testResetRenderer() {
 async function loadRenderer(): Promise<TrophyRenderer> {
 	if (injected) return injected;
 	if (cached) return cached;
-	// Prefer build outputs placed into the API bundle (api/_build) so serverless
-	// functions can import them at runtime. When running tests prefer the
-	// package `src` so Vitest module mocks are respected.
-	const isTest =
-		process.env.NODE_ENV === "test" || Boolean((globalThis as any).__vitest);
-	const specCandidates = isTest
-		? [
-				"../trophy/src/renderer",
-				"../trophy/src/index",
-				"../trophy/src/renderer.js",
-				"../trophy/src/index.js",
-				"./_build/trophy/renderer",
-				"./_build/trophy/index",
-				"./_build/trophy/renderer.js",
-				"./_build/trophy/index.js",
-				"../trophy/dist/index.js",
-				"../trophy/dist/renderer.js",
-			]
-		: [
-				"./_build/trophy/renderer",
-				"./_build/trophy/index",
-				"./_build/trophy/renderer.js",
-				"./_build/trophy/index.js",
-				"../trophy/src/renderer",
-				"../trophy/src/index",
-				"../trophy/src/renderer.js",
-				"../trophy/src/index.js",
-				"../trophy/dist/index.js",
-				"../trophy/dist/renderer.js",
-			];
+	// Prefer local source renderer first so the repository's canonical implementation
+	// is used during development and CI. Keep _build and dist outputs as fallbacks.
+	const specCandidates = [
+		"../trophy/src/renderer",
+		"../trophy/src/index",
+		"./_build/trophy/renderer",
+		"./_build/trophy/index",
+		"../trophy/dist/index.js",
+	];
 
 	const failures: Array<{ spec: string; err: string }> = [];
 	for (const spec of specCandidates) {
@@ -68,34 +47,7 @@ async function loadRenderer(): Promise<TrophyRenderer> {
 		}
 	}
 
-	// Attempt absolute file URLs as last resort (include api/_build paths)
-	const hrefCandidates = [
-		new URL("./_build/trophy/renderer.js", import.meta.url).href,
-		new URL("./_build/trophy/index.js", import.meta.url).href,
-		new URL("../trophy/src/renderer.js", import.meta.url).href,
-		new URL("../trophy/src/index.js", import.meta.url).href,
-		new URL("../trophy/dist/index.js", import.meta.url).href,
-	];
-	for (const h of hrefCandidates) {
-		try {
-			const mod = await import(h);
-			const fn =
-				mod.renderTrophySVG ?? mod.default?.renderTrophySVG ?? mod.default;
-			if (typeof fn === "function") {
-				cached = fn;
-				return fn;
-			} else {
-				failures.push({ spec: h, err: "no renderer export found" });
-			}
-		} catch (e) {
-			try {
-				const em = e?.toString?.() ?? String(e);
-				failures.push({ spec: h, err: em });
-			} catch {
-				failures.push({ spec: h, err: "unknown import error" });
-			}
-		}
-	}
+	// No URL-based fallbacks — keep resolution simple and deterministic.
 
 	try {
 		console.warn(
