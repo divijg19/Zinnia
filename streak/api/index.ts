@@ -5,7 +5,6 @@ import {
 	computeEtag,
 	getCacheAdapter,
 	setCacheHeaders,
-	setFallbackCacheHeaders,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "../../lib/canonical/http_cache";

@@ -11,7 +11,11 @@ try {
 	const { expect } = require("vitest");
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const serializer = require("./snapshot-serializers/svg-serializer").default;
-	if (expect && serializer && typeof expect.addSnapshotSerializer === "function") {
+	if (
+		expect &&
+		serializer &&
+		typeof expect.addSnapshotSerializer === "function"
+	) {
 		expect.addSnapshotSerializer(serializer);
 	}
 } catch {
@@ -22,7 +26,7 @@ try {
 try {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	delete (globalThis as any).__STREAK_TEST_RENDERER;
-} catch { }
+} catch {}
 
 // Use a per-worker cache directory to avoid cross-worker races. Tests run in
 // multiple workers and all share the repository `cache/` location by default.

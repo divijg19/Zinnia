@@ -89,7 +89,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						// Caller expects a 304 match to result in an empty body send.
 						return res.send("");
 					}
-				} catch { }
+				} catch {}
 				setSvgHeaders(res);
 				setCacheHeaders(
 					res,
@@ -156,7 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							res.status(200);
 							return res.send(cached);
 						}
-					} catch { }
+					} catch {}
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(
 						res,
@@ -209,7 +209,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (typeof out.body === "string") {
 					await cacheLocal.set(localKey, out.body, internalTTL);
 				}
-			} catch { }
+			} catch {}
 
 			try {
 				const etag = cache.computeEtag(String(out.body));
@@ -225,7 +225,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					res.status(200);
 					return res.send(String(out.body));
 				}
-			} catch { }
+			} catch {}
 
 			res.setHeader("Content-Type", out.contentType);
 			if (out.contentType === "image/png") {

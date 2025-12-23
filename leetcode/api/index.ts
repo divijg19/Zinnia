@@ -1,4 +1,7 @@
-import { setShortCacheHeaders, setSvgHeaders } from "../../lib/canonical/http_cache";
+import {
+	setShortCacheHeaders,
+	setSvgHeaders,
+} from "../../lib/canonical/http_cache";
 import { createHeaders } from "../packages/cloudflare-worker/src/headers.js";
 import { sanitize } from "../packages/cloudflare-worker/src/sanitize.js";
 import { Generator } from "../packages/core/src/card.js";
