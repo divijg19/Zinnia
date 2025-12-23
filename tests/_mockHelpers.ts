@@ -151,3 +151,19 @@ export function restoreMocks() {
 	vi.restoreAllMocks();
 	vi.resetModules();
 }
+
+// Canonical streak mock specifier and convenience helper
+export const STREAK_DIST_MOCK_ID = "../../streak/dist/index";
+
+export function mockStreakRenderer(mockExport: unknown) {
+	const moduleMock =
+		typeof mockExport === "function" ? { default: mockExport } : mockExport;
+	// expose global fallback used by loader to make tests deterministic
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		(globalThis as any).__STREAK_TEST_RENDERER = moduleMock;
+	} catch {}
+	vi.doMock(STREAK_DIST_MOCK_ID, () => moduleMock as any);
+	vi.doMock(`${STREAK_DIST_MOCK_ID}.js`, () => moduleMock as any);
+	vi.doMock(`${STREAK_DIST_MOCK_ID}.mjs`, () => moduleMock as any);
+}

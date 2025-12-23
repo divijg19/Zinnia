@@ -1,10 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-// Use direct relative path to api/_utils to avoid ESM resolution issues in local Vercel dev
 import {
 	setEtagAndMaybeSend304,
 	setShortCacheHeaders,
 	setSvgHeaders,
-} from "../api/_utils.js";
+} from "./canonical/http_cache";
 
 export type ErrorCode =
 	| "STATS_RATE_LIMIT"

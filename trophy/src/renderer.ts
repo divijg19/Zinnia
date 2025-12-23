@@ -1,7 +1,15 @@
+// Vendored and adapted rendering logic inspired by ryo-ma's "github-profile-trophy" project.
+// Original project: https://github.com/ryo-ma/github-profile-trophy
+// License: MIT — see ../../LICENSE
+// The implementation below is adapted for this repository and kept dependency-free.
+
 import {
 	normalizeHexToken,
 	parseBackgroundToken,
 } from "../../lib/theme-helpers.ts";
+import { Card } from "./card.ts";
+import { GithubApiService } from "./Services/GithubApiService.ts";
+import type { Theme } from "./theme.ts";
 import { COLORS } from "./theme.ts";
 
 type TrophyConfig = {
@@ -11,7 +19,7 @@ type TrophyConfig = {
 	columns?: number;
 };
 
-function getTheme(themeName?: string): {
+function _getTheme(themeName?: string): {
 	bg: string;
 	fg: string;
 	accent: string;
@@ -31,7 +39,7 @@ function normalizeHex(hex?: string | null): string | null {
 	return normalizeHexToken(hex);
 }
 
-function parseBackground(bgRaw?: string | null) {
+function _parseBackground(bgRaw?: string | null) {
 	const raw = String(bgRaw ?? "").trim();
 	if (!raw) return { defs: "", fill: "#ffffff" };
 
@@ -61,48 +69,94 @@ function parseBackground(bgRaw?: string | null) {
 }
 
 export function renderTrophySVG(cfg: TrophyConfig): string {
-	const { username, theme, title, columns = 4 } = cfg;
-	const { bg, fg, accent } = getTheme(theme);
-	const bgParsed = parseBackground(bg);
-	const bgNorm = bgParsed.fill ?? "#ffffff";
-	const bgDef = bgParsed.defs ?? "";
-	const fgNorm = normalizeHex(fg) ?? "#000000";
-	const accentNorm = normalizeHex(accent) ?? "#888888";
+	// Produce a visual placeholder using canonical Card/Trophy rendering so
+	// the snapshot visually matches upstream's layout. This avoids a
+	// lightweight, non-canonical grid used previously.
+	const { theme: themeName, title, columns = 4 } = cfg;
+	const theme = ((COLORS as Record<string, Theme>)[themeName ?? "flat"] ??
+		(COLORS as Record<string, Theme>).flat) as Theme;
 
-	// Consistent scaffold: header + grid of placeholder trophies
-	const cellW = 150;
-	const cellH = 90;
-	const gap = 12;
-	const headerH = 56;
-	const rows = 2;
-	const width = columns * cellW + (columns - 1) * gap + 32;
-	const height = headerH + rows * cellH + (rows - 1) * gap + 32;
+	const titles = (title || "").split(",").filter(Boolean);
+	const ranks: string[] = [];
+	const column = Number(columns || 4);
+	const row = 3;
+	const marginW = 0;
+	const marginH = 0;
+	const noBg = false;
+	const noFrame = false;
 
-	const trophies: string[] = [];
-	for (let i = 0; i < rows * columns; i++) {
-		const c = i % columns;
-		const r = Math.floor(i / columns);
-		const x = 16 + c * (cellW + gap);
-		const y = headerH + 16 + r * (cellH + gap);
+	// Render using Card with a minimal placeholder user info object to avoid
+	// making network calls. Fields chosen to provide reasonable visuals.
+	const placeholderUser = {
+		totalStargazers: 7200,
+		totalCommits: 4200,
+		totalFollowers: 500,
+		totalIssues: 240,
+		totalPullRequests: 300,
+		totalRepositories: 120,
+		totalReviews: 80,
+		languageCount: 12,
+		durationYear: 12,
+		durationDays: 4500,
+		ancientAccount: 1,
+		joined2020: 1,
+		ogAccount: 1,
+		totalOrganizations: 5,
+	} as any;
 
-		trophies.push(`
-			<g transform="translate(${x}, ${y})">
-				<rect rx="10" width="${cellW}" height="${cellH}" fill="#00000020" />
-				<g transform="translate(14, 14)">
-					<path d="M20 30 L30 10 L40 30 L50 35 L35 45 L38 60 L30 52 L22 60 L25 45 L10 35 Z" fill="${accentNorm}"/>
-					<text x="64" y="16" fill="${fgNorm}" font-size="12" font-family="Segoe UI, Arial, sans-serif">Achievement</text>
-					<text x="64" y="34" fill="${fgNorm}" font-size="11" font-family="Segoe UI, Arial, sans-serif" opacity="0.8">Trophy #${i + 1}</text>
-				</g>
-			</g>
-		`);
+	const card = new Card(
+		titles,
+		ranks,
+		column,
+		row,
+		110,
+		marginW,
+		marginH,
+		noBg,
+		noFrame,
+	);
+	return card.render(placeholderUser, theme);
+}
+
+// Convenience compatibility export used by `api/trophy`.
+// Signature: renderLocalTrophy(username, token, params)
+export async function renderLocalTrophy(
+	username: string,
+	_token: string,
+	params: URLSearchParams,
+) {
+	const _title = params.get("title") || undefined;
+	const cols = Number(params.get("columns") || params.get("cols") || "4") || 4;
+	const themeName = params.get("theme") || undefined;
+	const theme = ((COLORS as Record<string, Theme>)[themeName ?? "flat"] ??
+		(COLORS as Record<string, Theme>).flat) as Theme;
+
+	const titles = (params.get("title") || "").split(",").filter(Boolean);
+	const ranks = (params.get("rank") || "").split(",").filter(Boolean);
+	const column = Number(params.get("column") || cols || "-1");
+	const row = Number(params.get("row") || "3");
+	const marginW = Number(params.get("margin-w") || "0");
+	const marginH = Number(params.get("margin-h") || "0");
+	const noBg = params.get("no-bg") === "true";
+	const noFrame = params.get("no-frame") === "true";
+
+	const service = new GithubApiService(_token || "");
+	const userInfoOrError = await service.requestUserInfo(username);
+	if (userInfoOrError instanceof Error) {
+		throw userInfoOrError;
 	}
 
-	// Background handling: either gradient string "angle,#hex,#hex" or simple color
-	const bgFill = bgNorm;
+	const card = new Card(
+		titles,
+		ranks,
+		column,
+		row,
+		110,
+		marginW,
+		marginH,
+		noBg,
+		noFrame,
+	);
 
-	const safeTitle = String(title ?? `GitHub Profile Trophies`)
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;");
-
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trophy for ${username}">\n  <title>Trophies for ${username}</title>\n  ${bgDef}\n  <rect width="100%" height="100%" fill="${bgFill}" />\n\t<g transform="translate(16, 16)">\n\t\t<text x="0" y="24" fill="${fgNorm}" font-size="18" font-family="Segoe UI, Arial, sans-serif" font-weight="600">${safeTitle}</text>\n\t    <text x="0" y="44" fill="${fgNorm}" font-size="12" font-family="Segoe UI, Arial, sans-serif" opacity="0.8">${username}</text>\n  </g>\n  ${trophies.join("\n")}\n</svg>`;
+	return card.render(userInfoOrError, theme);
 }

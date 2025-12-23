@@ -235,3 +235,82 @@ export function listPatStatus() {
 }
 
 export { STATIC_PAT_KEYS as PAT_KEYS };
+
+/**
+ * Hard-coded mapping of service names to preferred PAT keys (PAT_n).
+ * Only `PAT_n` env vars are used per deployment policy.
+ */
+const SERVICE_PAT_MAP: Record<string, string> = {
+	stats: "PAT_1",
+	"top-langs": "PAT_1",
+	leetcode: "PAT_2",
+	trophy: "PAT_3",
+	streak: "PAT_4",
+};
+
+/**
+ * Synchronous lookup for a service-bound PAT. Lookup order:
+ *  1. Use the service's preferred PAT_n per SERVICE_PAT_MAP (if present and not exhausted)
+ *  2. Fallback to the existing global selector `getGithubPAT()` which uses PAT_1..PAT_5
+ */
+export function getGithubPATForService(service?: string): string | undefined {
+	if (!service) return getGithubPAT();
+	const s = service.toLowerCase();
+	const preferred = SERVICE_PAT_MAP[s];
+	if (preferred) {
+		// prefer the explicitly assigned PAT if present and not exhausted
+		if (!isPatExhausted(preferred)) {
+			const token = process.env[preferred];
+			if (token && token.trim().length > 0) return token.trim();
+		}
+	}
+	// fallback to existing selection logic
+	return getGithubPAT();
+}
+
+/**
+ * Async variant that returns both the env key name (e.g., PAT_3) and the token value.
+ * Lookup order:
+ *  1. Service's preferred PAT_n per SERVICE_PAT_MAP (if present, not exhausted locally and not remote-exhausted)
+ *  2. Fallback to `getGithubPATWithKeyAsync()` global rotation/selection
+ */
+export async function getGithubPATWithKeyForServiceAsync(
+	service?: string,
+): Promise<{ key: string; token: string } | undefined> {
+	try {
+		if (!service) return await getGithubPATWithKeyAsync();
+		const s = service.toLowerCase();
+		const preferred = SERVICE_PAT_MAP[s];
+		if (preferred) {
+			if (!isPatExhausted(preferred)) {
+				try {
+					const store = await getPatStore();
+					if (store && typeof store.isExhausted === "function") {
+						const remoteEx = await store.isExhausted(preferred);
+						if (remoteEx) {
+							// remote says exhausted -> fall through to global selector
+						} else {
+							const token = process.env[preferred];
+							if (token && token.trim().length > 0)
+								return { key: preferred, token: token.trim() };
+						}
+					} else {
+						// no KV store, use local check and env
+						const token = process.env[preferred];
+						if (token && token.trim().length > 0)
+							return { key: preferred, token: token.trim() };
+					}
+				} catch (_e) {
+					// on any errors checking store, try local env token
+					const token = process.env[preferred];
+					if (token && token.trim().length > 0)
+						return { key: preferred, token: token.trim() };
+				}
+			}
+		}
+		// fallback to global async selector
+		return await getGithubPATWithKeyAsync();
+	} catch {
+		return await getGithubPATWithKeyAsync();
+	}
+}

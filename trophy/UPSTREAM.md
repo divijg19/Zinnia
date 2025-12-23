@@ -1,5 +1,5 @@
 Source: https://github.com/ryo-ma/github-profile-trophy
-Pinned commit: d9e5b3e1d3c6b49af3d3a1e5f085034ccb0e9672 (previous submodule pointer)
+Pinned commit: eb5e82f9dec8b37616bac4acdce9dc1a6d708c78 (imported 2025-12-22T22:46:52.043Z)
 
 Notes:
 - Vendored to replace Deno-specific implementation with a Node/Vercel-friendly proxy and a local TS SVG renderer.

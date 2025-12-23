@@ -1,5 +1,5 @@
 import {
-	getGithubPATWithKeyAsync,
+	getGithubPATWithKeyForServiceAsync,
 	markPatExhaustedAsync,
 } from "../../lib/tokens";
 import type { ContributionDay } from "./types.ts";
@@ -56,8 +56,6 @@ async function doGraphQL(
 	if (!res.ok) {
 		if (res.status === 401 || res.status === 403) {
 			try {
-				// 'pat' here is the token value; prefer marking by key if available.
-				// When using getGithubPATWithKeyAsync, callers can pass the key via a header.
 				const keyHeader = (variables as any).__patKey as string | undefined;
 				if (keyHeader) await markPatExhaustedAsync?.(keyHeader, 300);
 			} catch {
@@ -65,7 +63,6 @@ async function doGraphQL(
 			}
 			throw new Error("rate-limited");
 		}
-		// propagate a helpful message
 		const text = await res
 			.text()
 			.catch(() => res.statusText || String(res.status));
@@ -77,13 +74,9 @@ async function doGraphQL(
 export async function fetchContributions(
 	username: string,
 ): Promise<ContributionDay[]> {
-	// Strategy:
-	// 1) Query current year for createdAt and contributionYears
-	// 2) Determine additional years to request (user-created -> previous years)
-	// 3) Request each year's calendar and merge contributionDays
-
 	const thisYear = new Date().getUTCFullYear();
-	const patInfo = await getGithubPATWithKeyAsync();
+	const patInfo = await getGithubPATWithKeyForServiceAsync("streak");
+
 	if (!patInfo) {
 		// Fallback: try to scrape the public GitHub contributions calendar
 		try {
@@ -93,16 +86,13 @@ export async function fetchContributions(
 			if (!resp.ok) throw new Error("public-contributions-fetch-failed");
 			const text = await resp.text();
 			const days: ContributionDay[] = [];
-			// Match <rect ... data-date="YYYY-MM-DD" ... data-count="N" ...>
 			const re =
 				/<rect[^>]*data-date="([0-9-]+)"[^>]*data-count="([0-9]+)"[^>]*>/g;
 			let match: RegExpExecArray | null = re.exec(text);
 			while (match !== null) {
 				const date = match[1];
 				const countStr = match[2];
-				if (date && countStr) {
-					days.push({ date, count: Number(countStr) });
-				}
+				if (date && countStr) days.push({ date, count: Number(countStr) });
 				match = re.exec(text);
 			}
 			if (days.length > 0) {
@@ -110,11 +100,19 @@ export async function fetchContributions(
 				return days;
 			}
 			// If parsing failed, fall through to GraphQL path which will error
-		} catch {
-			throw new Error("no-github-pat");
+		} catch (scrapeErr) {
+			try {
+				if (process.env.STREAK_DEBUG === "1")
+					console.warn(
+						"streak: public contributions scrape failed",
+						String(scrapeErr),
+					);
+			} catch {}
+			throw new Error("no-github-pat-or-scrape-failed");
 		}
 	}
-	// Ensure patInfo is present for GraphQL calls (TypeScript narrowing)
+
+	// Ensure we have patInfo for GraphQL calls
 	if (!patInfo) throw new Error("no-github-pat");
 
 	const json = await doGraphQL(
@@ -124,32 +122,26 @@ export async function fetchContributions(
 	);
 	const user = json?.data?.user;
 	if (!user) {
-		// propagate upstream message
 		const msg = json?.errors?.[0]?.message ?? "no user data";
 		throw new Error(msg);
 	}
 
-	// Determine created year and contribution years (best-effort)
 	const createdAt = user.createdAt || null;
 	const contributionYears =
 		user.contributionsCollection?.contributionYears ?? [];
 	let startYear = createdAt ? new Date(createdAt).getUTCFullYear() : thisYear;
-	// ensure minimum year not before 2005
 	startYear = Math.max(2005, startYear);
 
-	// If contributionYears present, use its earliest value as a hint
 	if (Array.isArray(contributionYears) && contributionYears.length > 0) {
 		const firstContributionYear =
 			Number(contributionYears[contributionYears.length - 1]) || startYear;
 		if (firstContributionYear < startYear) startYear = firstContributionYear;
 	}
 
-	const yearsToRequest = [];
+	const yearsToRequest: number[] = [];
 	for (let y = startYear; y <= thisYear; y++) yearsToRequest.push(y);
 
 	const days: ContributionDay[] = [];
-
-	// For each year, perform a query and extract days
 	for (const y of yearsToRequest) {
 		const result = await doGraphQL(
 			yearQuery(y),
@@ -166,11 +158,8 @@ export async function fetchContributions(
 		}
 	}
 
-	// Deduplicate by date (if overlapping years) and keep latest count
-	const byDate = new Map();
-	for (const d of days) {
-		byDate.set(d.date, d.count);
-	}
+	const byDate = new Map<string, number>();
+	for (const d of days) byDate.set(d.date, d.count);
 	const merged = Array.from(byDate.entries()).map(([date, count]) => ({
 		date,
 		count,

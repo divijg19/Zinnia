@@ -1,6 +1,9 @@
 // Serve a demo preview SVG using the TypeScript demo preview module.
 
-import { setShortCacheHeaders, setSvgHeaders } from "../../api/_utils.js";
+import {
+	setShortCacheHeaders,
+	setSvgHeaders,
+} from "../../lib/canonical/http_cache";
 import type { RequestLike, ResponseLike } from "../src/server_types";
 
 export default async function handler(req: RequestLike, res: ResponseLike) {
