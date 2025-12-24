@@ -42,18 +42,18 @@ async function _streamToBufferWithTimeout(
 		const to =
 			timeoutMs > 0
 				? setTimeout(() => {
-					try {
-						const r = readable as NodeJS.ReadableStream & {
-							destroy?: (err?: Error) => void;
-						};
-						if (typeof r.destroy === "function")
-							r.destroy(new Error("stream read timeout"));
-					} catch {
-						// ignore
-					}
-					cleanup();
-					reject(new Error("stream read timeout"));
-				}, timeoutMs)
+						try {
+							const r = readable as NodeJS.ReadableStream & {
+								destroy?: (err?: Error) => void;
+							};
+							if (typeof r.destroy === "function")
+								r.destroy(new Error("stream read timeout"));
+						} catch {
+							// ignore
+						}
+						cleanup();
+						reject(new Error("stream read timeout"));
+					}, timeoutMs)
 				: null;
 
 		function cleanup() {
