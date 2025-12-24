@@ -10,6 +10,11 @@ export function normalizeSvg(svg: string): string {
 	let out = svg || "";
 	out = out.replace(/<\?xml[^>]*>\s*/i, "");
 	out = out.replace(/bggrad-[0-9a-fA-F]+/g, "bggrad-<id>");
+	// normalize trophy-specific ids (rank-*, *-rank-progress) and url() refs
+	out = out.replace(/id="rank-[^"]+"/g, 'id="rank-<id>"');
+	out = out.replace(/url\(#rank-[^)]+\)/g, "url(#rank-<id>)");
+	out = out.replace(/id="[A-Za-z0-9_-]+-rank-progress"/g, 'id="<progress-id>"');
+	out = out.replace(/#[A-Za-z0-9_-]+-rank-progress/g, "#<progress-id>");
 	out = out.replace(/\s+/g, " ").trim();
 	out = out.replace(/#([0-9a-fA-F]{3,8})/g, (m) => m.toLowerCase());
 	// round long floats to 3 decimals to tolerate tiny diffs
@@ -37,18 +42,18 @@ async function _streamToBufferWithTimeout(
 		const to =
 			timeoutMs > 0
 				? setTimeout(() => {
-						try {
-							const r = readable as NodeJS.ReadableStream & {
-								destroy?: (err?: Error) => void;
-							};
-							if (typeof r.destroy === "function")
-								r.destroy(new Error("stream read timeout"));
-						} catch {
-							// ignore
-						}
-						cleanup();
-						reject(new Error("stream read timeout"));
-					}, timeoutMs)
+					try {
+						const r = readable as NodeJS.ReadableStream & {
+							destroy?: (err?: Error) => void;
+						};
+						if (typeof r.destroy === "function")
+							r.destroy(new Error("stream read timeout"));
+					} catch {
+						// ignore
+					}
+					cleanup();
+					reject(new Error("stream read timeout"));
+				}, timeoutMs)
 				: null;
 
 		function cleanup() {

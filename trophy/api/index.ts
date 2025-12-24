@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { setShortCacheHeaders, setSvgHeaders } from "../../api/_utils";
+import {
+	setShortCacheHeaders,
+	setSvgHeaders,
+} from "../../lib/canonical/http_cache";
 import { loadTrophyModule } from "../../lib/canonical/trophy_loader";
 import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens";
 
