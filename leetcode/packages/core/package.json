@@ -1,5 +1,6 @@
 {
 	"name": "leetcode-card",
+	"type": "module",
 	"private": true,
 	"engines": {
 		"node": ">=24"

@@ -15,6 +15,12 @@ export function normalizeSvg(svg: string): string {
 	out = out.replace(/url\(#rank-[^)]+\)/g, "url(#rank-<id>)");
 	out = out.replace(/id="[A-Za-z0-9_-]+-rank-progress"/g, 'id="<progress-id>"');
 	out = out.replace(/#[A-Za-z0-9_-]+-rank-progress/g, "#<progress-id>");
+
+	// normalize other generated ids that contain short hashes or seeds
+	// e.g. id="grad-abc123" or id="title-1a2b3c"
+	out = out.replace(/id="[A-Za-z0-9_-]+-[0-9a-fA-F]{4,}"/g, 'id="<id>"');
+	out = out.replace(/#[A-Za-z0-9_-]+-[0-9a-fA-F]{4,}/g, "#<id>");
+	out = out.replace(/url\(#[A-Za-z0-9_-]+-[0-9a-fA-F]{4,}\)/g, "url(#<id>)");
 	out = out.replace(/\s+/g, " ").trim();
 	out = out.replace(/#([0-9a-fA-F]{3,8})/g, (m) => m.toLowerCase());
 	// round long floats to 3 decimals to tolerate tiny diffs

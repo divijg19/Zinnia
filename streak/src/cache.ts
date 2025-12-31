@@ -129,6 +129,15 @@ let CACHE: Cache | null = null;
 
 export async function getCache(): Promise<Cache> {
 	if (CACHE) return CACHE;
+	const isTest =
+		typeof process !== "undefined" &&
+		(process.env.VITEST === "1" ||
+			process.env.NODE_ENV === "test" ||
+			typeof (globalThis as any).vi !== "undefined");
+	if (isTest) {
+		CACHE = IN_MEMORY;
+		return CACHE;
+	}
 	const us = await createUpstashCache();
 	if (us) {
 		CACHE = us;

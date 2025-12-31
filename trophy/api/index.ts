@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	setShortCacheHeaders,
 	setSvgHeaders,
-} from "../../lib/canonical/http_cache";
+} from "../../lib/canonical/http_cache.js";
 import { loadTrophyModule } from "../../lib/canonical/trophy_loader";
 import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens";
 
@@ -159,6 +159,37 @@ export async function handleWeb(req: Request): Promise<Response> {
 			// so request still returns a simple stub SVG instead of 500.
 			// eslint-disable-next-line no-console
 			console.error("trophy: loadTrophyModule failed", e);
+
+			// Try to recover by importing the local source renderer directly
+			// (useful in dev/test where compiled bundles may be missing).
+			try {
+				const src: any = await import("../../trophy/src/renderer");
+				const srcRender =
+					src.renderTrophySVG ?? src.default?.renderTrophySVG ?? src.default;
+				const theme = url.searchParams.get("theme") || undefined;
+				const title = url.searchParams.get("title") || undefined;
+				const columns = Number(url.searchParams.get("columns") || "4") || 4;
+				if (typeof srcRender === "function") {
+					try {
+						const svg = srcRender({ username, theme, title, columns });
+						const headers = new Headers();
+						setSvgHeaders({
+							setHeader: (k: string, v: string) => headers.set(k, v),
+						} as any);
+						setShortCacheHeaders(
+							{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
+							cacheSeconds,
+						);
+						return new Response(svg, { headers });
+					} catch (e2) {
+						// eslint-disable-next-line no-console
+						console.error("trophy: source renderer threw", e2);
+					}
+				}
+			} catch (e2) {
+				// eslint-disable-next-line no-console
+				console.error("trophy: source renderer import failed", e2);
+			}
 		}
 
 		// Final fallback simple stub
