@@ -1,3 +1,5 @@
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	clearGlobalFetchMock,
@@ -31,15 +33,38 @@ async function loadHandlerWithMocks(
 	);
 	// Normalize module shape: if caller provided a raw function, treat it as a
 	// `default` export so runtime imports like `mod.default` behave correctly.
-	const moduleMock =
-		typeof mockExport === "function" ? { default: mockExport } : mockExport;
-	// Expose a global test fallback so the loader can pick up the mocked
-	// renderer shape directly when `vi.doMock` resolution is flaky in some
-	// runtimes. Tests still call `vi.doMock`, but the loader will consult
-	// `globalThis.__STREAK_TEST_RENDERER` first to be deterministic.
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(globalThis as any).__STREAK_TEST_RENDERER = moduleMock;
-	vi.doMock(mockModPath, () => moduleMock as any);
+	//
+	// Vitest may also expect certain named exports to exist on mocked modules
+	// (even if they're unused). Provide them as `undefined` by default so the
+	// canonical loader can still exercise the intended export-shape branches.
+	const baseMock =
+		typeof mockExport === "function"
+			? { default: mockExport }
+			: (mockExport ?? {});
+	const moduleMock = {
+		loadStreakRenderer: undefined,
+		renderFallbackSvg: undefined,
+		renderForUser: undefined,
+		...(baseMock as any),
+	};
+
+	// The canonical loader imports streak renderer from a few specifiers.
+	// Mock all the common variants to keep this test deterministic.
+	const absIndexJs = path.resolve(process.cwd(), "streak/dist/index.js");
+	const absIndex = path.resolve(process.cwd(), "streak/dist/index");
+	const absIndexJsUrl = pathToFileURL(absIndexJs).href;
+	const specifiers = new Set<string>([
+		mockModPath,
+		"../../streak/dist/index.js",
+		"../../streak/dist/index.mjs",
+		"../../streak/dist/index",
+		absIndexJs,
+		absIndex,
+		absIndexJsUrl,
+	]);
+	for (const spec of specifiers) {
+		vi.doMock(spec, () => moduleMock as any);
+	}
 	const mod = await import("../../streak/api/index.ts");
 	return mod.default as any;
 }

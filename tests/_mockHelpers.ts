@@ -166,4 +166,12 @@ export function mockStreakRenderer(mockExport: unknown) {
 	vi.doMock(STREAK_DIST_MOCK_ID, () => moduleMock as any);
 	vi.doMock(`${STREAK_DIST_MOCK_ID}.js`, () => moduleMock as any);
 	vi.doMock(`${STREAK_DIST_MOCK_ID}.mjs`, () => moduleMock as any);
+
+	// Also register mocks for the API _build locations the loader may try
+	// in non-test or alternate resolution environments so tests remain
+	// deterministic if the loader attempts those literal specifiers.
+	vi.doMock("../api/_build/streak/index", () => moduleMock as any);
+	vi.doMock("../api/_build/streak/index.js", () => moduleMock as any);
+	vi.doMock("../api/_build/streak/index.mjs", () => moduleMock as any);
+	vi.doMock("../api/_build/streak/index.ts", () => moduleMock as any);
 }

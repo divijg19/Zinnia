@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
+import { importByPath } from "../lib/loader/index.js";
 import { filterThemeParam, isValidUsername } from "../lib/params.js";
 import {
 	setCacheHeaders,
@@ -16,9 +19,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			`${proto}://${host}`,
 		);
 		// path param support: /api/leetcode/<username>
-		const path = url.pathname.replace(/^\//, "").split("/");
-		if (path[0] === "api" && path[1] === "leetcode" && path[2]) {
-			url.searchParams.set("username", path[2]);
+		const parts = url.pathname.replace(/^\//, "").split("/");
+		if (parts[0] === "api" && parts[1] === "leetcode" && parts[2]) {
+			url.searchParams.set("username", parts[2]);
 		}
 		const username = url.searchParams.get("username");
 		if (!isValidUsername(username)) {
@@ -78,6 +81,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		};
 
 		// Add extensions based on ext/extension parameter
+		// Construct the expected compiled path directly to avoid a
+		// multi-argument helper call that causes TS confusion in some setups.
+		const metaDir = path.dirname(new URL(import.meta.url).pathname);
+		let found = path.resolve(
+			metaDir,
+			"..",
+			"leetcode",
+			"packages",
+			"core",
+			"dist",
+			"index.js",
+		);
+		if (!fs.existsSync(found)) {
+			const alt = path.join(
+				process.cwd(),
+				"leetcode",
+				"packages",
+				"core",
+				"dist",
+				"index.js",
+			);
+			if (fs.existsSync(alt)) {
+				if (process.env.LOADER_DEBUG === "1")
+					console.debug("leetcode: using cwd fallback ->", alt);
+				found = alt;
+			}
+		}
+		if (!found || !fs.existsSync(found)) {
+			return sendErrorSvg(
+				req,
+				res,
+				"Missing compiled leetcode core (run build)",
+				"LEETCODE_BUILD_MISSING",
+			);
+		}
+		const coreMod = (await importByPath(found)) as any;
 		const {
 			FontExtension,
 			AnimationExtension,
@@ -85,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			HeatmapExtension,
 			ActivityExtension,
 			ContestExtension,
-		} = await import("../leetcode/packages/core/dist/index.js");
+		} = coreMod;
 
 		sanitized.extensions = [FontExtension, AnimationExtension, ThemeExtension];
 
@@ -124,9 +163,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			: envDefault;
 
 		try {
-			const { Generator } = (await import(
-				"../leetcode/packages/core/dist/index.js"
-			)) as { Generator: any };
+			const { Generator } = coreMod as { Generator: any };
 			const generator = new Generator(
 				null as unknown as Cache,
 				{} as Record<string, string>,

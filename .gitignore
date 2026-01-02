@@ -205,3 +205,4 @@ dist/
 
 # Vendored trophy snapshot (archival) - keep out of active tree unless intentionally edited
 trophy/_vendor/
+.env*.local

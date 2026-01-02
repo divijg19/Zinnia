@@ -1,4 +1,6 @@
 {
+	"name": "@zinnia/streak",
+	"type": "module",
 	"engines": {
 		"node": ">=24"
 	}

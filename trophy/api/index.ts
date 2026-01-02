@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	setShortCacheHeaders,
 	setSvgHeaders,
-} from "../../lib/canonical/http_cache";
+} from "../../lib/canonical/http_cache.js";
 import { loadTrophyModule } from "../../lib/canonical/trophy_loader";
 import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens";
 
@@ -102,20 +102,28 @@ export async function handleWeb(req: Request): Promise<Response> {
 	try {
 		// If we have a usable PAT, produce a full local rendering using the live API
 		if (patInfo?.token) {
-			const svg = await renderLocalTrophy(
-				username,
-				patInfo.token,
-				url.searchParams,
-			);
-			const headers = new Headers();
-			setSvgHeaders({
-				setHeader: (k: string, v: string) => headers.set(k, v),
-			} as any);
-			setShortCacheHeaders(
-				{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
-				cacheSeconds,
-			);
-			return new Response(svg, { headers });
+			try {
+				const svg = await renderLocalTrophy(
+					username,
+					patInfo.token,
+					url.searchParams,
+				);
+				const headers = new Headers();
+				setSvgHeaders({
+					setHeader: (k: string, v: string) => headers.set(k, v),
+				} as any);
+				setShortCacheHeaders(
+					{
+						setHeader: (k: string, v: string) => headers.set(k, v),
+					} as any,
+					cacheSeconds,
+				);
+				return new Response(svg, { headers });
+			} catch (e) {
+				// eslint-disable-next-line no-console
+				console.error("trophy: local render failed", e);
+				return svgError("trophy: local render failed", cacheSeconds);
+			}
 		}
 
 		// No token available — fall back to the lightweight stub renderer (no network)
@@ -127,19 +135,61 @@ export async function handleWeb(req: Request): Promise<Response> {
 			const title = url.searchParams.get("title") || undefined;
 			const columns = Number(url.searchParams.get("columns") || "4") || 4;
 			if (renderTrophySVG) {
-				const svg = renderTrophySVG({ username, theme, title, columns });
-				const headers = new Headers();
-				setSvgHeaders({
-					setHeader: (k: string, v: string) => headers.set(k, v),
-				} as any);
-				setShortCacheHeaders(
-					{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
-					cacheSeconds,
-				);
-				return new Response(svg, { headers });
+				try {
+					const svg = renderTrophySVG({ username, theme, title, columns });
+					const headers = new Headers();
+					setSvgHeaders({
+						setHeader: (k: string, v: string) => headers.set(k, v),
+					} as any);
+					setShortCacheHeaders(
+						{
+							setHeader: (k: string, v: string) => headers.set(k, v),
+						} as any,
+						cacheSeconds,
+					);
+					return new Response(svg, { headers });
+				} catch (e) {
+					// eslint-disable-next-line no-console
+					console.error("trophy: renderTrophySVG threw", e);
+					// fall through to fallback
+				}
 			}
-		} catch {
-			// ignore and fall through to simple fallback
+		} catch (e) {
+			// Log the loader failure for diagnostics; fall through to fallback
+			// so request still returns a simple stub SVG instead of 500.
+			// eslint-disable-next-line no-console
+			console.error("trophy: loadTrophyModule failed", e);
+
+			// Try to recover by importing the local source renderer directly
+			// (useful in dev/test where compiled bundles may be missing).
+			try {
+				const src: any = await import("../../trophy/src/renderer");
+				const srcRender =
+					src.renderTrophySVG ?? src.default?.renderTrophySVG ?? src.default;
+				const theme = url.searchParams.get("theme") || undefined;
+				const title = url.searchParams.get("title") || undefined;
+				const columns = Number(url.searchParams.get("columns") || "4") || 4;
+				if (typeof srcRender === "function") {
+					try {
+						const svg = srcRender({ username, theme, title, columns });
+						const headers = new Headers();
+						setSvgHeaders({
+							setHeader: (k: string, v: string) => headers.set(k, v),
+						} as any);
+						setShortCacheHeaders(
+							{ setHeader: (k: string, v: string) => headers.set(k, v) } as any,
+							cacheSeconds,
+						);
+						return new Response(svg, { headers });
+					} catch (e2) {
+						// eslint-disable-next-line no-console
+						console.error("trophy: source renderer threw", e2);
+					}
+				}
+			} catch (e2) {
+				// eslint-disable-next-line no-console
+				console.error("trophy: source renderer import failed", e2);
+			}
 		}
 
 		// Final fallback simple stub

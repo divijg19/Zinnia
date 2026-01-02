@@ -3,12 +3,14 @@ import {
 	setEtagAndMaybeSend304,
 	setShortCacheHeaders,
 	setSvgHeaders,
-} from "./canonical/http_cache";
+} from "./canonical/http_cache.js";
 
 export type ErrorCode =
 	| "STATS_RATE_LIMIT"
 	| "STATS_INTERNAL"
+	| "STATS_BUILD_MISSING"
 	| "TOP_LANGS_INTERNAL"
+	| "TOP_LANGS_BUILD_MISSING"
 	| "STREAK_UPSTREAM_FETCH"
 	| "STREAK_UPSTREAM_STATUS"
 	| "STREAK_INTERNAL"
@@ -17,6 +19,7 @@ export type ErrorCode =
 	| "TROPHY_INTERNAL"
 	| "LEETCODE_INVALID"
 	| "LEETCODE_INTERNAL"
+	| "LEETCODE_BUILD_MISSING"
 	| "UNKNOWN";
 
 /** Minimal standard error SVG with hidden error code comment. */

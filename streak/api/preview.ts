@@ -3,7 +3,7 @@
 import {
 	setShortCacheHeaders,
 	setSvgHeaders,
-} from "../../lib/canonical/http_cache";
+} from "../../lib/canonical/http_cache.js";
 import type { RequestLike, ResponseLike } from "../src/server_types";
 
 export default async function handler(req: RequestLike, res: ResponseLike) {

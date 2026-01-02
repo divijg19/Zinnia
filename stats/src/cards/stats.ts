@@ -353,7 +353,8 @@ export function renderStatsCard(
 		hide_rank ? 0 : statItems.length ? 150 : 180,
 	);
 
-	const progress = 100 - rank.percentile;
+	const rankSafe = rank ?? { level: "A", percentile: 100 };
+	const progress = 100 - (rankSafe.percentile ?? 100);
 	const cssStyles = getStyles({
 		ringColor: resolvedRingColor || ring_color || "",
 		textColor,
@@ -449,7 +450,7 @@ export function renderStatsCard(
 		.join(", ");
 
 	card.setAccessibilityLabel({
-		title: `${card.title}, Rank: ${rank.level}`,
+		title: `${card.title}, Rank: ${rankSafe.level}`,
 		desc: labels,
 	});
 

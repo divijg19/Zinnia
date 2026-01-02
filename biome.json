@@ -23,7 +23,14 @@
 			"!package.json",
 			"!api/_build",
 			"!trophy/dist",
-			"!streak/dist"
+			"!streak/dist",
+			"!stats/api",
+			"!./tmp",
+			"!tmp",
+			"!.git/",
+			"!node_modules/",
+			"!dist/",
+			"!*.map"
 		],
 		"maxSize": 1048576
 	},

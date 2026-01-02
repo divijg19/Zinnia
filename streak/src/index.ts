@@ -115,7 +115,15 @@ export async function renderForUser(
 		return { contentType: ct, body: cached.body };
 	}
 	try {
-		const days: ContributionDay[] = await fetchContributions(username);
+		const forceRefresh = !!(
+			params &&
+			(params.force_refresh === "1" ||
+				params.force_refresh === "true" ||
+				params.force_refresh === true)
+		);
+		const days: ContributionDay[] = await fetchContributions(username, {
+			forceRefresh,
+		});
 		const mode =
 			(params.mode as string) ?? (params.period as string) ?? "daily";
 		const stats =

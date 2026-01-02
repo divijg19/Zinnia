@@ -1,3 +1,6 @@
+// Ensure dotenv is loaded early in dev so PAT_* env vars are available
+import "./env.js";
+
 const STATIC_PAT_KEYS = ["PAT_1", "PAT_2", "PAT_3", "PAT_4", "PAT_5"] as const;
 
 // In-memory map of token -> expiry timestamp (ms) for exhausted/invalid tokens
@@ -44,28 +47,38 @@ export function discoverPatKeys(): string[] {
  * Choose a PAT key (like `PAT_2`) from available, non-exhausted keys.
  * Selection is randomized to distribute load across tokens in serverless environments.
  */
-export function choosePatKey(): string | undefined {
+export function choosePatKey(service?: string): string | undefined {
 	const keys = discoverPatKeys().filter((k) => !isPatExhausted(k));
 	if (keys.length === 0) return undefined;
+
+	// If a service preference exists, use it when available and not exhausted
+	if (service) {
+		const s = service.toLowerCase();
+		const pref = SERVICE_PAT_MAP[s];
+		if (pref && keys.includes(pref)) {
+			console.debug(
+				`tokens: choosePatKey selected preferred key ${pref} for service ${service}`,
+			);
+			return pref;
+		}
+	}
+
 	// deterministic, per-process round-robin for even distribution
 	const rr = rrCounter as number;
 	const key = keys[rr % keys.length];
 	rrCounter = (rr + 1) % keys.length;
 
-	// Diagnostic: log chosen key name (do not log token values).
 	try {
 		if (process.env.NODE_ENV !== "test" && process.env.TOKENS_DEBUG === "1") {
-			// console.* used intentionally for visibility in server logs
-			// without leaking secrets.
-			// Example log: [tokens] choosePatKey -> PAT_3
-			// Keep this lightweight to avoid noisy logs in test runs.
-			// eslint-disable-next-line no-console
 			console.info(`[tokens] choosePatKey -> ${key}`);
 		}
 	} catch (_e) {
 		// ignore logging failures
 	}
 
+	console.debug(
+		`tokens: choosePatKey selected ${key} for service ${service ?? "<none>"}`,
+	);
 	return key;
 }
 
