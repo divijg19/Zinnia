@@ -305,19 +305,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					return res.send(body);
 				}
 				// If upstream returned a successful but non-SVG payload, treat as an error
-				// and respond with a standardized error SVG (tests accept this path).
+				// and fall back to the local renderer/cached fallback.
 				if (
 					resp &&
 					resp.status >= 200 &&
 					resp.status < 300 &&
 					(!ct || !ct.includes("svg"))
 				) {
-					return sendErrorSvg(
-						req as VercelRequest,
-						res,
-						`Upstream streak returned ${resp.status}`,
-						"STREAK_UPSTREAM_STATUS",
-					);
+					// fall through to local renderer; upstream may be returning HTML due to
+					// bot protection or other transient issues even with a 2xx status.
 				}
 				// If upstream returned a non-OK but SVG we still forward with transient cache
 				if (resp && resp.status >= 400 && ct && ct.includes("svg")) {

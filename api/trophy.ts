@@ -137,7 +137,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		filterThemeParam(url);
 		const theme = (url.searchParams.get("theme") || "").toLowerCase();
 		const title = url.searchParams.get("title") || undefined;
-		const columns = parseInt(url.searchParams.get("columns") || "4", 10) || 4;
+		const columnsRaw = parseInt(
+			url.searchParams.get("columns") || url.searchParams.get("cols") || "-1",
+			10,
+		);
+		const columns =
+			Number.isFinite(columnsRaw) && (columnsRaw === -1 || columnsRaw > 0)
+				? columnsRaw
+				: -1;
+		const columnRaw = parseInt(
+			url.searchParams.get("column") || String(columns),
+			10,
+		);
+		const column =
+			Number.isFinite(columnRaw) && (columnRaw === -1 || columnRaw > 0)
+				? columnRaw
+				: columns;
+		const rowRaw = parseInt(
+			url.searchParams.get("row") || url.searchParams.get("rows") || "-1",
+			10,
+		);
+		const row = Number.isFinite(rowRaw) ? rowRaw : -1;
+		const params = new URLSearchParams(url.searchParams);
 
 		let svgOut: string;
 		try {
@@ -179,11 +200,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						} else if (mod && typeof mod.renderLocalTrophy === "function") {
 							renderer = async (opts: any) => {
 								const token = getGithubPATForService("trophy") || "";
-								const params = new URLSearchParams();
-								if (opts.title) params.set("title", String(opts.title));
-								if (opts.columns) params.set("columns", String(opts.columns));
-								if (opts.theme) params.set("theme", String(opts.theme));
-								return mod.renderLocalTrophy(opts.username, token, params);
+								const localParams =
+									opts && opts.params instanceof URLSearchParams
+										? new URLSearchParams(opts.params)
+										: new URLSearchParams();
+								if (opts.title) localParams.set("title", String(opts.title));
+								if (opts.theme) localParams.set("theme", String(opts.theme));
+								// Prefer explicit layout params if provided; otherwise keep those
+								// coming from the embed URL (opts.params).
+								if (opts.columns != null)
+									localParams.set("columns", String(opts.columns));
+								if (opts.column != null)
+									localParams.set("column", String(opts.column));
+								if (opts.row != null) localParams.set("row", String(opts.row));
+								return mod.renderLocalTrophy(opts.username, token, localParams);
 							};
 						} else if (mod && typeof mod.renderTrophySVG === "function") {
 							renderer = async (opts: any) => mod.renderTrophySVG(opts);
@@ -206,7 +236,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				if (!loaded)
 					throw new Error("trophy renderer not found or invalid exports");
 			}
-			svgOut = await renderer({ username, theme, title, columns });
+			svgOut = await renderer({
+				username,
+				theme,
+				title,
+				columns,
+				column,
+				row,
+				params,
+			});
 		} catch (err: unknown) {
 			try {
 				console.error(

@@ -53,8 +53,9 @@ const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 export const CONSTANTS = {
 	CACHE_MAX_AGE: 18800,
 	DEFAULT_PANEL_SIZE: 110,
-	DEFAULT_MAX_COLUMN: 8,
-	DEFAULT_MAX_ROW: 3,
+	// Freeform by default: -1 is treated as "no limit" (one full row).
+	DEFAULT_MAX_COLUMN: -1,
+	DEFAULT_MAX_ROW: -1,
 	DEFAULT_MARGIN_W: 0,
 	DEFAULT_MARGIN_H: 0,
 	DEFAULT_NO_BACKGROUND: false,
