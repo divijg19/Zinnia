@@ -9,7 +9,7 @@
 	"scripts": {
 		"pretest": "bun run build",
 		"build": "tsup leetcode/packages/core/src/index.ts --format esm --out-dir leetcode/packages/core/dist --platform node --target node24 --sourcemap --clean && tsup trophy/src/renderer.ts --format esm --out-dir api/_build/trophy --platform node --target node24 --sourcemap --clean && tsup streak/src/index.ts --format esm --out-dir streak/dist --platform node --target node24 --sourcemap --clean && tsup streak/src/index.ts --format esm --out-dir api/_build/streak --platform node --target node24 --external sharp --minify --clean && tsup stats/src/index.ts --format esm --out-dir stats/api --platform node --target node24 --sourcemap --clean",
-		"verify:local": "node scripts/verify-local.mjs",
+		"verify:local": "node scripts/dev-generate.mjs",
 		"vercel:deploy": "vercel --prod --token $VERCEL_TOKEN --yes",
 		"lint": "biome check . && tsc --noEmit",
 		"format": "biome format . --write",

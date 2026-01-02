@@ -248,88 +248,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// with an SVG payload, forward it; otherwise fall back to the local
 		// TypeScript renderer for generation/cached fallback.
 		let upstreamFailed = false;
-		try {
-			const upstream = new URL("https://zinnia-rho.vercel.app/");
-			for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
-			upstream.searchParams.set("user", user as string);
-			const resp = await fetch(upstream.toString());
-			const ct = resp?.headers?.get
-				? resp.headers.get("content-type")
-				: undefined;
-			if (
-				resp &&
-				resp.status >= 200 &&
-				resp.status < 300 &&
-				ct &&
-				ct.includes("svg")
-			) {
-				const body = await resp.text();
-				// Honor If-None-Match via helper which sets ETag header.
-				try {
-					if (
-						setEtagAndMaybeSend304(
-							req.headers as Record<string, unknown>,
-							res,
-							String(body),
-						)
-					) {
-						// Caller expects a 304 match to result in an empty body send.
-						return res.send("");
-					}
-				} catch {}
-				setSvgHeaders(res);
-				try {
-					res.setHeader(
-						"X-Streak-Renderer",
-						(globalThis as any).__STREAK_RENDERER_SPEC || "unknown",
+		const preferLocal =
+			process.env.VERCEL_ENV !== "production" ||
+			process.env.STREAK_PREFER_LOCAL === "1" ||
+			url.searchParams.get("prefer_local") === "1" ||
+			url.searchParams.get("no_upstream") === "1";
+		if (!preferLocal) {
+			try {
+				const upstream = new URL("https://zinnia-rho.vercel.app/");
+				for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
+				upstream.searchParams.set("user", user as string);
+				const resp = await fetch(upstream.toString());
+				const ct = resp?.headers?.get
+					? resp.headers.get("content-type")
+					: undefined;
+				if (
+					resp &&
+					resp.status >= 200 &&
+					resp.status < 300 &&
+					ct &&
+					ct.includes("svg")
+				) {
+					const body = await resp.text();
+					// Honor If-None-Match via helper which sets ETag header.
+					try {
+						if (
+							setEtagAndMaybeSend304(
+								req.headers as Record<string, unknown>,
+								res,
+								String(body),
+							)
+						) {
+							// Caller expects a 304 match to result in an empty body send.
+							return res.send("");
+						}
+					} catch {}
+					setSvgHeaders(res);
+					try {
+						res.setHeader(
+							"X-Streak-Renderer",
+							(globalThis as any).__STREAK_RENDERER_SPEC || "unknown",
+						);
+					} catch {}
+					setCacheHeaders(
+						res,
+						resolveCacheSeconds(
+							url,
+							["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+							86400,
+						),
 					);
-				} catch {}
-				setCacheHeaders(
-					res,
-					resolveCacheSeconds(
-						url,
-						["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-						86400,
-					),
-				);
-				try {
-					res.setHeader("X-Streak-Renderer", "upstream");
-				} catch {}
-				res.setHeader("X-Upstream-Status", String(resp.status));
-				return res.send(body);
+					try {
+						res.setHeader("X-Streak-Renderer", "upstream");
+					} catch {}
+					res.setHeader("X-Upstream-Status", String(resp.status));
+					return res.send(body);
+				}
+				// If upstream returned a successful but non-SVG payload, treat as an error
+				// and respond with a standardized error SVG (tests accept this path).
+				if (
+					resp &&
+					resp.status >= 200 &&
+					resp.status < 300 &&
+					(!ct || !ct.includes("svg"))
+				) {
+					return sendErrorSvg(
+						req as VercelRequest,
+						res,
+						`Upstream streak returned ${resp.status}`,
+						"STREAK_UPSTREAM_STATUS",
+					);
+				}
+				// If upstream returned a non-OK but SVG we still forward with transient cache
+				if (resp && resp.status >= 400 && ct && ct.includes("svg")) {
+					const body = await resp.text();
+					setSvgHeaders(res);
+					setShortCacheHeaders(res, 60);
+					try {
+						res.setHeader("X-Streak-Renderer", "cache");
+					} catch {}
+					res.setHeader("X-Upstream-Status", String(resp.status));
+					return res.send(body);
+				}
+				// otherwise, fall through to local renderer below
+			} catch {
+				// upstream failed — we'll prefer a cached fallback or return
+				// a standardized error SVG rather than invoking the heavy local
+				// renderer which can be slow/heavy in tests.
+				upstreamFailed = true;
 			}
-			// If upstream returned a successful but non-SVG payload, treat as an error
-			// and respond with a standardized error SVG (tests accept this path).
-			if (
-				resp &&
-				resp.status >= 200 &&
-				resp.status < 300 &&
-				(!ct || !ct.includes("svg"))
-			) {
-				return sendErrorSvg(
-					req as VercelRequest,
-					res,
-					`Upstream streak returned ${resp.status}`,
-					"STREAK_UPSTREAM_STATUS",
-				);
-			}
-			// If upstream returned a non-OK but SVG we still forward with transient cache
-			if (resp && resp.status >= 400 && ct && ct.includes("svg")) {
-				const body = await resp.text();
-				setSvgHeaders(res);
-				setShortCacheHeaders(res, 60);
-				try {
-					res.setHeader("X-Streak-Renderer", "cache");
-				} catch {}
-				res.setHeader("X-Upstream-Status", String(resp.status));
-				return res.send(body);
-			}
-			// otherwise, fall through to local renderer below
-		} catch {
-			// upstream failed — we'll prefer a cached fallback or return
-			// a standardized error SVG rather than invoking the heavy local
-			// renderer which can be slow/heavy in tests.
-			upstreamFailed = true;
 		}
 		try {
 			const cacheLocal = getCacheAdapterForService("streak");

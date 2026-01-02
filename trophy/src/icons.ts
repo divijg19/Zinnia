@@ -1,6 +1,40 @@
 import type { Theme } from "./theme.ts";
 import { RANK } from "./utils.ts";
 
+function parseHexColor(
+	value: string,
+): { r: number; g: number; b: number } | null {
+	const raw = String(value || "").trim();
+	const m = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+	if (!m) return null;
+	const hex = m[1].toLowerCase();
+	if (hex.length === 3) {
+		const r = Number.parseInt(hex[0] + hex[0], 16);
+		const g = Number.parseInt(hex[1] + hex[1], 16);
+		const b = Number.parseInt(hex[2] + hex[2], 16);
+		return { r, g, b };
+	}
+	const r = Number.parseInt(hex.slice(0, 2), 16);
+	const g = Number.parseInt(hex.slice(2, 4), 16);
+	const b = Number.parseInt(hex.slice(4, 6), 16);
+	return { r, g, b };
+}
+
+function clampByte(n: number): number {
+	return Math.max(0, Math.min(255, Math.round(n)));
+}
+
+function adjustHexColor(value: string, delta: number): string {
+	const rgb = parseHexColor(value);
+	if (!rgb) return value;
+	const r = clampByte(rgb.r + delta);
+	const g = clampByte(rgb.g + delta);
+	const b = clampByte(rgb.b + delta);
+	return `#${r.toString(16).padStart(2, "0")}${g
+		.toString(16)
+		.padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 const leafIcon = (laurel: string): string => {
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="90pt" height="90pt" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
 <metadata>
@@ -86,23 +120,25 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
     <stop offset="50%" stop-color="${theme.SECRET_RANK_2}"/>
     <stop offset="100%" stop-color="${theme.SECRET_RANK_3}"/>
     `;
-	} else if (rank.slice(0, 1) === RANK.S) {
-		color = theme.S_RANK_BASE;
+	} else if (rank === RANK.SSS || rank === RANK.SS || rank === RANK.S) {
+		const delta = rank === RANK.SSS ? 10 : rank === RANK.SS ? 0 : -12;
+		color = adjustHexColor(theme.S_RANK_BASE, delta);
 		rankColor = theme.S_RANK_TEXT;
 		backgroundIcon = leafIcon(theme.LAUREL);
 		gradationColor = `
     <stop offset="0%" stop-color="${color}"/>
     <stop offset="70%" stop-color="${color}"/>
-    <stop offset="100%" stop-color="${theme.S_RANK_SHADOW}"/>
+    <stop offset="100%" stop-color="${adjustHexColor(theme.S_RANK_SHADOW, delta)}"/>
     `;
-	} else if (rank.slice(0, 1) === RANK.A) {
-		color = theme.A_RANK_BASE;
+	} else if (rank === RANK.AAA || rank === RANK.AA || rank === RANK.A) {
+		const delta = rank === RANK.AAA ? 10 : rank === RANK.AA ? 0 : -12;
+		color = adjustHexColor(theme.A_RANK_BASE, delta);
 		rankColor = theme.A_RANK_TEXT;
 		backgroundIcon = leafIcon(theme.LAUREL);
 		gradationColor = `
     <stop offset="0%" stop-color="${color}"/>
     <stop offset="70%" stop-color="${color}"/>
-    <stop offset="100%" stop-color="${theme.A_RANK_SHADOW}"/>
+    <stop offset="100%" stop-color="${adjustHexColor(theme.A_RANK_SHADOW, delta)}"/>
     `;
 	} else if (rank === RANK.B) {
 		color = theme.B_RANK_BASE;
@@ -112,6 +148,14 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
     <stop offset="70%" stop-color="${color}"/>
     <stop offset="100%" stop-color="${theme.B_RANK_SHADOW}"/>
     `;
+	} else if (rank === RANK.C) {
+		color = theme.DEFAULT_RANK_BASE;
+		rankColor = theme.DEFAULT_RANK_TEXT;
+		gradationColor = `
+		<stop offset="0%" stop-color="${color}"/>
+		<stop offset="70%" stop-color="${color}"/>
+		<stop offset="100%" stop-color="${theme.DEFAULT_RANK_SHADOW}"/>
+		`;
 	}
 	const icon = `
     <path d="M7 10h2v4H7v-4z"/>

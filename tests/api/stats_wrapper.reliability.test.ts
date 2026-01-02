@@ -1,29 +1,30 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Mock the loader utilities used by api/stats to avoid relying on build artifacts.
-vi.mock("../../lib/loader/index.js", () => {
+vi.mock("../../stats/src/fetchers/stats", () => {
 	return {
-		resolveCompiledHandler: () => "/virtual/stats/api/index.js",
-		importByPath: async () => {
+		fetchStats: vi.fn(async () => {
 			return {
-				// A renderer-style export (the intended path)
-				renderStatsCard: async () => '<svg id="stats-renderer"></svg>',
-				// A misleading default export that is NOT a web handler.
-				default: () => {
-					throw new Error("default export should not be invoked as a handler");
-				},
+				name: "Alice",
+				totalStars: 1,
+				totalCommits: 2,
+				totalIssues: 3,
+				totalPRs: 4,
+				totalPRsMerged: 0,
+				mergedPRsPercentage: 0,
+				totalReviews: 0,
+				totalDiscussionsStarted: 0,
+				totalDiscussionsAnswered: 0,
+				contributedTo: 0,
+				rank: { level: "C", percentile: 50 },
 			};
-		},
-		pickHandlerFromModule: () => ({
-			name: "default",
-			fn: () => {
-				throw new Error("pickHandlerFromModule path should not be reached");
-			},
 		}),
-		invokePossibleRequestHandler: async () => {
-			throw new Error("invokePossibleRequestHandler should not be reached");
-		},
+	};
+});
+
+vi.mock("../../stats/src/cards/stats", () => {
+	return {
+		renderStatsCard: vi.fn(() => '<svg id="stats-rendered"></svg>'),
 	};
 });
 
@@ -77,7 +78,7 @@ describe("/api/stats wrapper reliability", () => {
 		vi.resetModules();
 	});
 
-	it("prefers renderer exports over default handler shape", async () => {
+	it("renders via stats fetcher + renderer", async () => {
 		process.env.PAT_1 = "ghp_test_token";
 		const { default: statsHandler } = await import("../../api/stats.js");
 		const req = makeReq("/api/stats?username=alice&theme=watchdog");
@@ -86,7 +87,7 @@ describe("/api/stats wrapper reliability", () => {
 
 		expect(res._status()).toBe(200);
 		expect(res._body()).toContain("<svg");
-		expect(res._body()).toContain("stats-renderer");
+		expect(res._body()).toContain("stats-rendered");
 		const ct = res._headers.get("content-type") ?? "";
 		expect(ct).toContain("image/svg");
 	});
