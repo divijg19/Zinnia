@@ -56,7 +56,9 @@ export function choosePatKey(service?: string): string | undefined {
 		const s = service.toLowerCase();
 		const pref = SERVICE_PAT_MAP[s];
 		if (pref && keys.includes(pref)) {
-			console.debug(`tokens: choosePatKey selected preferred key ${pref} for service ${service}`);
+			console.debug(
+				`tokens: choosePatKey selected preferred key ${pref} for service ${service}`,
+			);
 			return pref;
 		}
 	}
@@ -74,7 +76,9 @@ export function choosePatKey(service?: string): string | undefined {
 		// ignore logging failures
 	}
 
-	console.debug(`tokens: choosePatKey selected ${key} for service ${service ?? "<none>"}`);
+	console.debug(
+		`tokens: choosePatKey selected ${key} for service ${service ?? "<none>"}`,
+	);
 	return key;
 }
 
@@ -171,7 +175,7 @@ export async function getGithubPATWithKeyAsync(): Promise<
 						// eslint-disable-next-line no-console
 						console.info(`[tokens] getGithubPATWithKeyAsync -> ${k}`);
 					}
-				} catch { }
+				} catch {}
 				return { key: k, token: token.trim() };
 			}
 		}

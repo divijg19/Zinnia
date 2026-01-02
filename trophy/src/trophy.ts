@@ -1,3 +1,4 @@
+import { parseBackgroundToken } from "../../lib/theme-helpers.ts";
 import { getNextRankBar, getTrophyIcon } from "./icons.ts";
 import type { Theme } from "./theme.ts";
 import { abridgeScore, CONSTANTS, RANK, RANK_ORDER } from "./utils.ts";
@@ -77,6 +78,37 @@ export class Trophy {
 			TEXT,
 			NEXT_RANK_BAR,
 		} = theme;
+		// Support background gradient tokens like `45,#520806,#021D4A`.
+		// These need to be converted into `<defs><linearGradient .../></defs>` + `fill="url(#...)"`.
+		let backgroundDefs = "";
+		let backgroundFill = String(PRIMARY);
+		try {
+			const raw = String(PRIMARY ?? "").trim();
+			if (raw.includes(",")) {
+				const parsed = parseBackgroundToken(raw);
+				if (parsed) {
+					// Preserve legacy id for stable snapshots.
+					const legacyId = "bgGrad";
+					let defWithLegacyId = parsed.def.replace(parsed.id, legacyId);
+					// Remove gradientUnits to keep output stable across renderers.
+					defWithLegacyId = defWithLegacyId.replace(
+						/ gradientUnits=['"][^'"]+['"]/i,
+						"",
+					);
+					// Normalize formatting for deterministic snapshots.
+					defWithLegacyId = defWithLegacyId
+						.replace(/'/g, '"')
+						.replace(/\n\s*/g, "");
+					backgroundDefs = `<defs>${defWithLegacyId}</defs>`;
+					backgroundFill = `url(#${legacyId})`;
+				}
+			} else {
+				// Preserve legacy formatting (e.g., "#FFF") for snapshot stability.
+				backgroundFill = raw;
+			}
+		} catch {
+			// ignore and fall back to raw fill
+		}
 		const nextRankBar = getNextRankBar(
 			this.title,
 			this.calculateNextRankPercentage(),
@@ -92,6 +124,7 @@ export class Trophy {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          ${backgroundDefs}
           <rect
             x="0.5"
             y="0.5"
@@ -99,7 +132,7 @@ export class Trophy {
             width="${panelSize - 1}"
             height="${panelSize - 1}"
             stroke="#e1e4e8"
-            fill="${PRIMARY}"
+            fill="${backgroundFill}"
             stroke-opacity="${noFrame ? "0" : "1"}"
             fill-opacity="${noBackground ? "0" : "1"}"
           />

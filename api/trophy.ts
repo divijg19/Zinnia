@@ -69,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							"trophy: imported compiled keys ->",
 							Object.keys(mod || {}),
 						);
-					} catch { }
+					} catch {}
 					console.debug("trophy: using compiled spec ->", foundCompiled);
 				}
 				const picked = pickHandlerFromModule(mod, [
@@ -113,10 +113,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						"trophy: compiled handler invocation failed",
 						String(e),
 					);
-				} catch { }
+				} catch {}
 			}
 		}
-	} catch { }
+	} catch {}
 	try {
 		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
 		const host = (req.headers.host || "localhost").toString();
@@ -170,7 +170,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 									"trophy: imported module keys ->",
 									Object.keys(mod),
 								);
-							} catch { }
+							} catch {}
 						}
 						if (typeof mod === "function") {
 							renderer = mod;
@@ -214,7 +214,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					err instanceof Error ? err.message : String(err),
 					err instanceof Error ? err.stack : undefined,
 				);
-			} catch { }
+			} catch {}
 			return sendErrorSvg(
 				req,
 				res,
@@ -251,7 +251,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			} catch {
 				// ignore
 			}
-		} catch { }
+		} catch {}
 
 		if (
 			setEtagAndMaybeSend304(

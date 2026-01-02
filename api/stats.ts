@@ -68,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		if (process.env.LOADER_DEBUG === "1") {
 			try {
 				console.debug("stats: imported module keys ->", Object.keys(mod || {}));
-			} catch { }
+			} catch {}
 			console.debug("stats: using compiled spec ->", found);
 		}
 
@@ -79,23 +79,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			`${proto}://${host}`,
 		);
 
-		const picked = pickHandlerFromModule(mod, [
-			"default",
-			"request",
-			"handler",
-		]);
-		if (!picked || typeof picked.fn !== "function") {
-			// Attempt to call renderer-style exports as a fallback (renderStatsCard, renderStats, renderTopLanguages)
+		async function tryRendererExports(): Promise<boolean> {
+			// The compiled stats bundle is typically renderer exports, not a web handler.
 			try {
 				const url = urlForHandler;
 				const username = getUsername(url, ["username", "user"]);
-				if (!username)
-					return sendErrorSvg(
-						req,
-						res,
-						"Missing or invalid ?username=",
-						"UNKNOWN",
-					);
+				if (!username) {
+					sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
+					return true;
+				}
 				filterThemeParam(url);
 				const token = getGithubPATForService("stats") || "";
 				const paramsObj = Object.fromEntries(url.searchParams.entries());
@@ -125,14 +117,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							if (!out) continue;
 							if (typeof out === "string") body = out;
 							else if (typeof out === "object") {
-								if (typeof out.body === "string") body = out.body;
-								if (typeof out.status === "number") status = out.status;
-								if (typeof out.contentType === "string")
-									contentType = out.contentType;
+								if (typeof (out as any).body === "string")
+									body = (out as any).body;
+								if (typeof (out as any).status === "number")
+									status = (out as any).status;
+								if (typeof (out as any).contentType === "string")
+									contentType = (out as any).contentType;
 							}
 							if (!body) continue;
 							setSvgHeaders(res);
-							// determine cache seconds and apply
 							const cacheSeconds = resolveCacheSeconds(
 								url,
 								["STATS_CACHE_SECONDS", "CACHE_SECONDS"],
@@ -144,10 +137,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							} else {
 								setCacheHeaders(res, cacheSeconds);
 							}
-							if (contentType)
-								try {
-									res.setHeader("Content-Type", contentType);
-								} catch { }
+							try {
+								res.setHeader("Content-Type", contentType);
+							} catch {}
 							res.status(status);
 							if (
 								setEtagAndMaybeSend304(
@@ -157,16 +149,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 								)
 							) {
 								res.status(200);
-								return res.send(body);
+								res.send(body);
+								return true;
 							}
-							return res.send(body);
-						} catch { }
+							res.send(body);
+							return true;
+						} catch {
+							// try next shape
+						}
 					}
 				}
 			} catch {
-				// fallthrough to error response below
+				// ignore
 			}
+			return false;
+		}
 
+		// Prefer renderer-style exports first; avoids accidentally invoking a default export
+		// as a web handler when the bundle is just render helpers.
+		if (await tryRendererExports()) return null;
+
+		const picked = pickHandlerFromModule(mod, [
+			"default",
+			"request",
+			"handler",
+		]);
+		if (!picked || typeof picked.fn !== "function") {
 			return sendErrorSvg(
 				req,
 				res,
@@ -185,22 +193,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			if (!headersForHandler.has("authorization") && pat) {
 				headersForHandler.set("authorization", `token ${pat}`);
 				if (process.env.TOKENS_DEBUG === "1")
-					console.debug("stats: injected Authorization header for compiled handler using PAT_? (masked)");
+					console.debug(
+						"stats: injected Authorization header for compiled handler using PAT_? (masked)",
+					);
 			}
-		} catch (e) {
+		} catch (_e) {
 			// ignore header injection failures
 		}
-		const webReq = new Request(urlForHandler.toString(), {
-			method: req.method,
-			headers: headersForHandler,
-		});
-
 		try {
-			const result = await invokePossibleRequestHandler(
-				picked.fn as (...args: unknown[]) => unknown,
-				webReq,
-				res,
-			);
+			const result =
+				picked.name === "request"
+					? await invokePossibleRequestHandler(
+							picked.fn as (...args: unknown[]) => unknown,
+							new Request(urlForHandler.toString(), {
+								method: req.method,
+								headers: headersForHandler,
+							}),
+							res,
+						)
+					: await (picked.fn as any)(req, res);
 			if (result && typeof (result as any).text === "function") {
 				const webRes = result as Response;
 				try {
@@ -227,10 +238,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const respStatus = (err as any)?.response?.status;
 				const respHeaders = (err as any)?.response?.headers;
 				let respData: string | undefined;
-				if (typeof (err as any)?.response?.data === "string") respData = (err as any).response.data.slice(0, 1024);
+				if (typeof (err as any)?.response?.data === "string")
+					respData = (err as any).response.data.slice(0, 1024);
 				else if ((err as any)?.response?.data) {
 					try {
-						respData = JSON.stringify((err as any).response.data).slice(0, 1024);
+						respData = JSON.stringify((err as any).response.data).slice(
+							0,
+							1024,
+						);
 					} catch (_e) {
 						respData = String((err as any).response.data).slice(0, 1024);
 					}
@@ -243,15 +258,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					responseDataPreview: respData,
 				});
 			} catch (_e) {
-				console.error("stats: compiled handler invocation failed (no extra data)", String(err));
+				console.error(
+					"stats: compiled handler invocation failed (no extra data)",
+					String(err),
+				);
 			}
 			return sendErrorSvg(req, res, "stats: internal error", "STATS_INTERNAL");
 		} finally {
 			// restore original env
 			try {
-				if (typeof prevGithubToken === "undefined") delete process.env.GITHUB_TOKEN;
+				if (typeof prevGithubToken === "undefined")
+					delete process.env.GITHUB_TOKEN;
 				else process.env.GITHUB_TOKEN = prevGithubToken as string;
-			} catch (_e) { }
+			} catch (_e) {}
 		}
 	} catch (_err) {
 		return sendErrorSvg(req, res, "stats: internal error", "STATS_INTERNAL");

@@ -84,7 +84,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Construct the expected compiled path directly to avoid a
 		// multi-argument helper call that causes TS confusion in some setups.
 		const metaDir = path.dirname(new URL(import.meta.url).pathname);
-		let found = path.resolve(metaDir, "..", "leetcode", "packages", "core", "dist", "index.js");
+		let found = path.resolve(
+			metaDir,
+			"..",
+			"leetcode",
+			"packages",
+			"core",
+			"dist",
+			"index.js",
+		);
 		if (!fs.existsSync(found)) {
 			const alt = path.join(
 				process.cwd(),
@@ -138,16 +146,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				themes.length === 1 || themes[1] === ""
 					? themes[0]?.trim() || "light"
 					: {
-						light: themes[0]?.trim() || "light",
-						dark: themes[1]?.trim() || "dark",
-					};
+							light: themes[0]?.trim() || "light",
+							dark: themes[1]?.trim() || "dark",
+						};
 		}
 
 		const envDefault =
 			parseInt(
 				process.env.LEETCODE_CACHE_SECONDS ||
-				process.env.CACHE_SECONDS ||
-				"86400",
+					process.env.CACHE_SECONDS ||
+					"86400",
 				10,
 			) || 86400;
 		const cacheSeconds = config.cache
