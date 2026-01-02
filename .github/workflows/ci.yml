@@ -43,6 +43,9 @@ jobs:
       - name: Lint / typecheck
         run: bun run lint
 
+      - name: Build
+        run: bun run build
+
       - name: Tests
         env:
           CI: true
