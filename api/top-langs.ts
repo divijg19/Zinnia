@@ -1,16 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
-import { forwardWebResponseToVercel } from "../lib/http.js";
-import {
-	importByPath,
-	invokePossibleRequestHandler,
-	pickHandlerFromModule,
-	resolveCompiledHandler,
-} from "../lib/loader/index.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
+import { renderTopLanguages } from "../stats/src/cards/top-languages.js";
+import { fetchTopLanguages } from "../stats/src/fetchers/top-languages.js";
 import {
 	resolveCacheSeconds,
 	setCacheHeaders,
@@ -19,269 +12,225 @@ import {
 	setSvgHeaders,
 } from "./_utils.js";
 
+function parseBoolean(value: string | undefined): boolean | undefined {
+	if (typeof value !== "string") return undefined;
+	const v = value.toLowerCase();
+	if (v === "true") return true;
+	if (v === "false") return false;
+	return undefined;
+}
+
+function parseArray(value: string | undefined): string[] {
+	if (!value) return [];
+	return value
+		.split(",")
+		.map((s) => s.trim())
+		.filter(Boolean);
+}
+
+function parseNumber(value: string | undefined): number | undefined {
+	if (!value) return undefined;
+	const n = Number(value);
+	if (Number.isFinite(n)) return n;
+	return undefined;
+}
+
+function safeUrl(req: VercelRequest, fallbackPath: string): URL {
+	const host = (req.headers.host || "localhost").toString();
+	const proto = (req.headers["x-forwarded-proto"] || "http").toString();
+	const raw = (req.url as string | undefined) || fallbackPath;
+	try {
+		if (/^https?:\/\//i.test(raw)) return new URL(raw);
+		return new URL(raw, `${proto}://${host}`);
+	} catch {
+		return new URL(fallbackPath, `${proto}://${host}`);
+	}
+}
+
+function hasAnyPatEnv(): boolean {
+	try {
+		return Object.keys(process.env).some((k) => {
+			if (!/^PAT_\d*$/.test(k)) return false;
+			const v = process.env[k];
+			return typeof v === "string" && v.trim().length > 0;
+		});
+	} catch {
+		return false;
+	}
+}
+
+function seedPatFromRequestHeaders(req: VercelRequest): void {
+	try {
+		if (process.env.PAT_1 && process.env.PAT_1.trim().length > 0) return;
+		// Some upstream libs assume PAT_1 exists even if PAT_2..PAT_N are set.
+		// If we have any PAT_* already, mirror the first one into PAT_1.
+		for (const [k, v] of Object.entries(process.env)) {
+			if (!/^PAT_\d*$/.test(k)) continue;
+			if (typeof v !== "string") continue;
+			if (v.trim().length === 0) continue;
+			process.env.PAT_1 = v;
+			break;
+		}
+		if (process.env.PAT_1 && process.env.PAT_1.trim().length > 0) return;
+		const authRaw =
+			(req.headers.authorization as string | undefined) ||
+			(req.headers.Authorization as string | undefined);
+		const xTokenRaw = req.headers["x-github-token"] as string | undefined;
+		const candidate = String(xTokenRaw || authRaw || "").trim();
+		if (!candidate) return;
+		const token = candidate
+			.replace(/^token\s+/i, "")
+			.replace(/^bearer\s+/i, "")
+			.trim();
+		if (!token) return;
+		process.env.PAT_1 = token;
+	} catch {
+		// ignore
+	}
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		const pat = getGithubPATForService("top-langs");
-		if (!pat) {
+		try {
+			if (process.env.VERCEL_ENV !== "production") {
+				const hasAuth = Boolean(
+					(req.headers.authorization as string | undefined)?.trim() ||
+						(req.headers.Authorization as string | undefined)?.trim(),
+				);
+				const hasX = Boolean(
+					(req.headers["x-github-token"] as string | undefined)?.trim(),
+				);
+				res.setHeader("X-Has-Auth", hasAuth ? "1" : "0");
+				res.setHeader("X-Has-X-Github-Token", hasX ? "1" : "0");
+			}
+		} catch {}
+		const url = safeUrl(req, "/api/top-langs");
+		const username = getUsername(url, ["username", "user"]);
+		if (!username) {
+			return sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
+		}
+		filterThemeParam(url);
+
+		const token = getGithubPATForService("top-langs");
+		try {
+			if (
+				token &&
+				(!process.env.PAT_1 || process.env.PAT_1.trim().length === 0)
+			) {
+				process.env.PAT_1 = String(token);
+			}
+		} catch {}
+		seedPatFromRequestHeaders(req);
+
+		if (!hasAnyPatEnv()) {
 			return sendErrorSvg(
 				req,
 				res,
-				"Set PAT_1 in Vercel for top-langs",
+				"Set PAT_1 (or GITHUB_TOKEN) in Vercel for top-langs",
 				"STATS_RATE_LIMIT",
 			);
 		}
 
-		// Ensure compiled handler exists before dynamic import. Try
-		// `top-langs.js` first (if present), otherwise fall back to
-		// the `stats/api/index.js` bundle which exports renderer helpers.
-		let found =
-			resolveCompiledHandler(
-				import.meta.url,
-				"..",
-				"stats",
-				"api",
-				"top-langs.js",
-			) ||
-			resolveCompiledHandler(import.meta.url, "..", "stats", "api", "index.js");
-		if (!found) {
-			const alt = path.join(process.cwd(), "stats", "api", "index.js");
-			if (fs.existsSync(alt)) {
-				if (process.env.LOADER_DEBUG === "1")
-					console.debug("top-langs: using cwd fallback ->", alt);
-				found = alt;
-			}
-		}
-		if (!found) {
-			return sendErrorSvg(
-				req,
-				res,
-				"Missing compiled top-langs handler (run build)",
-				"TOP_LANGS_BUILD_MISSING",
-			);
-		}
-
-		// Ensure compiled module sees the PAT at import time; some modules
-		// read process.env.GITHUB_TOKEN during initialization. Restore later.
-		const prevGithubToken = process.env.GITHUB_TOKEN;
-		if (pat) process.env.GITHUB_TOKEN = String(pat);
-
-		// Import the handler by absolute path and call it (support multiple export shapes)
-		const mod = (await importByPath(found)) as unknown as Record<
-			string,
-			unknown
-		>;
-		if (process.env.LOADER_DEBUG === "1") {
-			try {
-				console.debug(
-					"top-langs: imported module keys ->",
-					Object.keys(mod || {}),
-				);
-			} catch (_) {}
-			console.debug("top-langs: using compiled spec ->", found);
-		}
-
-		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers.host || "localhost").toString();
-		const urlForHandler = new URL(
-			(req.url as string) || "/api/top-langs",
-			`${proto}://${host}`,
+		const exclude_repo = parseArray(
+			url.searchParams.get("exclude_repo") ?? undefined,
+		);
+		const size_weight = parseNumber(
+			url.searchParams.get("size_weight") ?? undefined,
+		);
+		const count_weight = parseNumber(
+			url.searchParams.get("count_weight") ?? undefined,
 		);
 
-		async function tryRendererExports(): Promise<boolean> {
-			try {
-				const url = urlForHandler;
-				const username = getUsername(url, ["username", "user"]);
-				if (!username) {
-					sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
-					return true;
-				}
-				filterThemeParam(url);
-				const token = getGithubPATForService("top-langs") || "";
-				const paramsObj = Object.fromEntries(url.searchParams.entries());
+		const topLangs = await fetchTopLanguages(
+			username,
+			exclude_repo,
+			typeof size_weight === "number" ? size_weight : 1,
+			typeof count_weight === "number" ? count_weight : 0,
+		);
 
-				const rendererCandidates = [
-					(mod as any).renderTopLanguages,
-					(mod as any).renderTopLangs,
-					(mod as any).renderTopLanguagesCard,
-				];
-				for (const fn of rendererCandidates) {
-					if (typeof fn !== "function") continue;
-					const shapes = [
-						() => fn({ username, token, params: paramsObj }),
-						() => fn(username, token, paramsObj),
-						() => fn(username, token),
-						() => fn(username),
-					];
-					for (const s of shapes) {
-						try {
-							const out = await s();
-							let body: string | undefined;
-							let status = 200;
-							let contentType = "image/svg+xml";
-							if (!out) continue;
-							if (typeof out === "string") body = out;
-							else if (typeof out === "object") {
-								if (typeof (out as any).body === "string")
-									body = (out as any).body;
-								if (typeof (out as any).status === "number")
-									status = (out as any).status;
-								if (typeof (out as any).contentType === "string")
-									contentType = (out as any).contentType;
-							}
-							if (!body) continue;
-							setSvgHeaders(res);
-							const cacheSeconds = resolveCacheSeconds(
-								url,
-								["TOP_LANGS_CACHE_SECONDS", "CACHE_SECONDS"],
-								86400,
-							);
-							if (status >= 500) {
-								setShortCacheHeaders(res, Math.min(cacheSeconds, 60));
-								res.setHeader("X-Cache-Status", "transient");
-							} else {
-								setCacheHeaders(res, cacheSeconds);
-							}
-							try {
-								res.setHeader("Content-Type", contentType);
-							} catch {}
-							res.status(status);
-							if (
-								setEtagAndMaybeSend304(
-									req.headers as Record<string, unknown>,
-									res,
-									body,
-								)
-							) {
-								res.status(200);
-								res.send(body);
-								return true;
-							}
-							res.send(body);
-							return true;
-						} catch {
-							// try next shape
-						}
-					}
-				}
-			} catch {
-				// ignore
-			}
-			return false;
-		}
+		const layoutRaw = url.searchParams.get("layout") ?? undefined;
+		const layout =
+			layoutRaw === "compact" ||
+			layoutRaw === "normal" ||
+			layoutRaw === "donut" ||
+			layoutRaw === "donut-vertical" ||
+			layoutRaw === "pie"
+				? layoutRaw
+				: undefined;
+		const statsFormatRaw = url.searchParams.get("stats_format") ?? undefined;
+		const stats_format =
+			statsFormatRaw === "percentages" || statsFormatRaw === "bytes"
+				? statsFormatRaw
+				: undefined;
 
-		// Prefer renderer exports first (stats bundle usually provides render helpers).
-		if (await tryRendererExports()) return null;
+		const svg = renderTopLanguages(topLangs, {
+			hide: parseArray(url.searchParams.get("hide") ?? undefined),
+			hide_progress: parseBoolean(
+				url.searchParams.get("hide_progress") ?? undefined,
+			),
+			hide_title: parseBoolean(url.searchParams.get("hide_title") ?? undefined),
+			hide_border: parseBoolean(
+				url.searchParams.get("hide_border") ?? undefined,
+			),
+			custom_title: url.searchParams.get("custom_title") ?? undefined,
+			// Top-langs renderer uses a narrow theme union; accept any user-provided theme.
+			theme: (url.searchParams.get("theme") ?? "default") as any,
+			layout,
+			locale: url.searchParams.get("locale") ?? undefined,
+			langs_count: parseNumber(
+				url.searchParams.get("langs_count") ?? undefined,
+			),
+			card_width: parseNumber(url.searchParams.get("card_width") ?? undefined),
+			border_radius: parseNumber(
+				url.searchParams.get("border_radius") ?? undefined,
+			),
+			title_color: url.searchParams.get("title_color") ?? undefined,
+			text_color: url.searchParams.get("text_color") ?? undefined,
+			bg_color: url.searchParams.get("bg_color") ?? undefined,
+			border_color: url.searchParams.get("border_color") ?? undefined,
+			stats_format,
+			disable_animations: parseBoolean(
+				url.searchParams.get("disable_animations") ?? undefined,
+			),
+		});
 
-		const picked = pickHandlerFromModule(mod, [
-			"default",
-			"request",
-			"handler",
-		]);
-		if (!picked || typeof picked.fn !== "function") {
-			return sendErrorSvg(
-				req,
-				res,
-				"top-langs: invalid handler",
-				"TOP_LANGS_INTERNAL",
-			);
-		}
-
-		const headersForHandler = new Headers();
-		for (const [k, v] of Object.entries(
-			req.headers as Record<string, string>,
-		)) {
-			if (typeof v === "string") headersForHandler.set(k, v);
-		}
-		// Ensure compiled handler sees an Authorization header when we have a PAT
-		try {
-			if (!headersForHandler.has("authorization") && pat) {
-				headersForHandler.set("authorization", `token ${pat}`);
-				if (process.env.TOKENS_DEBUG === "1")
-					console.debug(
-						"top-langs: injected Authorization header for compiled handler using PAT_? (masked)",
-					);
-			}
-		} catch (_e) {
-			// ignore header injection failures
-		}
-		try {
-			const result =
-				picked.name === "request"
-					? await invokePossibleRequestHandler(
-							picked.fn as (...args: unknown[]) => unknown,
-							new Request(urlForHandler.toString(), {
-								method: req.method,
-								headers: headersForHandler,
-							}),
-							res,
-						)
-					: await (picked.fn as any)(req, res);
-			if (result && typeof (result as any).text === "function") {
-				const webRes = result as Response;
-				try {
-					return await forwardWebResponseToVercel(res, webRes);
-				} catch (err) {
-					console.debug(
-						"top-langs: forwarding compiled handler response failed:",
-						String(err),
-					);
-					return sendErrorSvg(
-						req,
-						res,
-						"top-langs: internal error",
-						"TOP_LANGS_INTERNAL",
-					);
-				}
-			}
-			// Handler likely wrote to res directly
+		setSvgHeaders(res);
+		const cacheSeconds = resolveCacheSeconds(
+			url,
+			["TOP_LANGS_CACHE_SECONDS", "CACHE_SECONDS"],
+			86400,
+		);
+		setCacheHeaders(res, cacheSeconds);
+		if (
+			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, svg)
+		) {
+			res.status(200);
+			res.send(svg);
 			return null;
-		} catch (err) {
-			console.debug(
-				"top-langs: compiled handler invocation failed:",
-				String(err),
-			);
-			return sendErrorSvg(
-				req,
-				res,
-				"top-langs: internal error",
-				"TOP_LANGS_INTERNAL",
-			);
-		} finally {
-			try {
-				if (typeof prevGithubToken === "undefined")
-					delete process.env.GITHUB_TOKEN;
-				else process.env.GITHUB_TOKEN = prevGithubToken as string;
-			} catch (_e) {}
 		}
+		res.status(200);
+		res.send(svg);
+		return null;
 	} catch (err) {
 		try {
-			// Surface axios-like response details when available to aid debugging
-			// without leaking tokens.
-			const respStatus = (err as any)?.response?.status;
-			const respHeaders = (err as any)?.response?.headers;
-			let respData: string | undefined;
-			if (typeof (err as any)?.response?.data === "string")
-				respData = (err as any).response.data.slice(0, 1024);
-			else if ((err as any)?.response?.data) {
-				try {
-					respData = JSON.stringify((err as any).response.data).slice(0, 1024);
-				} catch (_e) {
-					respData = String((err as any).response.data).slice(0, 1024);
-				}
+			if (process.env.VERCEL_ENV !== "production") {
+				const name = err instanceof Error ? err.name : "Error";
+				const msgRaw = err instanceof Error ? err.message : String(err);
+				const msg = String(msgRaw)
+					.replace(/gh[pousr]_[A-Za-z0-9_]{10,}/g, "[REDACTED]")
+					.slice(0, 180);
+				res.setHeader("X-Dev-Error-Name", name);
+				res.setHeader("X-Dev-Error-Message", msg);
 			}
-			console.error("top-langs: compiled handler invocation failed", {
-				message: err instanceof Error ? err.message : String(err),
-				stack: err instanceof Error ? err.stack : undefined,
-				responseStatus: respStatus,
-				responseHeaders: respHeaders,
-				responseDataPreview: respData,
-			});
-		} catch (_e) {
+		} catch {}
+		try {
 			console.error(
-				"top-langs: compiled handler invocation failed (no extra data)",
-				String(err),
+				"top-langs: internal error",
+				err instanceof Error ? err.stack || err.message : String(err),
 			);
-		}
+		} catch {}
+		setShortCacheHeaders(res, 60);
+		res.setHeader("X-Cache-Status", "transient");
 		return sendErrorSvg(
 			req,
 			res,

@@ -78,8 +78,9 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
 
 	const titles = (title || "").split(",").filter(Boolean);
 	const ranks: string[] = [];
-	const column = Number(columns || 4);
-	const row = 3;
+	const columnRaw = Number(columns || 4);
+	const column = Number.isFinite(columnRaw) && columnRaw > 0 ? columnRaw : 4;
+	const row = -1;
 	const marginW = 0;
 	const marginH = 0;
 	const noBg = false;
@@ -126,15 +127,18 @@ export async function renderLocalTrophy(
 	params: URLSearchParams,
 ) {
 	const _title = params.get("title") || undefined;
-	const cols = Number(params.get("columns") || params.get("cols") || "4") || 4;
+	const colsRaw = Number(params.get("columns") || params.get("cols") || "4");
+	const cols = Number.isFinite(colsRaw) && colsRaw > 0 ? colsRaw : 4;
 	const themeName = params.get("theme") || undefined;
 	const theme = ((COLORS as Record<string, Theme>)[themeName ?? "flat"] ??
 		(COLORS as Record<string, Theme>).flat) as Theme;
 
 	const titles = (params.get("title") || "").split(",").filter(Boolean);
 	const ranks = (params.get("rank") || "").split(",").filter(Boolean);
-	const column = Number(params.get("column") || cols || "-1");
-	const row = Number(params.get("row") || "3");
+	const columnRaw = Number(params.get("column") || cols || "-1");
+	const column = Number.isFinite(columnRaw) ? columnRaw : cols;
+	const rowRaw = Number(params.get("row") || params.get("rows") || "-1");
+	const row = Number.isFinite(rowRaw) ? rowRaw : -1;
 	const marginW = Number(params.get("margin-w") || "0");
 	const marginH = Number(params.get("margin-h") || "0");
 	const noBg = params.get("no-bg") === "true";

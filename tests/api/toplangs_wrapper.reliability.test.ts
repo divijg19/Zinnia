@@ -1,27 +1,20 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../lib/loader/index.js", () => {
+vi.mock("../../stats/src/fetchers/top-languages", () => {
 	return {
-		resolveCompiledHandler: () => "/virtual/stats/api/index.js",
-		importByPath: async () => {
+		fetchTopLanguages: vi.fn(async () => {
 			return {
-				renderTopLanguages: async () => '<svg id="toplangs-renderer"></svg>',
-				// This resembles a Vercel-style handler; wrapper must call it as (req,res),
-				// not as a web Request handler.
-				default: (_req: any, res: any) => {
-					res.setHeader("Content-Type", "image/svg+xml");
-					res.status(200);
-					return res.send('<svg id="toplangs-default"></svg>');
-				},
+				langs: [{ name: "TypeScript", color: "#3178c6", size: 123, count: 1 }],
+				totalLanguageSize: 123,
 			};
-		},
-		pickHandlerFromModule: (mod: any) => ({ name: "default", fn: mod.default }),
-		invokePossibleRequestHandler: async () => {
-			throw new Error(
-				"invokePossibleRequestHandler should not be used for default export",
-			);
-		},
+		}),
+	};
+});
+
+vi.mock("../../stats/src/cards/top-languages", () => {
+	return {
+		renderTopLanguages: vi.fn(() => '<svg id="toplangs-rendered"></svg>'),
 	};
 });
 
@@ -85,39 +78,6 @@ describe("/api/top-langs wrapper reliability", () => {
 		await handler(req, res);
 
 		expect(res._status()).toBe(200);
-		expect(res._body()).toContain("toplangs-renderer");
-	});
-
-	it("treats default export as a Vercel handler, not a web Request handler", async () => {
-		// Force renderer exports to be absent so the wrapper takes the picked handler path.
-		process.env.PAT_1 = "ghp_test_token";
-		vi.doMock("../../lib/loader/index.js", () => {
-			return {
-				resolveCompiledHandler: () => "/virtual/stats/api/index.js",
-				importByPath: async () => ({
-					default: (_req: any, res: any) => {
-						res.setHeader("Content-Type", "image/svg+xml");
-						res.status(200);
-						return res.send('<svg id="toplangs-default"></svg>');
-					},
-				}),
-				pickHandlerFromModule: (mod: any) => ({
-					name: "default",
-					fn: mod.default,
-				}),
-				invokePossibleRequestHandler: async () => {
-					throw new Error("should not be called for default");
-				},
-			};
-		});
-		vi.resetModules();
-
-		const { default: handler } = await import("../../api/top-langs.js");
-		const req = makeReq("/api/top-langs?username=alice");
-		const res = makeRes();
-		await handler(req, res);
-
-		expect(res._status()).toBe(200);
-		expect(res._body()).toContain("toplangs-default");
+		expect(res._body()).toContain("toplangs-rendered");
 	});
 });

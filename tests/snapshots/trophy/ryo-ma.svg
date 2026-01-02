@@ -1,8 +1,8 @@
 
     <svg
       width="440"
-      height="330"
-      viewBox="0 0 440 330"
+      height="440"
+      viewBox="0 0 440 440"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -16,6 +16,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -54,37 +55,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">S Rank Hacker</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">All S Rank</text>
           
-    <style>
-    @keyframes AllSuperRankRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #AllSuperRank-rank-progress{
-      animation: AllSuperRankRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="AllSuperRank-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes AllSuperRankRankAnimation { from { width: 0px; } to { width: 80px; } } #AllSuperRank-rank-progress{ animation: AllSuperRankRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="AllSuperRank-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -96,6 +70,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -134,37 +109,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Rainbow Lang User</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">12pt</text>
           
-    <style>
-    @keyframes MultiLanguageRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #MultiLanguage-rank-progress{
-      animation: MultiLanguageRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="MultiLanguage-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes MultiLanguageRankAnimation { from { width: 0px; } to { width: 80px; } } #MultiLanguage-rank-progress{ animation: MultiLanguageRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="MultiLanguage-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -176,6 +124,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -214,37 +163,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Village Elder</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">12pt</text>
           
-    <style>
-    @keyframes LongTimeUserRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #LongTimeUser-rank-progress{
-      animation: LongTimeUserRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="LongTimeUser-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes LongTimeUserRankAnimation { from { width: 0px; } to { width: 80px; } } #LongTimeUser-rank-progress{ animation: LongTimeUserRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="LongTimeUser-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -256,6 +178,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -294,37 +217,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Ancient User</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">Before 2010</text>
           
-    <style>
-    @keyframes AncientUserRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #AncientUser-rank-progress{
-      animation: AncientUserRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="AncientUser-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes AncientUserRankAnimation { from { width: 0px; } to { width: 80px; } } #AncientUser-rank-progress{ animation: AncientUserRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="AncientUser-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -336,6 +232,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -374,37 +271,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">OG User</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">Joined 2008</text>
           
-    <style>
-    @keyframes OGUserRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #OGUser-rank-progress{
-      animation: OGUserRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="OGUser-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes OGUserRankAnimation { from { width: 0px; } to { width: 80px; } } #OGUser-rank-progress{ animation: OGUserRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="OGUser-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -416,6 +286,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -454,37 +325,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Everything started...</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">Joined 2020</text>
           
-    <style>
-    @keyframes Joined2020RankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Joined2020-rank-progress{
-      animation: Joined2020RankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Joined2020-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes Joined2020RankAnimation { from { width: 0px; } to { width: 80px; } } #Joined2020-rank-progress{ animation: Joined2020RankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Joined2020-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -496,6 +340,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -534,37 +379,10 @@
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Jack of all Trades</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">5pt</text>
           
-    <style>
-    @keyframes OrganizationsRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Organizations-rank-progress{
-      animation: OrganizationsRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Organizations-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes OrganizationsRankAnimation { from { width: 0px; } to { width: 80px; } } #Organizations-rank-progress{ animation: OrganizationsRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Organizations-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -576,6 +394,7 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -610,7 +429,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 <path d="M7249 1054 c-42 -7 -109 -25 -150 -40 -76 -27 -226 -101 -267 -133 l-24 -18 41 -66 c22 -37 36 -67 31 -67 -18 0 -11 -80 11 -121 11 -22 53 -73 92 -113 279 -282 682 -361 1251 -245 113 23 172 49 188 84 14 30 3 72 -20 77 -9 3 18 15 61 29 l78 24 -93 81 c-362 313 -622 460 -902 509 -106 18 -194 18 -297 -1z"/>
 </g>
 </svg>
-  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -619,7 +438,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
     <circle cx="8" cy="6" r="4" fill="#FFF" />
     <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#886000">S</text>
   
-    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -632,9 +451,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-SSS" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#f4cc0a"/>
+    <stop offset="70%" stop-color="#f4cc0a"/>
+    <stop offset="100%" stop-color="#f4cc0a"/>
     
     </linearGradient>
   </defs>
@@ -653,37 +472,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Super Stargazer</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">7.2kpt</text>
           
-    <style>
-    @keyframes StarsRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Stars-rank-progress{
-      animation: StarsRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Stars-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes StarsRankAnimation { from { width: 0px; } to { width: 80px; } } #Stars-rank-progress{ animation: StarsRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Stars-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -695,6 +487,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -729,7 +522,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 <path d="M7249 1054 c-42 -7 -109 -25 -150 -40 -76 -27 -226 -101 -267 -133 l-24 -18 41 -66 c22 -37 36 -67 31 -67 -18 0 -11 -80 11 -121 11 -22 53 -73 92 -113 279 -282 682 -361 1251 -245 113 23 172 49 188 84 14 30 3 72 -20 77 -9 3 18 15 61 29 l78 24 -93 81 c-362 313 -622 460 -902 509 -106 18 -194 18 -297 -1z"/>
 </g>
 </svg>
-  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -738,7 +531,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
     <circle cx="8" cy="6" r="4" fill="#FFF" />
     <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#886000">S</text>
   
-    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -751,9 +544,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-SSS" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#f4cc0a"/>
+    <stop offset="70%" stop-color="#f4cc0a"/>
+    <stop offset="100%" stop-color="#f4cc0a"/>
     
     </linearGradient>
   </defs>
@@ -772,37 +565,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">God Committer</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">4.2kpt</text>
           
-    <style>
-    @keyframes CommitsRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Commits-rank-progress{
-      animation: CommitsRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Commits-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes CommitsRankAnimation { from { width: 0px; } to { width: 80px; } } #Commits-rank-progress{ animation: CommitsRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Commits-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -814,6 +580,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -848,7 +615,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 <path d="M7249 1054 c-42 -7 -109 -25 -150 -40 -76 -27 -226 -101 -267 -133 l-24 -18 41 -66 c22 -37 36 -67 31 -67 -18 0 -11 -80 11 -121 11 -22 53 -73 92 -113 279 -282 682 -361 1251 -245 113 23 172 49 188 84 14 30 3 72 -20 77 -9 3 18 15 61 29 l78 24 -93 81 c-362 313 -622 460 -902 509 -106 18 -194 18 -297 -1z"/>
 </g>
 </svg>
-  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -857,7 +624,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
     <circle cx="8" cy="6" r="4" fill="#FFF" />
     <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#886000">S</text>
   
-    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -870,9 +637,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-SSS" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#f4cc0a"/>
+    <stop offset="70%" stop-color="#f4cc0a"/>
+    <stop offset="100%" stop-color="#f4cc0a"/>
     
     </linearGradient>
   </defs>
@@ -891,37 +658,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">God Repo Creator</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">120pt</text>
           
-    <style>
-    @keyframes RepositoriesRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Repositories-rank-progress{
-      animation: RepositoriesRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Repositories-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes RepositoriesRankAnimation { from { width: 0px; } to { width: 80px; } } #Repositories-rank-progress{ animation: RepositoriesRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Repositories-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -933,6 +673,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -967,7 +708,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 <path d="M7249 1054 c-42 -7 -109 -25 -150 -40 -76 -27 -226 -101 -267 -133 l-24 -18 41 -66 c22 -37 36 -67 31 -67 -18 0 -11 -80 11 -121 11 -22 53 -73 92 -113 279 -282 682 -361 1251 -245 113 23 172 49 188 84 14 30 3 72 -20 77 -9 3 18 15 61 29 l78 24 -93 81 c-362 313 -622 460 -902 509 -106 18 -194 18 -297 -1z"/>
 </g>
 </svg>
-  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -976,7 +717,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
     <circle cx="8" cy="6" r="4" fill="#FFF" />
     <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#886000">S</text>
   
-    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -989,9 +730,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-SSS" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#f4cc0a"/>
+    <stop offset="70%" stop-color="#f4cc0a"/>
+    <stop offset="100%" stop-color="#f4cc0a"/>
     
     </linearGradient>
   </defs>
@@ -1010,37 +751,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">God Reviewer</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">80pt</text>
           
-    <style>
-    @keyframes ReviewsRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Reviews-rank-progress{
-      animation: ReviewsRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Reviews-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes ReviewsRankAnimation { from { width: 0px; } to { width: 80px; } } #Reviews-rank-progress{ animation: ReviewsRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Reviews-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -1052,6 +766,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -1086,7 +801,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 <path d="M7249 1054 c-42 -7 -109 -25 -150 -40 -76 -27 -226 -101 -267 -133 l-24 -18 41 -66 c22 -37 36 -67 31 -67 -18 0 -11 -80 11 -121 11 -22 53 -73 92 -113 279 -282 682 -361 1251 -245 113 23 172 49 188 84 14 30 3 72 -20 77 -9 3 18 15 61 29 l78 24 -93 81 c-362 313 -622 460 -902 509 -106 18 -194 18 -297 -1z"/>
 </g>
 </svg>
-  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+  <svg x="7" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -1095,7 +810,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
     <circle cx="8" cy="6" r="4" fill="#FFF" />
     <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#886000">S</text>
   
-    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#eac200" xmlns="http://www.w3.org/2000/svg">
+    </svg><svg x="68" y="35" width="65" height="65" viewBox="0 0 30 30" fill="#f4cc0a" xmlns="http://www.w3.org/2000/svg">
       
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
@@ -1108,9 +823,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-SSS" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#f4cc0a"/>
+    <stop offset="70%" stop-color="#f4cc0a"/>
+    <stop offset="100%" stop-color="#f4cc0a"/>
     
     </linearGradient>
   </defs>
@@ -1129,37 +844,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Seasoned Veteran</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">4.5kpt</text>
           
-    <style>
-    @keyframes ExperienceRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 80px;
-      }
-    }
-    #Experience-rank-progress{
-      animation: ExperienceRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Experience-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes ExperienceRankAnimation { from { width: 0px; } to { width: 80px; } } #Experience-rank-progress{ animation: ExperienceRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Experience-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -1171,6 +859,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -1239,37 +928,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Ultra Celebrity</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">500pt</text>
           
-    <style>
-    @keyframes FollowersRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 13.333px;
-      }
-    }
-    #Followers-rank-progress{
-      animation: FollowersRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Followers-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes FollowersRankAnimation { from { width: 0px; } to { width: 13.333px; } } #Followers-rank-progress{ animation: FollowersRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Followers-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -1281,6 +943,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -1319,9 +982,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-S" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#deb600"/>
+    <stop offset="70%" stop-color="#deb600"/>
+    <stop offset="100%" stop-color="#deb600"/>
     
     </linearGradient>
   </defs>
@@ -1340,37 +1003,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Super Issuer</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">240pt</text>
           
-    <style>
-    @keyframes IssuesRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 10.667px;
-      }
-    }
-    #Issues-rank-progress{
-      animation: IssuesRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="Issues-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes IssuesRankAnimation { from { width: 0px; } to { width: 10.667px; } } #Issues-rank-progress{ animation: IssuesRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="Issues-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
         <svg
@@ -1382,6 +1018,7 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          
           <rect
             x="0.5"
             y="0.5"
@@ -1420,9 +1057,9 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
   <defs>
     <linearGradient id="rank-S" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="#eac200"/>
-    <stop offset="70%" stop-color="#eac200"/>
-    <stop offset="100%" stop-color="#eac200"/>
+    <stop offset="0%" stop-color="#deb600"/>
+    <stop offset="70%" stop-color="#deb600"/>
+    <stop offset="100%" stop-color="#deb600"/>
     
     </linearGradient>
   </defs>
@@ -1441,37 +1078,10 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
           <text x="50%" y="85" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10.5" fill="#666">Super Puller</text>
           <text x="50%" y="97" text-anchor="middle" font-family="Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji" font-weight="bold" font-size="10" fill="#666">300pt</text>
           
-    <style>
-    @keyframes PullRequestRankAnimation {
-      from {
-        width: 0px;
-      }
-      to {
-        width: 26.667px;
-      }
-    }
-    #PullRequest-rank-progress{
-      animation: PullRequestRankAnimation 1s forwards ease-in-out;
-    }
-    </style>
-    <rect
-      x="15"
-      y="101"
-      rx="1"
-      width="80"
-      height="3.2"
-      opacity="0.3"
-      fill="#0366d6"
-    />
-    <rect
-      id="PullRequest-rank-progress"
-      x="15"
-      y="101"
-      rx="1"
-      height="3.2"
-      fill="#0366d6"
-    />
-  
+      <style> @keyframes PullRequestRankAnimation { from { width: 0px; } to { width: 26.667px; } } #PullRequest-rank-progress{ animation: PullRequestRankAnimation 1s forwards ease-in-out; } </style>
+      <rect x="15" y="101" rx="1" width="80" height="3.2" opacity="0.3" fill="#0366d6" />
+      <rect id="PullRequest-rank-progress" x="15" y="101" rx="1" height="3.2" fill="#0366d6" />
+    
         </svg>
         
     </svg>

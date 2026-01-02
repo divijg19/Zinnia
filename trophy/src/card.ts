@@ -63,7 +63,7 @@ export class Card {
 	}
 	private getRow(trophyList: TrophyList) {
 		let row = Math.floor((trophyList.length - 1) / this.maxColumn) + 1;
-		if (row > this.maxRow) {
+		if (this.maxRow > 0 && row > this.maxRow) {
 			row = this.maxRow;
 		}
 		return row;
