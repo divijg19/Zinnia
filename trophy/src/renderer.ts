@@ -72,14 +72,19 @@ export function renderTrophySVG(cfg: TrophyConfig): string {
 	// Produce a visual placeholder using canonical Card/Trophy rendering so
 	// the snapshot visually matches upstream's layout. This avoids a
 	// lightweight, non-canonical grid used previously.
-	const { theme: themeName, title, columns = 4 } = cfg;
+	const { theme: themeName, title, columns = -1 } = cfg;
 	const theme = ((COLORS as Record<string, Theme>)[themeName ?? "flat"] ??
 		(COLORS as Record<string, Theme>).flat) as Theme;
 
 	const titles = (title || "").split(",").filter(Boolean);
 	const ranks: string[] = [];
-	const columnRaw = Number(columns || 4);
-	const column = Number.isFinite(columnRaw) && columnRaw > 0 ? columnRaw : 4;
+	const columnRaw = Number(columns);
+	const column =
+		Number.isFinite(columnRaw) && columnRaw === -1
+			? -1
+			: Number.isFinite(columnRaw) && columnRaw > 0
+				? columnRaw
+				: -1;
 	const row = -1;
 	const marginW = 0;
 	const marginH = 0;
@@ -127,8 +132,13 @@ export async function renderLocalTrophy(
 	params: URLSearchParams,
 ) {
 	const _title = params.get("title") || undefined;
-	const colsRaw = Number(params.get("columns") || params.get("cols") || "4");
-	const cols = Number.isFinite(colsRaw) && colsRaw > 0 ? colsRaw : 4;
+	const colsRaw = Number(params.get("columns") || params.get("cols") || "-1");
+	const cols =
+		Number.isFinite(colsRaw) && colsRaw === -1
+			? -1
+			: Number.isFinite(colsRaw) && colsRaw > 0
+				? colsRaw
+				: -1;
 	const themeName = params.get("theme") || undefined;
 	const theme = ((COLORS as Record<string, Theme>)[themeName ?? "flat"] ??
 		(COLORS as Record<string, Theme>).flat) as Theme;

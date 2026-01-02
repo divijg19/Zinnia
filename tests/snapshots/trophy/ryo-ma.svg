@@ -34,9 +34,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -47,7 +47,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -88,9 +88,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -101,7 +101,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -142,9 +142,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -155,7 +155,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -196,9 +196,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -209,7 +209,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -250,9 +250,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -263,7 +263,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -304,9 +304,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -317,7 +317,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   
@@ -358,9 +358,9 @@
   <defs>
     <linearGradient id="rank-SECRET" gradientTransform="rotate(45)">
     
-    <stop offset="0%" stop-color="red"/>
-    <stop offset="50%" stop-color="fuchsia"/>
-    <stop offset="100%" stop-color="blue"/>
+    <stop offset="0%" stop-color="#ff1744"/>
+    <stop offset="50%" stop-color="#ff00ff"/>
+    <stop offset="100%" stop-color="#00e5ff"/>
     
     </linearGradient>
   </defs>
@@ -371,7 +371,7 @@
     <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
     <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
     <circle cx="8" cy="6" r="4" fill="#FFF" />
-    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="fuchsia">S</text>
+    <text x="6" y="8" font-family="Courier, Monospace" font-size="7" fill="#ff00ff">S</text>
   
   </svg>
   

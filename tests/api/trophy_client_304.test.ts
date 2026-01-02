@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 

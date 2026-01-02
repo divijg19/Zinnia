@@ -7,11 +7,12 @@ function parseHexColor(
 	const raw = String(value || "").trim();
 	const m = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
 	if (!m) return null;
-	const hex = m[1].toLowerCase();
+	const hex = (m[1] ?? "").toLowerCase();
+	if (hex.length !== 3 && hex.length !== 6) return null;
 	if (hex.length === 3) {
-		const r = Number.parseInt(hex[0] + hex[0], 16);
-		const g = Number.parseInt(hex[1] + hex[1], 16);
-		const b = Number.parseInt(hex[2] + hex[2], 16);
+		const r = Number.parseInt(hex.slice(0, 1).repeat(2), 16);
+		const g = Number.parseInt(hex.slice(1, 2).repeat(2), 16);
+		const b = Number.parseInt(hex.slice(2, 3).repeat(2), 16);
 		return { r, g, b };
 	}
 	const r = Number.parseInt(hex.slice(0, 2), 16);
@@ -104,6 +105,14 @@ const getSmallTrophyIcon = (
 	return "";
 };
 export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
+	const SECRET_NEON = {
+		// keep as fixed neon palette regardless of theme
+		RANK_1: "#ff1744", // neon red
+		RANK_2: "#ff00ff", // neon magenta
+		RANK_3: "#00e5ff", // neon cyan
+		TEXT: "#ff00ff",
+	} as const;
+
 	let color = theme.DEFAULT_RANK_BASE;
 	let rankColor = theme.DEFAULT_RANK_TEXT;
 	let backgroundIcon = "";
@@ -114,11 +123,11 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
   `;
 	const { ICON_CIRCLE } = theme;
 	if (rank === RANK.SECRET) {
-		rankColor = theme.SECRET_RANK_TEXT;
+		rankColor = SECRET_NEON.TEXT;
 		gradationColor = `
-    <stop offset="0%" stop-color="${theme.SECRET_RANK_1}"/>
-    <stop offset="50%" stop-color="${theme.SECRET_RANK_2}"/>
-    <stop offset="100%" stop-color="${theme.SECRET_RANK_3}"/>
+    <stop offset="0%" stop-color="${SECRET_NEON.RANK_1}"/>
+    <stop offset="50%" stop-color="${SECRET_NEON.RANK_2}"/>
+    <stop offset="100%" stop-color="${SECRET_NEON.RANK_3}"/>
     `;
 	} else if (rank === RANK.SSS || rank === RANK.SS || rank === RANK.S) {
 		const delta = rank === RANK.SSS ? 10 : rank === RANK.SS ? 0 : -12;
