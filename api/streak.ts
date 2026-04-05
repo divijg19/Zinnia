@@ -266,8 +266,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					resp &&
 					resp.status >= 200 &&
 					resp.status < 300 &&
-					ct &&
-					ct.includes("svg")
+					ct?.includes("svg")
 				) {
 					const body = await resp.text();
 					// Honor If-None-Match via helper which sets ETag header.
@@ -310,13 +309,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					resp &&
 					resp.status >= 200 &&
 					resp.status < 300 &&
-					(!ct || !ct.includes("svg"))
+					!ct?.includes("svg")
 				) {
 					// fall through to local renderer; upstream may be returning HTML due to
 					// bot protection or other transient issues even with a 2xx status.
 				}
 				// If upstream returned a non-OK but SVG we still forward with transient cache
-				if (resp && resp.status >= 400 && ct && ct.includes("svg")) {
+				if (resp && resp.status >= 400 && ct?.includes("svg")) {
 					const body = await resp.text();
 					setSvgHeaders(res);
 					setShortCacheHeaders(res, 60);
@@ -480,6 +479,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 				for (let i = 0; i < shapes.length; i++) {
 					const s = shapes[i];
+					if (!s) {
+						continue;
+					}
 					try {
 						const candidate = await s();
 						const bodyStr =
