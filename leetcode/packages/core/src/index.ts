@@ -39,6 +39,6 @@ export {
 	Generator,
 	HeatmapExtension,
 	RemoteStyleExtension,
-	ThemeExtension,
 	supported,
+	ThemeExtension,
 };

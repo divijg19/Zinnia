@@ -136,9 +136,9 @@ const setErrorCacheHeaders = (res: {
 };
 
 export {
+	CACHE_TTL,
+	DURATIONS,
 	resolveCacheSeconds,
 	setCacheHeaders,
 	setErrorCacheHeaders,
-	DURATIONS,
-	CACHE_TTL,
 };

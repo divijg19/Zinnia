@@ -39,11 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		>;
 		// Minimal Node-safe sanitization to avoid importing worker-only code.
 		// Ensure required fields and set safe defaults. Extensions are optional.
-		if (
-			!config.username ||
-			!config.username.trim() ||
-			!isValidUsername(config.username)
-		) {
+		if (!config.username?.trim() || !isValidUsername(config.username)) {
 			return sendErrorSvg(
 				req,
 				res,

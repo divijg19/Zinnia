@@ -168,7 +168,7 @@ const statsFetcher = async ({
 		}
 
 		const user = res.data?.data?.user;
-		if (!user || !user.repositories) {
+		if (!user?.repositories) {
 			// Nothing to aggregate; return what we have (likely an empty or error response)
 			return res;
 		}
