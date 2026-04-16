@@ -1,8 +1,0 @@
-#!/usr/bin/env sh
-# Minimal top-level pre-commit hook — safe no-op by default.
-# To enable linting, replace the `exit 0` with your commands, e.g.
-#   npm run lint-staged
-
-. "$(dirname "$0")/_/husky.sh" || true
-
-exit 0
