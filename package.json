@@ -23,17 +23,17 @@
 		"e2e:local": "bun run build && (bunx vercel dev --listen 3000 & sleep 3) && bash scripts/e2e_smoke.sh http://localhost:3000"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.12",
-		"@vitest/coverage-v8": "^4.1.4",
+		"@biomejs/biome": "^2.4.13",
+		"@vitest/coverage-v8": "^4.1.5",
 		"jsdom": "^29.0.2",
 		"tsup": "^8.5.1",
-		"typescript": "^6.0.2",
-		"vercel": "^51.5.0",
-		"vitest": "^4.1.4"
+		"typescript": "^6.0.3",
+		"vercel": "^52.0.0",
+		"vitest": "^4.1.5"
 	},
 	"dependencies": {
-		"@vercel/node": "^5.7.7",
-		"axios": "1.15.0",
+		"@vercel/node": "^5.7.13",
+		"axios": "1.15.2",
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
 		"github-username-regex": "^1.0.0",
