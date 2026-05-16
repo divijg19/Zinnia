@@ -28,12 +28,12 @@
 		"jsdom": "^29.1.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vercel": "^53.4.0",
+		"vercel": "^54.1.0",
 		"vitest": "^4.1.6"
 	},
 	"dependencies": {
-		"@vercel/node": "^5.8.0",
-		"axios": "1.16.0",
+		"@vercel/node": "^5.8.2",
+		"axios": "1.16.1",
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
 		"github-username-regex": "^1.0.0",
