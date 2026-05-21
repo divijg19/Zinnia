@@ -2,7 +2,6 @@
 import { createRequire } from "module";
 
 // stats/src/common/utils.ts
-import axios from "axios";
 import toEmoji from "emoji-name-map";
 import wrap from "word-wrap";
 
@@ -589,12 +588,16 @@ var fallbackColor = (color, fallbackColor2) => {
   return (gradient ? gradient : isValidHexColor(color || "") && `#${color}`) || fallbackColor2;
 };
 var request = (data, headers) => {
-  return axios({
-    url: "https://api.github.com/graphql",
+  return fetch("https://api.github.com/graphql", {
     method: "post",
     headers,
-    data
-  });
+    body: JSON.stringify(data)
+  }).then(
+    (res) => res.json().then((responseData) => ({
+      data: responseData,
+      statusText: res.statusText
+    }))
+  );
 };
 var getCardColors = ({
   title_color,
