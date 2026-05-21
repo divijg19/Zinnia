@@ -1,5 +1,3 @@
-import axios from "axios";
-
 type SimpleAxiosResponse<T> = { data: T } & Record<string, unknown>;
 
 import * as dotenv from "dotenv";
@@ -220,11 +218,18 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 			Accept: "application/vnd.github.cloak-preview",
 		};
 		if (token) headers.Authorization = `token ${token}`;
-		return axios({
-			method: "get",
-			url: `https://api.github.com/search/commits?q=author:${variables.login}`,
-			headers,
-		});
+		return fetch(
+			`https://api.github.com/search/commits?q=author:${variables.login}`,
+			{
+				method: "get",
+				headers,
+			},
+		).then((res) =>
+			res.json().then((responseData) => ({
+				data: responseData,
+				statusText: res.statusText,
+			})),
+		);
 	};
 
 	let res: SimpleAxiosResponse<{ total_count: number }>;

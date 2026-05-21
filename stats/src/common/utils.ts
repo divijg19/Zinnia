@@ -1,4 +1,3 @@
-import axios from "axios";
 import toEmoji from "emoji-name-map";
 import wrap from "word-wrap";
 import { themes } from "../../themes/index.js";
@@ -121,12 +120,16 @@ export const fallbackColor = (
 };
 
 export const request = (data: unknown, headers: Record<string, string>) => {
-	return axios({
-		url: "https://api.github.com/graphql",
+	return fetch("https://api.github.com/graphql", {
 		method: "post",
 		headers,
-		data,
-	});
+		body: JSON.stringify(data),
+	}).then((res) =>
+		res.json().then((responseData) => ({
+			data: responseData,
+			statusText: res.statusText,
+		})),
+	);
 };
 
 type CardThemeOptions = {
