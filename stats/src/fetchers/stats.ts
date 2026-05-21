@@ -1,5 +1,3 @@
-type SimpleAxiosResponse<T> = { data: T } & Record<string, unknown>;
-
 import * as dotenv from "dotenv";
 import githubUsernameRegex from "github-username-regex";
 import { calculateRank } from "../calculateRank.js";
@@ -232,14 +230,13 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 		);
 	};
 
-	let res: SimpleAxiosResponse<{ total_count: number }>;
+	let res: { data?: { total_count: number } } | undefined;
 	try {
 		res = (await retryer(fetchTotalCommits, {
 			login: username,
-		} as unknown as Record<
-			string,
-			unknown
-		>)) as unknown as SimpleAxiosResponse<{ total_count: number }>;
+		} as unknown as Record<string, unknown>)) as unknown as {
+			data?: { total_count: number };
+		};
 	} catch (err) {
 		logger.log(err);
 		throw new Error(String(err));
