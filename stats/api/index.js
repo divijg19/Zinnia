@@ -1,8 +1,8 @@
 // stats/src/cards/gist.ts
-import { createRequire } from "module";
+import { createRequire as createRequire2 } from "module";
 
 // stats/src/common/utils.ts
-import toEmoji from "emoji-name-map";
+import { createRequire } from "module";
 import wrap from "word-wrap";
 
 // stats/themes/index.js
@@ -505,6 +505,8 @@ var CustomError = class extends Error {
 };
 
 // stats/src/common/utils.ts
+var require2 = createRequire(import.meta.url);
+var emojiMap = null;
 var ERROR_CARD_LENGTH = 576.5;
 var flexLayout = ({
   items,
@@ -859,9 +861,12 @@ var chunkArray = (arr, perChunk) => {
 };
 var parseEmojis = (str) => {
   if (!str) throw new Error("[parseEmoji]: str argument not provided");
-  const emojiMap = toEmoji;
+  if (!emojiMap) {
+    emojiMap = require2("emoji-name-map");
+  }
+  const map = emojiMap;
   return str.replace(/:\w+:/gm, (emoji) => {
-    return emojiMap.get(emoji) || "";
+    return map.get(emoji) || "";
   });
 };
 var formatBytes = (bytes) => {
@@ -1111,8 +1116,8 @@ var rankIcon = (rankIconType, rankLevel, percentile) => {
 };
 
 // stats/src/cards/gist.ts
-var require2 = createRequire(import.meta.url);
-var languageColors = require2("../common/languageColors.json");
+var require3 = createRequire2(import.meta.url);
+var languageColors = require3("../common/languageColors.json");
 var ICON_SIZE = 16;
 var CARD_DEFAULT_WIDTH = 400;
 var HEADER_MAX_LENGTH = 35;
