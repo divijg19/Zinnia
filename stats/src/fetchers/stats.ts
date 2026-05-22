@@ -1,11 +1,12 @@
 import * as dotenv from "dotenv";
-import githubUsernameRegex from "github-username-regex";
 import { calculateRank } from "../calculateRank.js";
 import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
 import { retryer } from "../common/retryer.js";
 import { logger, request, wrapTextMultiline } from "../common/utils.js";
 import type { StatsData } from "./types.js";
+
+const GITHUB_USERNAME_REGEX = /^(?!-)(?!.*--)[A-Za-z0-9-]{1,39}(?<!-)$/;
 
 // GraphQL response shapes used by the fetchers. We intentionally keep these
 // minimal and focused on the fields we consume to avoid over-typing the
@@ -202,7 +203,7 @@ const statsFetcher = async ({
 };
 
 const totalCommitsFetcher = async (username: string): Promise<number> => {
-	if (!githubUsernameRegex.test(username)) {
+	if (!GITHUB_USERNAME_REGEX.test(username)) {
 		logger.log("Invalid username provided.");
 		throw new Error("Invalid username provided.");
 	}
