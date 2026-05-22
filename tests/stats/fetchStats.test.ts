@@ -60,10 +60,6 @@ describe("fetchStats (vitest)", () => {
 			},
 		}));
 
-		vi.doMock("axios", () => ({
-			default: async () => ({ data: { total_count: 42 } }),
-		}));
-
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
 
@@ -82,10 +78,6 @@ describe("fetchStats (vitest)", () => {
 			},
 		}));
 
-		vi.doMock("axios", () => ({
-			default: async () => ({ data: { total_count: 100 } }),
-		}));
-
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
 
@@ -101,10 +93,6 @@ describe("fetchStats (vitest)", () => {
 					return { data: data_year2003 };
 				return { data: data_stats };
 			},
-		}));
-
-		vi.doMock("axios", () => ({
-			default: async () => ({ data: { total_count: 10 } }),
 		}));
 
 		const mod = await import("../../stats/src/fetchers/stats");

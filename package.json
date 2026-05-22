@@ -33,8 +33,7 @@
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
 		"linkedom": "^0.18.12",
-		"sharp": "^0.34.5",
-		"word-wrap": "^1.2.5"
+		"sharp": "^0.34.5"
 	},
 	"overrides": {
 		"basic-ftp": "^5.2.0",
