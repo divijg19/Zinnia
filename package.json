@@ -25,14 +25,13 @@
 		"jsdom": "^29.1.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vercel": "^54.3.0",
+		"vercel": "^54.4.1",
 		"vitest": "^4.1.7"
 	},
 	"dependencies": {
-		"@vercel/node": "^5.8.3",
+		"@vercel/node": "^5.8.4",
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
-		"github-username-regex": "^1.0.0",
 		"linkedom": "^0.18.12",
 		"sharp": "^0.34.5",
 		"word-wrap": "^1.2.5"
