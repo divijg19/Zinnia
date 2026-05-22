@@ -1,7 +1,10 @@
-import toEmoji from "emoji-name-map";
+import { createRequire } from "node:module";
 import wrap from "word-wrap";
 import { themes } from "../../themes/index.js";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
+
+const require = createRequire(import.meta.url);
+let emojiMap: { get(key: string): string | undefined } | null = null;
 
 export const ERROR_CARD_LENGTH = 576.5;
 
@@ -322,11 +325,14 @@ export const chunkArray = <T>(arr: T[], perChunk: number): T[][] => {
 
 export const parseEmojis = (str: string) => {
 	if (!str) throw new Error("[parseEmoji]: str argument not provided");
-	const emojiMap = toEmoji as unknown as {
-		get(key: string): string | undefined;
-	};
+	if (!emojiMap) {
+		emojiMap = require("emoji-name-map") as {
+			get(key: string): string | undefined;
+		};
+	}
+	const map = emojiMap;
 	return str.replace(/:\w+:/gm, (emoji) => {
-		return emojiMap.get(emoji) || "";
+		return map.get(emoji) || "";
 	});
 };
 
