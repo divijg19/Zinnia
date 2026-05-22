@@ -1,5 +1,4 @@
 import { createRequire } from "node:module";
-import wrap from "word-wrap";
 import { themes } from "../../themes/index.js";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 
@@ -268,7 +267,7 @@ export const wrapTextMultiline = (text: string, width = 59, maxLines = 3) => {
 	if (isChinese) {
 		wrapped = encoded.split(fullWidthComma);
 	} else {
-		wrapped = wrap(encoded, { width }).split("\n");
+		wrapped = encoded.split(/\r?\n/).flatMap((line) => wrapLine(line, width));
 	}
 	const lines = wrapped.map((line) => line.trim()).slice(0, maxLines);
 	if (wrapped.length > maxLines) {
@@ -321,6 +320,39 @@ export const chunkArray = <T>(arr: T[], perChunk: number): T[][] => {
 		resultArray[chunkIndex].push(item);
 		return resultArray;
 	}, [] as T[][]);
+};
+
+const wrapLine = (line: string, width: number): string[] => {
+	if (!line.trim()) return [];
+
+	const words = line.trim().split(/\s+/).filter(Boolean);
+	const wrapped: string[] = [];
+	let current = "";
+
+	for (const word of words) {
+		if (!current) {
+			current = word;
+			continue;
+		}
+
+		if (`${current} ${word}`.length <= width) {
+			current = `${current} ${word}`;
+			continue;
+		}
+
+		wrapped.push(current);
+		if (word.length > width) {
+			for (let index = 0; index < word.length; index += width) {
+				wrapped.push(word.slice(index, index + width));
+			}
+			current = "";
+		} else {
+			current = word;
+		}
+	}
+
+	if (current) wrapped.push(current);
+	return wrapped;
 };
 
 export const parseEmojis = (str: string) => {
