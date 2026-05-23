@@ -3,7 +3,6 @@ export class LeetCode {
 		query,
 		variables,
 		headers,
-		..._rest
 	}: {
 		query: string;
 		variables?: unknown;
