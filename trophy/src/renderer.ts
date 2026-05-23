@@ -3,10 +3,6 @@
 // License: MIT — see ../../LICENSE
 // The implementation below is adapted for this repository and kept dependency-free.
 
-import {
-	normalizeHexToken,
-	parseBackgroundToken,
-} from "../../lib/theme-helpers.ts";
 import { Card } from "./card.ts";
 import { GithubApiService } from "./Services/GithubApiService.ts";
 import type { Theme } from "./theme.ts";
@@ -18,55 +14,6 @@ type TrophyConfig = {
 	title?: string;
 	columns?: number;
 };
-
-function _getTheme(themeName?: string): {
-	bg: string;
-	fg: string;
-	accent: string;
-} {
-	const t = COLORS[themeName ?? "flat"] || COLORS.flat;
-	if (!t) {
-		return { bg: "#ffffff", fg: "#000000", accent: "#000000" };
-	}
-	return {
-		bg: String(t.BACKGROUND),
-		fg: String(t.TITLE),
-		accent: String(t.NEXT_RANK_BAR),
-	};
-}
-
-function normalizeHex(hex?: string | null): string | null {
-	return normalizeHexToken(hex);
-}
-
-function _parseBackground(bgRaw?: string | null) {
-	const raw = String(bgRaw ?? "").trim();
-	if (!raw) return { defs: "", fill: "#ffffff" };
-
-	// If it's a gradient-like token, delegate to shared parser
-	if (raw.includes(",")) {
-		const parsed = parseBackgroundToken(raw);
-		if (parsed) {
-			// preserve legacy id `bgGrad` for trophy snapshots/compat
-			const legacyId = "bgGrad";
-			let defWithLegacyId = parsed.def.replace(parsed.id, legacyId);
-			// remove gradientUnits for legacy snapshot formatting
-			defWithLegacyId = defWithLegacyId.replace(
-				/ gradientUnits=['"][^'"]+['"]/i,
-				"",
-			);
-			// normalize quotes to double quotes and collapse newlines/spaces for snapshot stability
-			defWithLegacyId = defWithLegacyId
-				.replace(/'/g, '"')
-				.replace(/\n\s*/g, "");
-			const defs = `<defs>${defWithLegacyId}</defs>`;
-			return { defs, fill: `url(#${legacyId})` };
-		}
-	}
-
-	const color = normalizeHex(raw) ?? "#ffffff";
-	return { defs: "", fill: color };
-}
 
 export function renderTrophySVG(cfg: TrophyConfig): string {
 	// Produce a visual placeholder using canonical Card/Trophy rendering so
@@ -131,7 +78,6 @@ export async function renderLocalTrophy(
 	_token: string,
 	params: URLSearchParams,
 ) {
-	const _title = params.get("title") || undefined;
 	const colsRaw = Number(params.get("columns") || params.get("cols") || "-1");
 	const cols =
 		Number.isFinite(colsRaw) && colsRaw === -1
