@@ -84,7 +84,6 @@ export function buildStreakSvg(input: SvgInput): string {
 	const longVal = String(input.stats.longestStreak);
 
 	// Basic layout numbers (rounded to keep outputs stable)
-	const _pad = 16;
 	const leftX = 24;
 	const rightX = round(width / 2 + 8, 3);
 
