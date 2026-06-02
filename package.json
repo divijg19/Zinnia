@@ -21,15 +21,15 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.16",
-		"@vitest/coverage-v8": "^4.1.7",
+		"@vitest/coverage-v8": "^4.1.8",
 		"jsdom": "^29.1.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
-		"vercel": "^54.6.1",
-		"vitest": "^4.1.7"
+		"vercel": "^54.7.1",
+		"vitest": "^4.1.8"
 	},
 	"dependencies": {
-		"@vercel/node": "^5.8.8",
+		"@vercel/node": "^5.8.9",
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
 		"linkedom": "^0.18.12",
