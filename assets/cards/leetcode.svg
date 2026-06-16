@@ -15,102 +15,102 @@
 			opacity:1;
 		}
 		#L{
-			fill:#00D9FF!important;
+			fill:#00D9FF;
 			opacity:1;
 			filter:drop-shadow(0 2px 8px rgba(0,217,255,0.5));
 		}
 		#C{
-			fill:#00D9FF!important;
+			fill:#00D9FF;
 			opacity:0.85;
 		}
 		#dash{
-			fill:#FFBB00!important;
+			fill:#FFBB00;
 			opacity:0.95;
 			filter:drop-shadow(0 1px 4px rgba(255,187,0,0.4));
 		}
 		
 		/* Username - crisp white with cyan glow, hot pink hover */
 		#username-text{
-			font-weight:700!important;
-			font-size:24px!important;
+			font-weight:700;
+			font-size:24px;
 			letter-spacing:0.5px;
-			fill:#FFFFFF!important;
+			fill:#FFFFFF;
 			filter:drop-shadow(0 2px 4px rgba(169,254,247,0.3));
 			transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
 		}
 		#username:hover #username-text{
-			fill:#FE428E!important;
+			fill:#FE428E;
 			filter:drop-shadow(0 2px 8px rgba(254,66,142,0.6));
 			transform:translateY(-1px);
 		}
 		
 		/* Ranking - elegant cyan with subtle emphasis */
 		#ranking{
-			font-weight:600!important;
-			font-size:18px!important;
+			font-weight:600;
+			font-size:18px;
 			letter-spacing:0.3px;
-			fill:#A9FEF7!important;
+			fill:#A9FEF7;
 			opacity:0.92;
 		}
 		
 		/* Total solved circle - premium gradient ring with white text */
 		#total-solved-text{
-			font-weight:900!important;
-			font-size:38px!important;
+			font-weight:900;
+			font-size:38px;
 			letter-spacing:-0.5px;
-			fill:#FFFFFF!important;
+			fill:#FFFFFF;
 			filter:drop-shadow(0 3px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,255,255,0.3));
 		}
 		#total-solved-ring{
-			stroke:url(#g-ring)!important;
-			stroke-width:8px!important;
+			stroke:url(#g-ring);
+			stroke-width:8px;
 			opacity:1;
 			filter:drop-shadow(0 0 12px rgba(67,233,123,0.6));
 		}
 		#total-solved-bg{
-			stroke:rgba(255,255,255,0.12)!important;
-			stroke-width:8px!important;
+			stroke:rgba(255,255,255,0.12);
+			stroke-width:8px;
 			opacity:1;
 		}
 		
 		/* Difficulty labels - refined white with subtle opacity */
 		#easy-solved-type,#medium-solved-type,#hard-solved-type{
-			font-weight:600!important;
-			font-size:16px!important;
+			font-weight:600;
+			font-size:16px;
 			letter-spacing:0.3px;
-			fill:#FFFFFF!important;
+			fill:#FFFFFF;
 			opacity:0.85;
 		}
 		
 		/* Difficulty counts - cyan emphasis for readability */
 		#easy-solved-count,#medium-solved-count,#hard-solved-count{
-			font-weight:700!important;
-			font-size:16px!important;
+			font-weight:700;
+			font-size:16px;
 			letter-spacing:0.2px;
-			fill:#A9FEF7!important;
+			fill:#A9FEF7;
 			opacity:1;
 		}
 		
 		/* Progress bars - vibrant semantic colors with enhanced glows */
 		#easy-solved-progress{
-			stroke:#43E97B!important;
-			stroke-width:6px!important;
+			stroke:#43E97B;
+			stroke-width:6px;
 			filter:drop-shadow(0 0 6px rgba(67,233,123,0.7));
 		}
 		#medium-solved-progress{
-			stroke:#FFBB00!important;
-			stroke-width:6px!important;
+			stroke:#FFBB00;
+			stroke-width:6px;
 			filter:drop-shadow(0 0 6px rgba(255,187,0,0.7));
 		}
 		#hard-solved-progress{
-			stroke:#FF4757!important;
-			stroke-width:6px!important;
+			stroke:#FF4757;
+			stroke-width:6px;
 			filter:drop-shadow(0 0 6px rgba(255,71,87,0.7));
 		}
 		#easy-solved-bg,#medium-solved-bg,#hard-solved-bg{
-			opacity:1!important;
-			stroke-width:6px!important;
-			stroke:rgba(255,255,255,0.1)!important;
+			opacity:1;
+			stroke-width:6px;
+			stroke:rgba(255,255,255,0.1);
 		}
 		
 		/* Animations - smooth entrance */
@@ -123,15 +123,15 @@
 		#solved g:hover #easy-solved-count,
 		#solved g:hover #medium-solved-count,
 		#solved g:hover #hard-solved-count{
-			fill:#FFBB00!important;
+			fill:#FFBB00;
 			transition:fill 0.3s cubic-bezier(0.4,0,0.2,1);
 		}
 		
 		#solved g:hover #easy-solved-type,
 		#solved g:hover #medium-solved-type,
 		#solved g:hover #hard-solved-type{
-			fill:#FFFFFF!important;
-			opacity:1!important;
+			fill:#FFFFFF;
+			opacity:1;
 		}
 	
 svg{opacity:1}</style></svg>
