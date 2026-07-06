@@ -21,12 +21,12 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.2",
-		"@vitest/coverage-v8": "^4.1.9",
+		"@vitest/coverage-v8": "^4.1.10",
 		"jsdom": "^29.1.1",
 		"tsup": "^8.5.1",
 		"typescript": "^6.0.3",
 		"vercel": "^54.20.1",
-		"vitest": "^4.1.9"
+		"vitest": "^4.1.10"
 	},
 	"dependencies": {
 		"@vercel/node": "^5.8.22",
