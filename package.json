@@ -29,7 +29,7 @@
 		"vitest": "^4.1.10"
 	},
 	"dependencies": {
-		"@vercel/node": "^5.8.24",
+		"@vercel/node": "^5.8.25",
 		"dotenv": "^17.4.2",
 		"emoji-name-map": "^2.0.3",
 		"linkedom": "^0.18.13",
