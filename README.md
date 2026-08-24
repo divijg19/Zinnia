@@ -100,6 +100,12 @@ It is designed for **deterministic builds**, **centralized configuration**, and 
   bun run test
   ```
 
+  > **Warning:** do **not** use `bun test`. Bun's builtin runner lacks the
+  > Vitest APIs these suites rely on (`vi.resetModules`, `vi.doMock`,
+  > `vi.setSystemTime`, jsdom global wiring) and fails wholesale with false
+  > errors. Vitest is the only supported runner; CI uses it via
+  > `bun run test`.
+
 * Typecheck:
 
   ```sh
@@ -118,6 +124,8 @@ It is designed for **deterministic builds**, **centralized configuration**, and 
 * Root `tests/` contains shared and cross-package tests.
 * Package-local tests remain where specialized setup is required (e.g. `leetcode/test`).
 * Package `test` scripts delegate to Vitest using the shared root configuration.
+* Baseline (2026-08): full suite = 53 files / 193 tests, all green via
+  `bunx vitest --run` (root config includes `leetcode/test/**`).
 
 ### CI Behavior
 
