@@ -580,16 +580,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 			if (out.status) res.status(out.status);
 
-			const internalTTL = Math.max(
-				resolveCacheSeconds(
-					url,
-					["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-					86400,
-				),
-				259200,
+			// Renderer error payloads must never be persisted or sent with
+			// long cache TTLs: a transient GitHub failure would otherwise
+			// become sticky for days (cache entry + CDN/browser caching).
+			const outIsError = typeof out.status === "number" && out.status >= 400;
+			const baseCacheSeconds = resolveCacheSeconds(
+				url,
+				["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
+				86400,
 			);
+			const applyResponseCacheHeaders = () => {
+				if (outIsError) setShortCacheHeaders(res, 60);
+				else setCacheHeaders(res, baseCacheSeconds);
+			};
+
+			const internalTTL = Math.max(baseCacheSeconds, 259200);
 			try {
-				if (typeof out.body === "string") {
+				if (!outIsError && typeof out.body === "string") {
 					await cacheLocal.set(localKey, out.body, internalTTL);
 				}
 			} catch {}
@@ -623,36 +630,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				} catch {}
 			}
 			if (out.contentType === "image/png") {
-				setCacheHeaders(
-					res,
-					resolveCacheSeconds(
-						url,
-						["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-						86400,
-					),
-				);
+				applyResponseCacheHeaders();
 				return res.send(out.body as Buffer);
 			}
 			if (out.contentType === "application/json") {
-				setCacheHeaders(
-					res,
-					resolveCacheSeconds(
-						url,
-						["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-						86400,
-					),
-				);
+				applyResponseCacheHeaders();
 				return res.send(out.body as string);
 			}
 			setSvgHeaders(res);
-			setCacheHeaders(
-				res,
-				resolveCacheSeconds(
-					url,
-					["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-					86400,
-				),
-			);
+			applyResponseCacheHeaders();
 			return res.send(out.body as string);
 		} catch (e) {
 			console.error("streak: local renderer error", e);
