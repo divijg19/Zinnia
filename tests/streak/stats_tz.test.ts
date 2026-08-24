@@ -42,4 +42,38 @@ describe("computeStreaks timezone-aware", () => {
 		expect(s.currentStreak).toBe(3);
 		expect(s.longestStreak).toBe(3);
 	});
+
+	it("counts consecutive-day streaks correctly west of UTC (Los Angeles)", () => {
+		// Regression: shiftDateKey used to re-format shifted UTC-midnight
+		// instants through the target zone, so for America/Los_Angeles every
+		// -1 step moved back two days and +1 stayed put. That collapsed this
+		// 9-day run to longest=1 / current=3.
+		vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
+		const days = Array.from({ length: 9 }, (_, i) => {
+			const d = new Date(Date.UTC(2026, 5, 7 + i));
+			return { date: d.toISOString().slice(0, 10), count: 1 };
+		});
+		const s = computeStreaks(days, "America/Los_Angeles");
+		expect(s.totalContributions).toBe(9);
+		expect(s.currentStreak).toBe(9);
+		expect(s.currentStreakStart).toBe("2026-06-07");
+		expect(s.currentStreakEnd).toBe("2026-06-15");
+		expect(s.longestStreak).toBe(9);
+		expect(s.longestStreakStart).toBe("2026-06-07");
+		expect(s.longestStreakEnd).toBe("2026-06-15");
+	});
+
+	it("handles US DST spring-forward when walking day boundaries (New York)", () => {
+		// Pure UTC calendar arithmetic must be immune to local DST transitions.
+		vi.setSystemTime(new Date("2026-03-10T12:00:00Z"));
+		const days = [
+			{ date: "2026-03-07", count: 1 },
+			{ date: "2026-03-08", count: 1 },
+			{ date: "2026-03-09", count: 1 },
+		];
+		const s = computeStreaks(days, "America/New_York");
+		expect(s.currentStreak).toBe(3);
+		expect(s.currentStreakStart).toBe("2026-03-07");
+		expect(s.longestStreak).toBe(3);
+	});
 });
