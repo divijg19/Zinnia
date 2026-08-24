@@ -36,15 +36,14 @@ function contributionDayToLocalKey(
 	return toLocalDateKey(utcEnd, timeZone);
 }
 
-function shiftDateKey(
-	key: string,
-	deltaDays: number,
-	timeZone: string,
-): string {
-	// Parse key as UTC midnight, shift by deltaDays, then format in target tz
+function shiftDateKey(key: string, deltaDays: number): string {
+	// Keys are local calendar dates (YYYY-MM-DD). Shifting must be pure
+	// calendar arithmetic in UTC space: parsing the key as UTC midnight,
+	// adding whole days, and re-formatting in UTC. Never round-trip through
+	// the target timezone here — west-of-UTC zones would land on the
+	// previous local day and double-shift (-1 becomes -2, +1 becomes 0).
 	const ms = Date.parse(`${key}T00:00:00Z`);
-	const shifted = new Date(ms + deltaDays * 86400_000);
-	return toLocalDateKey(shifted, timeZone);
+	return new Date(ms + deltaDays * 86400_000).toISOString().slice(0, 10);
 }
 
 export function computeStreaks(
@@ -69,12 +68,12 @@ export function computeStreaks(
 	// the reported `currentStreak` represents the most recent consecutive run.
 	const includeToday = daysWithContrib.has(todayKey);
 	let currentStreak = 0;
-	let cursor = includeToday ? todayKey : shiftDateKey(todayKey, -1, timeZone);
+	let cursor = includeToday ? todayKey : shiftDateKey(todayKey, -1);
 
 	while (true) {
 		if (daysWithContrib.has(cursor)) {
 			currentStreak++;
-			cursor = shiftDateKey(cursor, -1, timeZone);
+			cursor = shiftDateKey(cursor, -1);
 		} else {
 			break;
 		}
@@ -84,11 +83,11 @@ export function computeStreaks(
 		currentStreak > 0
 			? includeToday
 				? todayKey
-				: shiftDateKey(todayKey, -1, timeZone)
+				: shiftDateKey(todayKey, -1)
 			: undefined;
 	const currentStreakStart =
 		currentStreak > 0
-			? shiftDateKey(currentStreakEnd as string, 1 - currentStreak, timeZone)
+			? shiftDateKey(currentStreakEnd as string, 1 - currentStreak)
 			: undefined;
 
 	// longest streak: scan sorted keys
@@ -105,7 +104,7 @@ export function computeStreaks(
 			runStart = k;
 			runLen = 1;
 		} else {
-			const nextOfPrev = shiftDateKey(prevKey, 1, timeZone);
+			const nextOfPrev = shiftDateKey(prevKey, 1);
 			if (k === nextOfPrev) {
 				runLen++;
 			} else {
