@@ -221,7 +221,7 @@ export async function fetchContributions(
 							for (const y of yearsToRequest) {
 								const result = await doGraphQL(
 									yearQuery(y),
-									{ login: username },
+									{ login: username, __patKey: patInfo.key },
 									patInfo.token,
 								);
 								const weeks =
@@ -281,7 +281,7 @@ export async function fetchContributions(
 
 	const json = await doGraphQL(
 		yearQuery(thisYear),
-		{ login: username },
+		{ login: username, __patKey: patInfo.key },
 		patInfo.token,
 	);
 	try {
@@ -368,7 +368,7 @@ export async function fetchContributions(
 	for (const y of yearsToRequest) {
 		const result = await doGraphQL(
 			yearQuery(y),
-			{ login: username },
+			{ login: username, __patKey: patInfo.key },
 			patInfo.token,
 		);
 		try {
