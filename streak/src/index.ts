@@ -108,19 +108,23 @@ export async function renderForUser(
 		}
 	})();
 
-	// check LRU cache first
-	const cached = DefaultLRU.get(stableKey);
-	if (cached) {
-		const ct = cached.type === "png" ? "image/png" : "image/svg+xml";
-		return { contentType: ct, body: cached.body };
+	const forceRefresh = !!(
+		params &&
+		(params.force_refresh === "1" ||
+			params.force_refresh === "true" ||
+			params.force_refresh === true)
+	);
+
+	// check LRU cache first — but never serve from the LRU when an explicit
+	// force_refresh was requested: the flag's contract is a fresh fetch.
+	if (!forceRefresh) {
+		const cached = DefaultLRU.get(stableKey);
+		if (cached) {
+			const ct = cached.type === "png" ? "image/png" : "image/svg+xml";
+			return { contentType: ct, body: cached.body };
+		}
 	}
 	try {
-		const forceRefresh = !!(
-			params &&
-			(params.force_refresh === "1" ||
-				params.force_refresh === "true" ||
-				params.force_refresh === true)
-		);
 		const days: ContributionDay[] = await fetchContributions(username, {
 			forceRefresh,
 		});
