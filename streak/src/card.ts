@@ -8,6 +8,7 @@ import {
 	normalizeThemeName,
 	parseBackgroundToken,
 } from "./card_helpers.js";
+import { escapeXml } from "./svg_builder.ts";
 import { THEMES as IMPORTED_THEMES } from "./themes.ts";
 import type { Params, Stats, Theme } from "./types_public.ts";
 
@@ -614,7 +615,7 @@ export function generateErrorCard(
 		`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${cardWidth} ${cardHeight}' width='${cardWidth}px' height='${cardHeight}px'>` +
 		`<defs>${defs}</defs>` +
 		`<rect stroke='${theme.border}' fill='${backgroundFill}' rx='${borderRadius}' x='0.5' y='0.5' width='${rectWidth}' height='${cardHeight - 1}'/>` +
-		`<text x='${cardWidth / 2}' y='${cardHeight / 2}' text-anchor='middle' fill='${theme.sideLabels}'>${message}</text>` +
+		`<text x='${cardWidth / 2}' y='${cardHeight / 2}' text-anchor='middle' fill='${theme.sideLabels}'>${escapeXml(String(message))}</text>` +
 		`</svg>`
 	);
 }
