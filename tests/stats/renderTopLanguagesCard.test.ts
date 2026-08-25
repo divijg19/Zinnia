@@ -216,4 +216,25 @@ describe("Test renderTopLanguages (rendering)", () => {
 				);
 			});
 	});
+
+	it("emits well-formed donut arc path data (no stray trailing coordinate)", () => {
+		const svg = renderTopLanguages(langs, { layout: "donut" });
+		document.body.innerHTML = svg;
+		expect(svg).toContain("lang-donut");
+		const dAttrs = Array.from(
+			document.querySelectorAll('[data-testid="lang-donut"]'),
+		)
+			.map((el) => el.getAttribute("d") ?? "")
+			.filter((d) => d.length > 0);
+
+		expect(dAttrs.length).toBeGreaterThan(0);
+		for (const d of dAttrs) {
+			// Full-string grammar: M x y  A rx ry 0 largeArc sweep ex ey — and
+			// nothing after. Pre-fix every segment carried a dangling extra
+			// coordinate that opened an invalid implicit arc.
+			expect(d).toMatch(
+				/^M -?[\d.]+ -?[\d.]+ A [\d.]+ [\d.]+ 0 [01] 0 -?[\d.]+ -?[\d.]+$/,
+			);
+		}
+	});
 });
