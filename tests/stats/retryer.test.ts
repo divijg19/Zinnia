@@ -79,7 +79,9 @@ describe("Retryer (vitest)", () => {
 				{} as unknown as Record<string, unknown>,
 			);
 		} catch (err: any) {
-			expect(fetcherFail).toHaveBeenCalledTimes(RETRIES + 1);
+			// Exactly RETRIES attempts: every attempt uses a real configured
+			// token slot — no phantom unauthenticated extra call.
+			expect(fetcherFail).toHaveBeenCalledTimes(RETRIES);
 			expect(err.message).toBe("Downtime due to GitHub API rate limiting");
 		}
 	});
