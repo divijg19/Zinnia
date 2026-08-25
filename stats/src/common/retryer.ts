@@ -16,6 +16,7 @@ export type FetcherFunction<V> = (
 ) => Promise<{
 	data: {
 		data?: any;
+		message?: string;
 		errors?: Array<{
 			type?: string;
 			message?: string;
@@ -44,6 +45,7 @@ export const retryer = async <V>(
 ): Promise<{
 	data: {
 		data?: any;
+		message?: string;
 		errors?: Array<{
 			type?: string;
 			message?: string;
@@ -81,12 +83,26 @@ export const retryer = async <V>(
 		const errors = response?.data?.errors;
 		const errorType = errors?.[0]?.type;
 		const errorMsg = errors?.[0]?.message || "";
+
+		// fetch-based transports RESOLVE on HTTP 401/403 instead of rejecting,
+		// so auth/rate-limit failures surface here as normal responses whose
+		// body carries a top-level `message`. Inspect it so bad/suspended/
+		// rate-limited tokens rotate to the next PAT instead of being
+		// returned as success.
+		const bodyMessage = String(
+			response?.data?.message ?? response?.response?.data?.message ?? "",
+		);
 		const isRateLimited =
-			(errors && errorType === "RATE_LIMITED") || /rate limit/i.test(errorMsg);
+			(errors && errorType === "RATE_LIMITED") ||
+			/rate limit/i.test(errorMsg) ||
+			/rate limit/i.test(bodyMessage);
+		const isBadCredential = bodyMessage === "Bad credentials";
+		const isAccountSuspended =
+			bodyMessage === "Sorry. Your account was suspended.";
 
 		// if rate limit is hit increase the RETRIES and recursively call the retryer
 		// with username, and current RETRIES
-		if (isRateLimited) {
+		if (isRateLimited || isBadCredential || isAccountSuspended) {
 			logger.log(`PAT_${retries + 1} Failed`);
 			retries++;
 			// directly return from the function
