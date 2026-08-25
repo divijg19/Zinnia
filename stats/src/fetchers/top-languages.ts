@@ -101,8 +101,6 @@ export const fetchTopLanguages = async (
 		)
 		.filter((repo: RepoNodeShape) => !repoToHide[repo.name]);
 
-	let repoCount = 0;
-
 	const flattened: Edge[] = repoNodes
 		.filter((node) => (node.languages?.edges ?? []).length > 0)
 		.reduce(
@@ -113,21 +111,14 @@ export const fetchTopLanguages = async (
 
 	const acc: LangAccumulator = {};
 	flattened.forEach((edge) => {
-		let langSize = edge.size ?? 0;
+		const langSize = edge.size ?? 0;
 		const existingLang = acc[edge.node.name];
-
-		if (existingLang && edge.node.name === existingLang.name) {
-			langSize = edge.size + existingLang.size;
-			repoCount += 1;
-		} else {
-			repoCount = 1;
-		}
 
 		acc[edge.node.name] = {
 			name: edge.node.name,
 			color: edge.node.color ?? "",
-			size: langSize,
-			count: repoCount,
+			size: (existingLang?.size ?? 0) + langSize,
+			count: (existingLang?.count ?? 0) + 1,
 		};
 	});
 
