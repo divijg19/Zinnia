@@ -445,7 +445,7 @@ const createDonutPaths = (
 		const ey = Number(endPoint.y.toFixed(6));
 		pathsArr.push({
 			percent,
-			d: `M ${sx} ${sy} A ${Number(radius.toFixed(6))} ${Number(radius.toFixed(6))} 0 ${largeArc} 0 ${ex} ${ey} ${sx}`,
+			d: `M ${sx} ${sy} A ${Number(radius.toFixed(6))} ${Number(radius.toFixed(6))} 0 ${largeArc} 0 ${ex} ${ey}`,
 		});
 		startAngle = endAngle;
 	}
