@@ -244,16 +244,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 		}
 
-		// Try upstream first (tests mock global fetch). If upstream succeeds
-		// with an SVG payload, forward it; otherwise fall back to the local
-		// TypeScript renderer for generation/cached fallback.
+		// Serve the canonical local renderer by default on every environment.
+		// The legacy upstream (zinnia-rho) derives its calendar from a rolling
+		// one-year window, clipping current streaks longer than ~a year, and
+		// re-enters this same deployment in production. Upstream is therefore
+		// opt-in only: STREAK_PREFER_UPSTREAM=1 or ?prefer_upstream=1.
 		let upstreamFailed = false;
-		const preferLocal =
-			process.env.VERCEL_ENV !== "production" ||
-			process.env.STREAK_PREFER_LOCAL === "1" ||
-			url.searchParams.get("prefer_local") === "1" ||
-			url.searchParams.get("no_upstream") === "1";
-		if (!preferLocal) {
+		const preferUpstream =
+			process.env.STREAK_PREFER_UPSTREAM === "1" ||
+			url.searchParams.get("prefer_upstream") === "1";
+		if (preferUpstream) {
 			try {
 				const upstream = new URL("https://zinnia-rho.vercel.app/");
 				for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);

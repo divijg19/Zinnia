@@ -35,7 +35,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 		);
 		req.query = { user: "test" };
 		const res: TestResponse = makeRes();
@@ -77,7 +77,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 		);
 		req.query = { user: "test" };
 		const res: TestResponse = makeRes();
@@ -103,7 +103,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 		);
 		req.query = { user: "test" };
 		const res: TestResponse = makeRes();
@@ -142,7 +142,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 		);
 		req.query = { user: "test" };
 		const res: TestResponse = makeRes();
@@ -180,7 +180,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 			{
 				"if-none-match": etag,
 			},
@@ -218,7 +218,7 @@ describe("/api/streak handler", () => {
 		const handler = mod.default;
 
 		const req: TestRequest & { query?: Record<string, string> } = makeReq(
-			"/api/streak?user=test",
+			"/api/streak?user=test&prefer_upstream=1",
 		);
 		req.query = { user: "test" };
 		const res: TestResponse = makeRes();
