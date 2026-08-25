@@ -3,11 +3,19 @@ import { logger } from "./utils.js";
 
 // Script variables.
 
-// Count the number of GitHub API tokens available.
-const PATs = Object.keys(process.env).filter((key) =>
-	/PAT_\d*$/.exec(key),
-).length;
-const RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
+// Collect available PAT values so selection can never fall back to an
+// unauthenticated request due to sparse key numbering (e.g. only PAT_1
+// and PAT_3 defined). Read at call time so env changes after module load
+// (tests, warm lambdas) are honored.
+function getPatTokens(): string[] {
+	return Object.keys(process.env)
+		.filter((key) => /^PAT_\d*$/.exec(key))
+		.map((key) => process.env[key])
+		.filter((value): value is string =>
+			Boolean(value && value.trim().length > 0),
+		);
+}
+const RETRIES = process.env.NODE_ENV === "test" ? 7 : getPatTokens().length;
 
 export type FetcherFunction<V> = (
 	variables: V,
@@ -62,7 +70,7 @@ export const retryer = async <V>(
 		throw new CustomError("No GitHub API tokens found", CustomError.NO_TOKENS);
 	}
 
-	if (retries > RETRIES) {
+	if (retries >= RETRIES) {
 		throw new CustomError(
 			"Downtime due to GitHub API rate limiting",
 			CustomError.MAX_RETRY,
@@ -73,7 +81,7 @@ export const retryer = async <V>(
 		// try to fetch with the first token since RETRIES is 0 index i'm adding +1
 		const response = await fetcher(
 			variables,
-			process.env[`PAT_${retries + 1}`] || "",
+			getPatTokens()[retries] || "",
 			// used in tests for faking rate limit
 			retries,
 		);
