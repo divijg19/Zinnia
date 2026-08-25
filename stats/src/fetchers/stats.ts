@@ -244,7 +244,9 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 	}
 
 	const totalCount = res?.data?.total_count;
-	if (!totalCount || Number.isNaN(totalCount)) {
+	// A legitimate total of 0 must not be treated as a fetch failure; only a
+	// missing or non-numeric field indicates the search API let us down.
+	if (typeof totalCount !== "number" || Number.isNaN(totalCount)) {
 		throw new CustomError(
 			"Could not fetch total commits.",
 			CustomError.GITHUB_REST_API_ERROR,

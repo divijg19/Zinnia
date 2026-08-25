@@ -109,4 +109,39 @@ describe("fetchStats (vitest)", () => {
 		);
 		expect(stats).toBeTruthy();
 	});
+
+	it("treats a legitimate zero commit count as valid with include_all_commits", async () => {
+		vi.doMock("../../stats/src/common/retryer", () => ({
+			retryer: async (_fetcher: any, variables: any) => {
+				// REST search-commits call carries only { login }; the GraphQL
+				// stats call carries the full variable set.
+				if (variables && "includeMergedPullRequests" in variables)
+					return { data: data_stats };
+				return { data: { total_count: 0 } };
+			},
+		}));
+
+		const mod = await import("../../stats/src/fetchers/stats");
+		const { fetchStats } = mod;
+
+		const stats = await fetchStats("anurag", true);
+		expect(stats.totalCommits).toBe(0);
+	});
+
+	it("still throws when the search API omits total_count entirely", async () => {
+		vi.doMock("../../stats/src/common/retryer", () => ({
+			retryer: async (_fetcher: any, variables: any) => {
+				if (variables && "includeMergedPullRequests" in variables)
+					return { data: data_stats };
+				return { data: {} };
+			},
+		}));
+
+		const mod = await import("../../stats/src/fetchers/stats");
+		const { fetchStats } = mod;
+
+		await expect(fetchStats("anurag", true)).rejects.toThrow(
+			"Could not fetch total commits.",
+		);
+	});
 });
