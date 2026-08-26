@@ -65,11 +65,22 @@ export class GithubApiService extends GithubRepository {
 			this.requestUserPullRequest(username),
 		]);
 		const [activity, issue, pullRequest] = await promises;
-		const status = [activity.status, issue.status, pullRequest.status];
 
-		if (status.includes("rejected")) {
-			Logger.error(`Can not find a user with username:' ${username}'`);
-			return new ServiceError("Not found", EServiceKindError.NOT_FOUND);
+		// executeQuery catches every failure and RESOLVES with a ServiceError,
+		// so these promises are "fulfilled" even on API/rate-limit/auth
+		// errors. Status checks alone would unwrap the error object as data
+		// and blow up inside the UserInfo constructor (surfacing as a
+		// generic renderer failure). Inspect values and preserve the error
+		// kind instead.
+		for (const result of [activity, issue, pullRequest]) {
+			if (result.status === "rejected") {
+				Logger.error(`Can not find a user with username:' ${username}'`);
+				return new ServiceError("Not found", EServiceKindError.NOT_FOUND);
+			}
+			if (result.value instanceof ServiceError) {
+				Logger.error(result.value.message);
+				return result.value;
+			}
 		}
 
 		return new UserInfo(
