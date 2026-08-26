@@ -2892,7 +2892,7 @@ var createDonutPaths = (cx, cy, radius, percentages) => {
     const ey = Number(endPoint.y.toFixed(6));
     pathsArr.push({
       percent,
-      d: `M ${sx} ${sy} A ${Number(radius.toFixed(6))} ${Number(radius.toFixed(6))} 0 ${largeArc} 0 ${ex} ${ey} ${sx}`
+      d: `M ${sx} ${sy} A ${Number(radius.toFixed(6))} ${Number(radius.toFixed(6))} 0 ${largeArc} 0 ${ex} ${ey}`
     });
     startAngle = endAngle;
   }
@@ -3062,15 +3062,17 @@ var blacklist = [
 ];
 
 // stats/src/common/retryer.ts
-var PATs = Object.keys(process.env).filter(
-  (key) => /PAT_\d*$/.exec(key)
-).length;
-var RETRIES = process.env.NODE_ENV === "test" ? 7 : PATs;
+function getPatTokens() {
+  return Object.keys(process.env).filter((key) => /^PAT_\d*$/.exec(key)).map((key) => process.env[key]).filter(
+    (value) => Boolean(value && value.trim().length > 0)
+  );
+}
+var RETRIES = process.env.NODE_ENV === "test" ? 7 : getPatTokens().length;
 var retryer = async (fetcher, variables, retries = 0) => {
   if (!RETRIES) {
     throw new CustomError("No GitHub API tokens found", CustomError.NO_TOKENS);
   }
-  if (retries > RETRIES) {
+  if (retries >= RETRIES) {
     throw new CustomError(
       "Downtime due to GitHub API rate limiting",
       CustomError.MAX_RETRY
@@ -3079,15 +3081,20 @@ var retryer = async (fetcher, variables, retries = 0) => {
   try {
     const response = await fetcher(
       variables,
-      process.env[`PAT_${retries + 1}`] || "",
+      getPatTokens()[retries] || "",
       // used in tests for faking rate limit
       retries
     );
     const errors = response?.data?.errors;
     const errorType = errors?.[0]?.type;
     const errorMsg = errors?.[0]?.message || "";
-    const isRateLimited = errors && errorType === "RATE_LIMITED" || /rate limit/i.test(errorMsg);
-    if (isRateLimited) {
+    const bodyMessage = String(
+      response?.data?.message ?? response?.response?.data?.message ?? ""
+    );
+    const isRateLimited = errors && errorType === "RATE_LIMITED" || /rate limit/i.test(errorMsg) || /rate limit/i.test(bodyMessage);
+    const isBadCredential = bodyMessage === "Bad credentials";
+    const isAccountSuspended = bodyMessage === "Sorry. Your account was suspended.";
+    if (isRateLimited || isBadCredential || isAccountSuspended) {
       logger.log(`PAT_${retries + 1} Failed`);
       retries++;
       return retryer(fetcher, variables, retries);
