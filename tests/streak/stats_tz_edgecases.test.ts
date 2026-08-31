@@ -1,7 +1,16 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { computeStreaks } from "../../streak/src/stats_tz";
 
 describe("computeStreaks edge cases (timezone / today handling)", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it("includes today when contribution exists", () => {
+		vi.setSystemTime(new Date("2026-08-26T12:00:00Z"));
 		const tz = "UTC";
 		const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 		const days = [{ date: today, count: 1 }];
@@ -11,6 +20,7 @@ describe("computeStreaks edge cases (timezone / today handling)", () => {
 	});
 
 	it("does not include today when no contribution but counts yesterday run", () => {
+		vi.setSystemTime(new Date("2026-08-26T12:00:00Z"));
 		const tz = "UTC";
 		const today = new Date();
 		const yesterday = new Date(today.getTime() - 86400_000)

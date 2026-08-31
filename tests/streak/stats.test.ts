@@ -19,7 +19,11 @@ describe("stats computations", () => {
 			"2021-04-17": 2,
 			"2021-04-18": 7,
 		};
-		const stats = getContributionStats(mapToArray(contributions));
+		const stats = getContributionStats(
+			mapToArray(contributions),
+			[],
+			new Date("2021-04-18T12:00:00Z"),
+		);
 		const expected: Stats = {
 			mode: "daily",
 			totalContributions: 17,
@@ -38,7 +42,11 @@ describe("stats computations", () => {
 			"2021-04-17": 2,
 			"2021-04-18": 0,
 		};
-		const stats = getContributionStats(mapToArray(contributions));
+		const stats = getContributionStats(
+			mapToArray(contributions),
+			[],
+			new Date("2021-04-18T12:00:00Z"),
+		);
 		const expected: Stats = {
 			mode: "daily",
 			totalContributions: 10,
@@ -57,7 +65,11 @@ describe("stats computations", () => {
 			"2021-04-17": 0,
 			"2021-04-18": 0,
 		};
-		const stats = getContributionStats(mapToArray(contributions));
+		const stats = getContributionStats(
+			mapToArray(contributions),
+			[],
+			new Date("2021-04-18T12:00:00Z"),
+		);
 		const expected: Stats = {
 			mode: "daily",
 			totalContributions: 8,
@@ -145,10 +157,11 @@ describe("stats computations", () => {
 			"2023-04-16": 0,
 			"2023-04-17": 3,
 		};
-		const stats = getContributionStats(mapToArray(contributions), [
-			"Sun",
-			"Sat",
-		]);
+		const stats = getContributionStats(
+			mapToArray(contributions),
+			["Sun", "Sat"],
+			new Date("2023-04-17T12:00:00Z"),
+		);
 		expect(stats.totalContributions).toBe(6);
 		expect(stats.firstContribution).toBe("2023-04-12");
 		expect(stats.longestStreak.length).toBe(4);
