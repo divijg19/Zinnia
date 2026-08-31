@@ -130,9 +130,20 @@ export type CacheAdapter = {
 
 export function getCacheAdapterForService(service: string): CacheAdapter {
 	return {
+		// Reads honor the TTL embedded in the entry's meta file: `writeCacheWithMeta`
+		// persists `ttlSeconds` and `ts`, and an expired entry is treated as a miss
+		// so a stale rendered SVG cannot be served forever.
 		get: async (key: string) => {
 			try {
-				return await cache.readCache(service, String(key));
+				const entry = await cache.readCacheWithMeta(service, String(key));
+				if (!entry) return null;
+				if (typeof entry.ttl === "number" && Number.isFinite(entry.ttl)) {
+					const wroteAt = typeof entry.ts === "number" ? entry.ts : 0;
+					if (wroteAt > 0 && Date.now() - wroteAt > entry.ttl * 1000) {
+						return null;
+					}
+				}
+				return entry.body;
 			} catch {
 				return null;
 			}
