@@ -8,6 +8,32 @@ import type { ContributionDay } from "./types.ts";
 const yearQuery = (year: number) =>
 	`query($login: String!) { user(login: $login) { createdAt contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") { contributionYears contributionCalendar { weeks { contributionDays { date contributionCount } } } } }`;
 
+// Ascending date comparator shared by every merge/sort of ContributionDay lists.
+const byDateAsc = (a: ContributionDay, b: ContributionDay) =>
+	a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+
+// Fetch helper that mirrors doGraphQL's timeout convention so the scrape path
+// (which issues several sequential HTTP requests) cannot hang the renderer.
+async function fetchWithTimeout(
+	url: string,
+	init?: RequestInit,
+): Promise<Response> {
+	const timeoutMs = Number(process.env.STREAK_FETCH_TIMEOUT_MS || 8000);
+	const controller = new AbortController();
+	const to =
+		timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+	try {
+		return await fetch(url, { ...init, signal: controller.signal });
+	} catch (err: unknown) {
+		if ((err as unknown as { name?: string })?.name === "AbortError") {
+			throw new Error("fetch-timeout");
+		}
+		throw err;
+	} finally {
+		if (to) clearTimeout(to);
+	}
+}
+
 // Parse day-level contribution cells from a GitHub public contributions page.
 // Supports both the legacy SVG <rect> layout and the current table layout where
 // each day cell carries a `data-date` attribute and is followed by a <tool-tip>
@@ -63,7 +89,7 @@ async function scrapeContributionsFullHistory(
 	// profile), so streaks up to several years are still respected.
 	let startYear: number | null = null;
 	try {
-		const res = await fetch(
+		const res = await fetchWithTimeout(
 			`https://api.github.com/users/${encodeURIComponent(username)}`,
 		);
 		if (res.ok) {
@@ -80,7 +106,7 @@ async function scrapeContributionsFullHistory(
 
 	for (let y = startYear; y <= thisYear; y++) {
 		try {
-			const resp = await fetch(
+			const resp = await fetchWithTimeout(
 				`https://github.com/users/${encodeURIComponent(username)}/contributions?from=${y}-01-01&to=${y}-12-31`,
 			);
 			if (!resp.ok) continue;
@@ -106,7 +132,7 @@ async function scrapeContributionsFullHistory(
 	// Last-resort fallback: the trailing bare page (single-year window).
 	if (byDate.size === 0) {
 		try {
-			const resp = await fetch(
+			const resp = await fetchWithTimeout(
 				`https://github.com/users/${encodeURIComponent(username)}/contributions`,
 			);
 			if (resp.ok) {
@@ -123,7 +149,7 @@ async function scrapeContributionsFullHistory(
 	const days: ContributionDay[] = Array.from(byDate.entries()).map(
 		([date, count]) => ({ date, count }),
 	);
-	days.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+	days.sort(byDateAsc);
 	return days;
 }
 
@@ -327,9 +353,7 @@ export async function fetchContributions(
 							date,
 							count,
 						}));
-						merged.sort((a, b) =>
-							a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
-						);
+						merged.sort(byDateAsc);
 						// update meta.lastDate
 						const lastDate = merged.length
 							? merged[merged.length - 1]?.date
@@ -450,7 +474,7 @@ export async function fetchContributions(
 		date,
 		count,
 	}));
-	merged.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+	merged.sort(byDateAsc);
 	// write full fetch back to cache with full resync metadata
 	try {
 		await writeContribCache(

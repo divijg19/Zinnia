@@ -130,12 +130,16 @@ describe("streak fetchContributions scrape full-history (no PAT)", () => {
 		expect(stats.currentStreak.end).toBe("2026-08-26");
 		expect(stats.currentStreak.length).toBe(376);
 		// The scraper must request both full years, not just the bare page.
-		expect(fetchMock).toHaveBeenCalledWith(
-			expect.stringContaining("contributions?from=2025-"),
-		);
-		expect(fetchMock).toHaveBeenCalledWith(
-			expect.stringContaining("contributions?from=2026-"),
-		);
+		expect(
+			fetchMock.mock.calls.some(([url]) =>
+				String(url).includes("contributions?from=2025-"),
+			),
+		).toBe(true);
+		expect(
+			fetchMock.mock.calls.some(([url]) =>
+				String(url).includes("contributions?from=2026-"),
+			),
+		).toBe(true);
 	});
 
 	it("drops future zero cells from the current-year page so the run is not clipped", async () => {
