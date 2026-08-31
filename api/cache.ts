@@ -106,7 +106,7 @@ export async function writeCacheWithMeta(
 export async function readCacheWithMeta(
 	service: string,
 	url: string,
-): Promise<{ body: string; etag?: string; ts?: number } | null> {
+): Promise<{ body: string; etag?: string; ts?: number; ttl?: number } | null> {
 	try {
 		const dir = serviceCacheDir(service);
 		if (!dir) return null; // filesystem cache disabled
@@ -118,7 +118,12 @@ export async function readCacheWithMeta(
 		try {
 			const raw = await fs.readFile(metaFile, "utf8");
 			const parsed = JSON.parse(raw);
-			return { body, etag: parsed.etag, ts: parsed.ts };
+			return {
+				body,
+				etag: parsed.etag,
+				ts: parsed.ts,
+				ttl: parsed.ttl,
+			};
 		} catch (_e) {
 			return { body };
 		}
