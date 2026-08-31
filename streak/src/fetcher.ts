@@ -8,6 +8,125 @@ import type { ContributionDay } from "./types.ts";
 const yearQuery = (year: number) =>
 	`query($login: String!) { user(login: $login) { createdAt contributionsCollection(from: "${year}-01-01T00:00:00Z", to: "${year}-12-31T23:59:59Z") { contributionYears contributionCalendar { weeks { contributionDays { date contributionCount } } } } }`;
 
+// Parse day-level contribution cells from a GitHub public contributions page.
+// Supports both the legacy SVG <rect> layout and the current table layout where
+// each day cell carries a `data-date` attribute and is followed by a <tool-tip>
+// holding per-day counts (e.g. "12 contributions on September 7th.").
+function parseContributionsHtml(text: string): ContributionDay[] {
+	const days: ContributionDay[] = [];
+	// First try legacy SVG <rect> parsing
+	const reRect =
+		/<rect[^>]*data-date=["']([0-9-]+)["'][^>]*data-count=["']([0-9]+)["'][^>]*>/g;
+	let m: RegExpExecArray | null = reRect.exec(text);
+	while (m) {
+		const date = m[1];
+		const countStr = m[2];
+		if (date && countStr) days.push({ date, count: Number(countStr) });
+		m = reRect.exec(text);
+	}
+	// If no <rect> entries found, try table-based layout (td + tool-tip)
+	if (days.length === 0) {
+		const reTd =
+			/<td[^>]*data-date=["']([0-9-]+)["'][^>]*>[\s\S]*?<\/td>\s*<tool-tip[^>]*>([\s\S]*?)<\/tool-tip>/g;
+		m = reTd.exec(text);
+		while (m) {
+			const date = m[1];
+			const tip = (m[2] || "").replace(/\s+/g, " ").trim();
+			let count = 0;
+			if (/No contributions on/i.test(tip)) count = 0;
+			else {
+				const numMatch = tip.match(/([0-9]+) contribution/);
+				if (numMatch) count = Number(numMatch[1]);
+			}
+			if (date) days.push({ date, count });
+			m = reTd.exec(text);
+		}
+	}
+	return days;
+}
+
+// Fetch a user's full contribution history by scraping GitHub's public
+// contributions pages. GitHub's bare page only renders the trailing ~1 year,
+// which clips streaks longer than ~365 days. Passing `from`/`to` per calendar
+// year returns day-granular, count-bearing data for the whole requested year,
+// so we probe each year from the account's join year (when the public profile
+// API is reachable) through the current year and merge the results.
+async function scrapeContributionsFullHistory(
+	username: string,
+): Promise<ContributionDay[]> {
+	const thisYear = new Date().getUTCFullYear();
+	const todayISO = new Date().toISOString().slice(0, 10);
+	const byDate = new Map<string, number>();
+
+	// Determine the earliest year from the public profile API. Fall back to a
+	// bounded recent window when it is unreachable (e.g. rate limited or no
+	// profile), so streaks up to several years are still respected.
+	let startYear: number | null = null;
+	try {
+		const res = await fetch(
+			`https://api.github.com/users/${encodeURIComponent(username)}`,
+		);
+		if (res.ok) {
+			const j = (await res.json()) as { created_at?: string };
+			if (typeof j?.created_at === "string" && /^\d{4}-/.test(j.created_at)) {
+				const y = Number(j.created_at.slice(0, 4));
+				if (Number.isFinite(y) && y >= 2005 && y <= thisYear) startYear = y;
+			}
+		}
+	} catch {
+		// ignore and use the bounded fallback below
+	}
+	if (startYear === null) startYear = Math.max(2005, thisYear - 2);
+
+	for (let y = startYear; y <= thisYear; y++) {
+		try {
+			const resp = await fetch(
+				`https://github.com/users/${encodeURIComponent(username)}/contributions?from=${y}-01-01&to=${y}-12-31`,
+			);
+			if (!resp.ok) continue;
+			const text = await resp.text();
+			for (const c of parseContributionsHtml(text)) {
+				// The current-year page includes future zero cells; drop them so
+				// trailing zeros cannot reset the running streak.
+				if (c.date > todayISO) continue;
+				byDate.set(c.date, (byDate.get(c.date) ?? 0) + c.count);
+			}
+		} catch (yearErr) {
+			try {
+				if (process.env.STREAK_DEBUG === "1")
+					console.warn(
+						"streak: full-history scrape failed for year",
+						y,
+						String(yearErr),
+					);
+			} catch {}
+		}
+	}
+
+	// Last-resort fallback: the trailing bare page (single-year window).
+	if (byDate.size === 0) {
+		try {
+			const resp = await fetch(
+				`https://github.com/users/${encodeURIComponent(username)}/contributions`,
+			);
+			if (resp.ok) {
+				const text = await resp.text();
+				for (const c of parseContributionsHtml(text)) {
+					byDate.set(c.date, c.count);
+				}
+			}
+		} catch {
+			// ignore; the caller handles empty results
+		}
+	}
+
+	const days: ContributionDay[] = Array.from(byDate.entries()).map(
+		([date, count]) => ({ date, count }),
+	);
+	days.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+	return days;
+}
+
 type GraphQLVariables = Record<string, string | number | boolean | null>;
 
 async function doGraphQL(
@@ -143,48 +262,14 @@ export async function fetchContributions(
 	const patInfo = await getGithubPATWithKeyForServiceAsync("streak");
 
 	if (!patInfo) {
-		// Fallback: try to scrape the public GitHub contributions calendar
+		// Fallback: scrape the public GitHub contributions history. The bare
+		// page only shows a trailing ~1-year window; scrape per-year pages so
+		// streaks longer than ~365 days are not clipped.
 		try {
-			const resp = await fetch(
-				`https://github.com/users/${username}/contributions`,
-			);
-			if (!resp.ok) throw new Error("public-contributions-fetch-failed");
-			const text = await resp.text();
-			const days: ContributionDay[] = [];
-			// First try legacy SVG <rect> parsing
-			const reRect =
-				/<rect[^>]*data-date=["']([0-9-]+)["'][^>]*data-count=["']([0-9]+)["'][^>]*>/g;
-			let m: RegExpExecArray | null = reRect.exec(text);
-			while (m) {
-				const date = m[1];
-				const countStr = m[2];
-				if (date && countStr) days.push({ date, count: Number(countStr) });
-				m = reRect.exec(text);
-			}
-			// If no <rect> entries found, try table-based layout (td + tool-tip)
-			if (days.length === 0) {
-				const reTd =
-					/<td[^>]*data-date=["']([0-9-]+)["'][^>]*>[\s\S]*?<\/td>\s*<tool-tip[^>]*>([\s\S]*?)<\/tool-tip>/g;
-				m = reTd.exec(text);
-				while (m) {
-					const date = m[1];
-					const tip = (m[2] || "").replace(/\s+/g, " ").trim();
-					let count = 0;
-					const singleMatch = tip.match(/No contributions on/i);
-					if (singleMatch) count = 0;
-					else {
-						const numMatch = tip.match(/([0-9]+) contribution/);
-						if (numMatch) count = Number(numMatch[1]);
-					}
-					if (date) days.push({ date, count });
-					m = reTd.exec(text);
-				}
-			}
+			const days = await scrapeContributionsFullHistory(username);
 			if (days.length > 0) {
-				days.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 				return days;
 			}
-			// If parsing failed, fall through to GraphQL path which will error
 		} catch (scrapeErr) {
 			try {
 				if (process.env.STREAK_DEBUG === "1")
@@ -298,44 +383,12 @@ export async function fetchContributions(
 	if (!user) {
 		const msg = json?.errors?.[0]?.message ?? "no user data";
 		// Try a scrape fallback before failing outright to keep renderer
-		// deterministic for embeds. Reuse the public contributions endpoint.
+		// deterministic for embeds. Use the public contributions history
+		// (full-year pages so long streaks are not clipped to ~1 year).
 		try {
-			const resp = await fetch(
-				`https://github.com/users/${username}/contributions`,
-			);
-			if (resp?.ok) {
-				const text = await resp.text();
-				const days: ContributionDay[] = [];
-				const reRect =
-					/<rect[^>]*data-date=["']([0-9-]+)["'][^>]*data-count=["']([0-9]+)["'][^>]*>/g;
-				let m: RegExpExecArray | null = reRect.exec(text);
-				while (m) {
-					const date = m[1];
-					const countStr = m[2];
-					if (date && countStr) days.push({ date, count: Number(countStr) });
-					m = reRect.exec(text);
-				}
-				if (days.length === 0) {
-					const reTd =
-						/<td[^>]*data-date=["']([0-9-]+)["'][^>]*>[\s\S]*?<\/td>\s*<tool-tip[^>]*>([\s\S]*?)<\/tool-tip>/g;
-					m = reTd.exec(text);
-					while (m) {
-						const date = m[1];
-						const tip = (m[2] || "").replace(/\s+/g, " ").trim();
-						let count = 0;
-						if (/No contributions on/i.test(tip)) count = 0;
-						else {
-							const numMatch = tip.match(/([0-9]+) contribution/);
-							if (numMatch) count = Number(numMatch[1]);
-						}
-						if (date) days.push({ date, count });
-						m = reTd.exec(text);
-					}
-				}
-				if (days.length > 0) {
-					days.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
-					return days;
-				}
+			const days = await scrapeContributionsFullHistory(username);
+			if (days.length > 0) {
+				return days;
 			}
 		} catch (scrapeErr) {
 			try {
