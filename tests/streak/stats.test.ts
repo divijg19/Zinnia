@@ -91,25 +91,29 @@ describe("stats computations", () => {
 	});
 
 	test("future commits handling", () => {
-		const yesterday = new Date();
-		yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-		const today = new Date();
-		const tomorrow = new Date();
-		tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-		const inTwoDays = new Date();
-		inTwoDays.setUTCDate(inTwoDays.getUTCDate() + 2);
+		// A deterministic "now" so the clock-anchored streak is stable.
+		const now = new Date("2026-08-26T12:00:00Z");
+		const yesterday = new Date("2026-08-25T00:00:00Z")
+			.toISOString()
+			.slice(0, 10);
+		const today = "2026-08-26";
+		const tomorrow = "2026-08-27";
+		const inTwoDays = "2026-08-28";
 
-		const contributions: Record<string, number> = {};
-		contributions[yesterday.toISOString().slice(0, 10)] = 1;
-		contributions[today.toISOString().slice(0, 10)] = 1;
-		contributions[tomorrow.toISOString().slice(0, 10)] = 1;
-		contributions[inTwoDays.toISOString().slice(0, 10)] = 1;
+		const contributions = {
+			[yesterday]: 1,
+			[today]: 1,
+			[tomorrow]: 1,
+			[inTwoDays]: 1,
+		};
 
-		const stats = getContributionStats(mapToArray(contributions));
-		// current implementation counts yesterday, today, tomorrow and the in-2-days entry
-		expect(stats.totalContributions).toBe(4);
-		expect(stats.longestStreak.length).toBe(4);
-		expect(stats.currentStreak.length).toBe(4);
+		const stats = getContributionStats(mapToArray(contributions), [], now);
+		// Hardened semantics: rows dated after "now" are ignored for streak and
+		// totals, so only yesterday + today count (they can never prematurely
+		// extend the run or reset it).
+		expect(stats.totalContributions).toBe(2);
+		expect(stats.longestStreak.length).toBe(2);
+		expect(stats.currentStreak.length).toBe(2);
 	});
 
 	test("weekly stats and missing week cases", () => {
