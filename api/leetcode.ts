@@ -6,7 +6,7 @@ import { importByPath } from "../lib/loader/index.js";
 import { filterThemeParam, isValidUsername } from "../lib/params.js";
 import {
 	setCacheHeaders,
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setSvgHeaders,
 } from "./_utils.js";
 
@@ -168,18 +168,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const svgOut = await generator.generate(sanitized);
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
-			if (
-				setEtagAndMaybeSend304(
-					req.headers as Record<string, unknown>,
-					res,
-					svgOut,
-				)
-			) {
-				// Some embedders treat a 304 without a body as an error. Send
-				// the full SVG body with 200 so embedders reliably render it.
-				res.status(200);
-				return res.send(svgOut);
-			}
+			// Always 200 + full body with ETag set. Some embedders treat a 304
+			// without a body as an error, so never send a bare 304.
+			setEtagAndAlwaysSend200(res, svgOut);
+			res.status(200);
 			return res.send(svgOut);
 		} catch (e) {
 			const error = e as Error;

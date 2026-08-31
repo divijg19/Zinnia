@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./canonical/http_cache.js";
@@ -35,7 +35,7 @@ export function svgError(
 
 /** Send a standardized error SVG on the provided response with cache+etag handling. */
 export function sendErrorSvg(
-	req: VercelRequest,
+	_req: VercelRequest,
 	res: VercelResponse,
 	message: string,
 	code: ErrorCode,
@@ -62,13 +62,8 @@ export function sendErrorSvg(
 		// ignore header failures
 	}
 	res.status(200);
-	if (
-		setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-	) {
-		// Ensure embedders receive a full SVG body (some clients treat 304 without
-		// body as an error). Reset status to 200 and send the body.
-		res.status(200);
-		return res.send(body);
-	}
+	// Always 200 + full SVG body with ETag set (never 304-empty, which some
+	// embedders treat as an error).
+	setEtagAndAlwaysSend200(res, body);
 	return res.send(body);
 }

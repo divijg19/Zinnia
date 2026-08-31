@@ -18,12 +18,12 @@ function makeRes() {
 	} as unknown as Record<string, unknown>;
 }
 
-describe("Trophy handler honors client If-None-Match with 304", () => {
+describe("Trophy handler always-200 + ETag on If-None-Match", () => {
 	afterEach(() => {
 		restoreMocks();
 	});
 
-	it("returns 304 when client If-None-Match equals cached etag", async () => {
+	it("sends full SVG body with ETag set when client If-None-Match matches", async () => {
 		const cachedBody = "<svg>CACHED</svg>";
 		const etag = cachedBody.slice(0, 16);
 		vi.resetModules();
@@ -50,15 +50,12 @@ describe("Trophy handler honors client If-None-Match with 304", () => {
 			res as unknown as VercelResponse,
 		);
 
-		const statusArg = (res.status as any).mock.calls[0]?.[0] ?? 200;
+		// Never a bare 304-empty: the full SVG body is sent and an ETag is set.
 		const sentArg = (res.send as any).mock.calls[0]?.[0] ?? "";
-		if (statusArg === 304) {
-			// Some handlers may set 304 but still send the cached SVG body.
-			// Accept either an empty body or an SVG string here.
-			expect(sentArg === "" || String(sentArg).includes("<svg")).toBe(true);
-		} else {
-			expect(statusArg).toBe(200);
-			expect(String(sentArg)).toContain("<svg");
-		}
+		expect(String(sentArg)).toContain("<svg");
+		expect(res.setHeader).toHaveBeenCalledWith(
+			"ETag",
+			expect.stringMatching(/^".+"$/),
+		);
 	});
 });

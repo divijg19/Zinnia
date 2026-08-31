@@ -197,6 +197,20 @@ export function setEtagAndMaybeSend304(
 	return false;
 }
 
+/**
+ * Formalized ETag contract for SVG card endpoints: always send `200` with the
+ * full body, and always set the `ETag` header from that body.
+ *
+ * Many embedders (GitHub readme cards, dashboards) treat a `304` without a body
+ * as an error and fail to render, so we never return `304` here. Setting `ETag`
+ * still lets clients revalidate and reuse their cached copy on later requests.
+ * This is purely HTTP revalidation; the internal cache layer (TTL/fallback, see
+ * `getCacheAdapterForService`) is a separate concern and unaffected.
+ */
+export function setEtagAndAlwaysSend200(res: ResponseLike, body: string): void {
+	res.setHeader("ETag", `"${computeEtag(body)}"`);
+}
+
 export default {
 	resolveCacheSeconds,
 	setCacheHeaders,
@@ -217,4 +231,5 @@ export default {
 	getCacheAdapter: getCacheAdapterForService,
 	getCacheAdapterForService,
 	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 };
