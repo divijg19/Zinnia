@@ -162,7 +162,7 @@ describe("/api/streak handler", () => {
 		}
 	});
 
-	it("honors client If-None-Match and returns 304 when ETag matches", async () => {
+	it("always returns 200 with full SVG body and ETag set on If-None-Match match", async () => {
 		const upstreamBody = "<svg>CACHED</svg>";
 		setGlobalFetchMock(
 			makeFetchResolved({
@@ -193,16 +193,10 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		// Either the handler honored If-None-Match (304) or produced a
-		// local/fallback response; accept either behavior for tests.
-		const statusArg = res.status.mock.calls[0][0] as number;
-		if (statusArg === 304) {
-			expect(res.send).toHaveBeenCalledWith("");
-		} else {
-			// fallback behavior: should have returned an SVG payload
-			const body304 = res.send.mock.calls[0][0] as string;
-			expect(body304).toContain("<svg");
-		}
+		// Always-200 contract: never a bare 304; full SVG body sent with ETag set.
+		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.send).toHaveBeenCalledWith(upstreamBody);
+		expect(res.setHeader).toHaveBeenCalledWith("ETag", `"${etag}"`);
 	});
 
 	it("forwards upstream 404 SVG payload and sets short cache TTL", async () => {

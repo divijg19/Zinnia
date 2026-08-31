@@ -15,7 +15,7 @@ import {
 	computeEtag,
 	resolveCacheSeconds,
 	setCacheHeaders,
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "./_utils.js";
@@ -291,16 +291,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 		} catch {}
 
-		if (
-			setEtagAndMaybeSend304(
-				req.headers as Record<string, unknown>,
-				res,
-				svgOut,
-			)
-		) {
-			res.status(200);
-			return res.send(svgOut);
-		}
+		// Always 200 + full SVG with ETag set (never 304-empty).
+		setEtagAndAlwaysSend200(res, svgOut);
 		return res.send(svgOut);
 	} catch (_err) {
 		return sendErrorSvg(req, res, "trophy: internal error", "TROPHY_INTERNAL");

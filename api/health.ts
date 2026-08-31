@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	resolveCacheSeconds,
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
@@ -29,28 +29,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setSvgHeaders(res);
 		// Health checks are transient; keep short TTL so status updates quickly.
 		setShortCacheHeaders(res, cacheSeconds);
-		res.status(200);
 		const body = svg(text);
-		if (
-			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-		) {
-			// Send full body with 200 to avoid embedders treating empty 304 as error
-			res.status(200);
-			return res.send(body);
-		}
+		// Always 200 + full body with ETag set (never 304-empty).
+		setEtagAndAlwaysSend200(res, body);
+		res.status(200);
 		return res.send(body);
 	} catch (_e) {
 		setSvgHeaders(res);
 		// On error return a short-lived health response
 		setShortCacheHeaders(res, 60);
-		res.status(200);
 		const body = svg("OK");
-		if (
-			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, body)
-		) {
-			res.status(200);
-			return res.send(body);
-		}
+		setEtagAndAlwaysSend200(res, body);
+		res.status(200);
 		return res.send(body);
 	}
 }

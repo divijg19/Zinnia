@@ -222,12 +222,11 @@ import {
 	getCacheAdapterForService,
 	resolveCacheSeconds,
 	setCacheHeaders,
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setFallbackCacheHeaders,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
-import * as cache from "./cache.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -269,19 +268,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					ct?.includes("svg")
 				) {
 					const body = await resp.text();
-					// Honor If-None-Match via helper which sets ETag header.
-					try {
-						if (
-							setEtagAndMaybeSend304(
-								req.headers as Record<string, unknown>,
-								res,
-								String(body),
-							)
-						) {
-							// Caller expects a 304 match to result in an empty body send.
-							return res.send("");
-						}
-					} catch {}
+					// Always 200 + full body with ETag set (never 304-empty, which
+					// breaks embedders). Revalidation is handled client-side.
+					setEtagAndAlwaysSend200(res, String(body));
 					setSvgHeaders(res);
 					try {
 						res.setHeader(
@@ -301,6 +290,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						res.setHeader("X-Streak-Renderer", "upstream");
 					} catch {}
 					res.setHeader("X-Upstream-Status", String(resp.status));
+					res.status(200);
 					return res.send(body);
 				}
 				// If upstream returned a successful but non-SVG payload, treat as an error
@@ -342,21 +332,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const cached = await cacheLocal.get(localKey);
 				if (cached) {
 					try {
-						const etag = cache.computeEtag
-							? cache.computeEtag(cached)
-							: undefined;
-						if (etag) res.setHeader("ETag", `"${etag}"`);
-						if (
-							etag &&
-							setEtagAndMaybeSend304(
-								req.headers as Record<string, unknown>,
-								res,
-								String(cached),
-							)
-						) {
-							res.status(200);
-							return res.send(cached);
-						}
+						// Always 200 + full cached body with ETag set.
+						setEtagAndAlwaysSend200(res, String(cached));
 					} catch {}
 					setSvgHeaders(res);
 					setFallbackCacheHeaders(
@@ -370,6 +347,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							86400,
 						),
 					);
+					res.status(200);
 					return res.send(cached);
 				}
 			} catch {
@@ -602,19 +580,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			} catch {}
 
 			try {
-				const etag = cache.computeEtag(String(out.body));
-				if (etag) res.setHeader("ETag", `"${etag}"`);
-				if (
-					etag &&
-					setEtagAndMaybeSend304(
-						req.headers as Record<string, unknown>,
-						res,
-						String(out.body),
-					)
-				) {
-					res.status(200);
-					return res.send(String(out.body));
-				}
+				// Always 200 + full body with ETag set (never 304-empty).
+				setEtagAndAlwaysSend200(res, String(out.body));
 			} catch {}
 
 			try {
@@ -639,6 +606,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 			setSvgHeaders(res);
 			applyResponseCacheHeaders();
+			res.status(200);
 			return res.send(out.body as string);
 		} catch (e) {
 			console.error("streak: local renderer error", e);

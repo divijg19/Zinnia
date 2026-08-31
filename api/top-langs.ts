@@ -7,7 +7,7 @@ import { fetchTopLanguages } from "../stats/src/fetchers/top-languages.js";
 import {
 	resolveCacheSeconds,
 	setCacheHeaders,
-	setEtagAndMaybeSend304,
+	setEtagAndAlwaysSend200,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
@@ -201,13 +201,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			86400,
 		);
 		setCacheHeaders(res, cacheSeconds);
-		if (
-			setEtagAndMaybeSend304(req.headers as Record<string, unknown>, res, svg)
-		) {
-			res.status(200);
-			res.send(svg);
-			return null;
-		}
+		// Always 200 + full SVG with ETag set (never 304-empty).
+		setEtagAndAlwaysSend200(res, svg);
 		res.status(200);
 		res.send(svg);
 		return null;

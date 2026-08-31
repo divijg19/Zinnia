@@ -143,6 +143,14 @@ export function mockApiUtilsFactory({
 				}
 				return false;
 			},
+			setEtagAndAlwaysSend200: (res: any, body: string) => {
+				const etag = computeEtag(body);
+				try {
+					res.setHeader("ETag", `"${etag}"`);
+				} catch (_e) {
+					// ignore
+				}
+			},
 		};
 	};
 }
