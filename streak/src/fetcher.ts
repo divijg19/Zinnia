@@ -2,6 +2,7 @@ import {
 	getGithubPATWithKeyForServiceAsync,
 	markPatExhaustedAsync,
 } from "../../lib/tokens";
+import { sanitizeToToday } from "./current_streak.ts";
 import type { ContributionDay } from "./types.ts";
 
 // Build GraphQL query for a year's contribution calendar and optional fields
@@ -354,15 +355,18 @@ export async function fetchContributions(
 							count,
 						}));
 						merged.sort(byDateAsc);
+						// Drop any future/trailing cells so they cannot reset the
+						// run or be persisted into the 72h contributing cache.
+						const clean = sanitizeToToday(merged);
 						// update meta.lastDate
-						const lastDate = merged.length
-							? merged[merged.length - 1]?.date
+						const lastDate = clean.length
+							? clean[clean.length - 1]?.date
 							: meta?.lastDate;
-						await writeContribCache(username, merged, {
+						await writeContribCache(username, clean, {
 							lastDate,
 							lastFullResyncTs: meta?.lastFullResyncTs,
 						});
-						return merged;
+						return clean;
 					} catch (err) {
 						// If incremental fetch fails, fall back to returning cached data
 						try {
@@ -475,17 +479,20 @@ export async function fetchContributions(
 		count,
 	}));
 	merged.sort(byDateAsc);
+	// Drop any future/trailing cells so they cannot reset the run or be
+	// persisted into the 72h contributing cache.
+	const clean = sanitizeToToday(merged);
 	// write full fetch back to cache with full resync metadata
 	try {
 		await writeContribCache(
 			username,
-			merged,
+			clean,
 			{
-				lastDate: merged.length ? merged[merged.length - 1]?.date : undefined,
+				lastDate: clean.length ? clean[clean.length - 1]?.date : undefined,
 				lastFullResyncTs: Date.now(),
 			},
 			259200,
 		);
 	} catch (_) {}
-	return merged;
+	return clean;
 }

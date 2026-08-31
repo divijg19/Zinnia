@@ -1,3 +1,4 @@
+import { resolveRealDays } from "./current_streak.ts";
 import type { ContributionDay } from "./types.ts";
 
 export type Stats = {
@@ -35,13 +36,18 @@ function isExcludedDay(date: string, excludedDays: string[]): boolean {
 export function getContributionStats(
 	days: ContributionDay[],
 	excludedDays: string[] = [],
+	now?: Date,
 ): Stats {
 	if (!days || days.length === 0) throw new Error("No contributions found.");
+	// Anchor the ongoing run to the clock, clamped to the last real day in the
+	// data (never a future/trailing cell), and ignore any future cells so they
+	// can never extend or reset the current streak. Defense in depth on top of
+	// the fetcher's own sanitization.
+	const { today, realDays } = resolveRealDays(days, now);
+	if (realDays.length === 0) throw new Error("No contributions found.");
 	// days expected sorted ascending
-	const last = days[days.length - 1];
-	const firstItem = days[0];
-	if (!last || !firstItem) throw new Error("No contributions found.");
-	const today = last.date;
+	const firstItem = realDays[0];
+	if (!firstItem) throw new Error("No contributions found.");
 	const first = firstItem.date;
 
 	const excludedNormalized = normalizeDays(excludedDays || []);
@@ -50,7 +56,7 @@ export function getContributionStats(
 	let longest = { start: first, end: first, length: 0 };
 	let current = { start: first, end: first, length: 0 };
 
-	for (const { date, count } of days) {
+	for (const { date, count } of realDays) {
 		totalContributions += count;
 		const excluded = isExcludedDay(date, excludedNormalized);
 		if (count > 0 || (current.length > 0 && excluded)) {
@@ -76,14 +82,20 @@ export function getContributionStats(
 	};
 }
 
-export function getWeeklyContributionStats(days: ContributionDay[]): Stats {
+export function getWeeklyContributionStats(
+	days: ContributionDay[],
+	now?: Date,
+): Stats {
 	if (!days || days.length === 0) throw new Error("No contributions found.");
-	const lastItem = days[days.length - 1];
-	if (!lastItem) throw new Error("No contributions found.");
-	const thisWeek = getPreviousSunday(lastItem.date);
-	const firstItem = days[0];
+	// Weekly runs are also anchored to the clock (clamped to the last real
+	// data day) so trailing/future cells cannot shift the "this week" window
+	// or reset an ongoing run. Ignore any future cells defensively.
+	const { today, realDays } = resolveRealDays(days, now);
+	if (realDays.length === 0) throw new Error("No contributions found.");
+	const firstItem = realDays[0];
 	if (!firstItem) throw new Error("No contributions found.");
 	const first = firstItem.date;
+	const thisWeek = getPreviousSunday(today);
 	const firstWeek = getPreviousSunday(first);
 
 	const stats: Stats = {
@@ -95,7 +107,7 @@ export function getWeeklyContributionStats(days: ContributionDay[]): Stats {
 	} as Stats;
 
 	const weeks: Record<string, number> = {};
-	for (const { date, count } of days) {
+	for (const { date, count } of realDays) {
 		const week = getPreviousSunday(date);
 		if (!weeks[week]) weeks[week] = 0;
 		const c = typeof count === "number" ? count : 0;

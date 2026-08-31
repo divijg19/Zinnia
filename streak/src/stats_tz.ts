@@ -1,5 +1,5 @@
 // Timezone-aware streak calculation helpers
-// Place into streak/src/stats_tz.ts
+import { shiftDateKey } from "./current_streak.ts";
 
 export type ContributionDay = { date: string; count: number };
 
@@ -34,16 +34,6 @@ function contributionDayToLocalKey(
 	// for timezones ahead of UTC (e.g., Asia/Tokyo).
 	const utcEnd = new Date(`${dayIsoUtc}T23:59:59Z`);
 	return toLocalDateKey(utcEnd, timeZone);
-}
-
-function shiftDateKey(key: string, deltaDays: number): string {
-	// Keys are local calendar dates (YYYY-MM-DD). Shifting must be pure
-	// calendar arithmetic in UTC space: parsing the key as UTC midnight,
-	// adding whole days, and re-formatting in UTC. Never round-trip through
-	// the target timezone here — west-of-UTC zones would land on the
-	// previous local day and double-shift (-1 becomes -2, +1 becomes 0).
-	const ms = Date.parse(`${key}T00:00:00Z`);
-	return new Date(ms + deltaDays * 86400_000).toISOString().slice(0, 10);
 }
 
 export function computeStreaks(
