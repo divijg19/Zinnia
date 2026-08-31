@@ -4,30 +4,7 @@ import {
 	getContributionStats,
 	getWeeklyContributionStats,
 } from "../../streak/src/stats";
-
-// A single consecutive daily run.
-function buildRun(
-	start: string,
-	end: string,
-): Array<{ date: string; count: number }> {
-	const out: Array<{ date: string; count: number }> = [];
-	let cursor = new Date(`${start}T00:00:00Z`);
-	const stop = new Date(`${end}T00:00:00Z`);
-	while (cursor.getTime() <= stop.getTime()) {
-		out.push({ date: cursor.toISOString().slice(0, 10), count: 1 });
-		cursor = new Date(cursor.getTime() + 86_400_000);
-	}
-	return out;
-}
-
-// Every day in the range as zero-count cells (GitHub returns these for the
-// remainder of the current year).
-function buildZeros(
-	start: string,
-	end: string,
-): Array<{ date: string; count: number }> {
-	return buildRun(start, end).map((d) => ({ date: d.date, count: 0 }));
-}
+import { buildRun, buildZeros } from "./_helpers.ts";
 
 describe("getContributionStats is clock-anchored and ignores future cells", () => {
 	const now = new Date("2026-08-26T12:00:00Z");
