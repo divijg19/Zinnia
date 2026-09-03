@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
-import { themes } from "../../themes/index.js";
+import { themes } from "../../../lib/themes";
+import { toStatsTheme } from "../../../lib/themes/adapters/stats";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 
 const require = createRequire(import.meta.url);
@@ -155,37 +156,46 @@ export const getCardColors = ({
 	theme,
 	fallbackTheme = "default",
 }: CardThemeOptions) => {
-	const themesMap = themes as Record<string, Record<string, string>>;
-	const defaultTheme = themesMap[fallbackTheme];
+	const defaultTheme = themes[fallbackTheme];
 	if (!defaultTheme) {
 		throw new Error(`Fallback theme '${fallbackTheme}' not found`);
 	}
-	const selectedTheme = themesMap[theme || ""] || defaultTheme;
-	const defaultBorderColor =
-		selectedTheme.border_color || defaultTheme.border_color;
+	const defaultThemeColors = defaultTheme.colors;
+	const defaultStats = {
+		title_color: defaultThemeColors.title?.hex,
+		icon_color: defaultThemeColors.icon?.hex,
+		text_color: defaultThemeColors.text?.hex,
+		bg_color: defaultThemeColors.background
+			? "hex" in defaultThemeColors.background
+				? defaultThemeColors.background.hex
+				: undefined
+			: undefined,
+	};
+	const selectedTheme = themes[theme || ""] || defaultTheme;
+	// Resolve per-theme properties, falling back to the default theme for any
+	// missing keys (e.g. border_color). Mirrors the historical behavior where a
+	// property absent on the selected theme is replaced by the default's value.
+	const adapted = toStatsTheme(selectedTheme, defaultTheme);
 	const titleColor = fallbackColor(
-		title_color || selectedTheme.title_color,
-		`#${defaultTheme.title_color}`,
+		title_color || adapted.title_color,
+		`#${defaultStats.title_color}`,
 	);
-	const ringColor = fallbackColor(
-		ring_color || selectedTheme.ring_color,
-		titleColor,
-	);
+	const ringColor = fallbackColor(ring_color || adapted.ring_color, titleColor);
 	const iconColor = fallbackColor(
-		icon_color || selectedTheme.icon_color,
-		`#${defaultTheme.icon_color}`,
+		icon_color || adapted.icon_color,
+		`#${defaultStats.icon_color}`,
 	);
 	const textColor = fallbackColor(
-		text_color || selectedTheme.text_color,
-		`#${defaultTheme.text_color}`,
+		text_color || adapted.text_color,
+		`#${defaultStats.text_color}`,
 	);
 	const bgColor = fallbackColor(
-		bg_color || selectedTheme.bg_color,
-		`#${defaultTheme.bg_color}`,
+		bg_color || adapted.bg_color,
+		`#${defaultStats.bg_color}`,
 	);
 	const borderColor = fallbackColor(
-		border_color || defaultBorderColor,
-		`#${defaultBorderColor}`,
+		border_color || adapted.border_color,
+		`#${adapted.border_color}`,
 	);
 	if (
 		typeof titleColor !== "string" ||
