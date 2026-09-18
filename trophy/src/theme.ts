@@ -1,6 +1,10 @@
 import { toTrophyTheme } from "../../lib/themes/adapters/trophy.js";
 import { themes } from "../../lib/themes/registry.js";
 
+/**
+ * @deprecated Use `import { toTrophyTheme } from '../../lib/themes/adapters/trophy'` instead.
+ * This file will be removed after a deprecation period.
+ */
 const adaptedColors: Record<string, ReturnType<typeof toTrophyTheme>> = {};
 for (const name of Object.keys(themes)) {
 	const def = themes[name];

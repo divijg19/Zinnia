@@ -1,5 +1,14 @@
-/* Shared theme helpers: parseBackgroundToken and normalizeHexToken */
+// Shared theme utility helpers. These were formerly in `lib/theme-helpers.ts`;
+// they are now part of the canonical `lib/themes` module and re-exported from
+// `lib/themes/index.ts`.
 
+/**
+ * Parse a background token string into an SVG gradient id + <defs> markup.
+ *
+ * Supports the historical `"angle,hex,hex"` linear form and the
+ * `"radial,hex,hex"` radial form. Returns `null` when the input is not a
+ * gradient token.
+ */
 export function parseBackgroundToken(
 	bgRaw?: string | null,
 ): { id: string; def: string } | null {
@@ -52,6 +61,7 @@ export function parseBackgroundToken(
 	}
 }
 
+/** Normalize a hex token to `#rrggbb` lower case, preserving gradients/urls. */
 export function normalizeHexToken(hex?: string | null): string | null {
 	if (!hex) return null;
 	const s = String(hex).trim();
@@ -69,6 +79,10 @@ export function normalizeHexToken(hex?: string | null): string | null {
 	return s;
 }
 
+/**
+ * Normalize legacy snake_case theme keys to canonical camelCase names used by
+ * the streak/trophy renderers.
+ */
 export function normalizeThemeKeys(
 	raw: Record<string, string | undefined> | null | undefined,
 ): Record<string, string | undefined> {

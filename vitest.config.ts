@@ -20,6 +20,10 @@ export default defineConfig({
 	resolve: {
 		alias: [
 			{
+				find: /^@lib\/(.*)$/,
+				replacement: path.resolve(__dirname, "lib/$1"),
+			},
+			{
 				find: /^nano-font\/fonts\/.*/,
 				replacement: path.resolve(
 					__dirname,
@@ -33,6 +37,12 @@ export default defineConfig({
 		testTimeout: 60000,
 		// Leverage the existing leetcode setup and also run root setup cleanup
 		setupFiles: [setupFile, rootSetup],
+		// --- Pool isolation: run each test file in its own process to prevent
+		// shared-state bleeding (streak dist cache, theme registries, etc.)
+		pool: "forks",
+		poolOptions: {
+			singleFork: true,
+		},
 		include: includeGlobs,
 		coverage: {
 			provider: "v8",

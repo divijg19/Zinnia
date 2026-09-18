@@ -112,9 +112,7 @@ function loadThemesSync(): Record<string, Theme> {
 						// normalize legacy snake_case keys to canonical names
 						// use shared helper to keep behavior consistent across modules
 						// eslint-disable-next-line @typescript-eslint/no-var-requires
-						const {
-							normalizeThemeKeys,
-						} = require("../../lib/theme-helpers.ts");
+						const { normalizeThemeKeys } = require("../../lib/themes/utils.ts");
 						const normalized = normalizeThemeKeys(raw);
 						const vk = Object.keys(normalized);
 						if (

@@ -1,4 +1,4 @@
-import { parseBackgroundToken } from "../../lib/theme-helpers.ts";
+import { parseBackgroundToken } from "../../lib/themes/utils.ts";
 import { getNextRankBar, getTrophyIcon } from "./icons.ts";
 import type { Theme } from "./theme.ts";
 import { abridgeScore, CONSTANTS, RANK, RANK_ORDER } from "./utils.ts";

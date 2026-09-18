@@ -1,0 +1,5210 @@
+{
+  "themes": [
+    {
+      "name": "alduin",
+      "displayName": "alduin",
+      "previewColors": [
+        "#dfd7af",
+        "#1c1c1c",
+        "#e3e3e3"
+      ],
+      "colors": {
+        "title": {
+          "hex": "dfd7af"
+        },
+        "text": {
+          "hex": "dfd7af"
+        },
+        "icon": {
+          "hex": "e3e3e3"
+        },
+        "background": {
+          "hex": "1c1c1c"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#1c1c1c",
+        "TITLE": "#dfd7af",
+        "ICON_CIRCLE": "#e3e3e3",
+        "TEXT": "#dfd7af",
+        "LAUREL": "#a9d3ab",
+        "SECRET_RANK_1": "#f58e8e",
+        "SECRET_RANK_2": "#d6add5",
+        "SECRET_RANK_3": "#66d9ef",
+        "SECRET_RANK_TEXT": "#f58e8e",
+        "NEXT_RANK_BAR": "#dfd7af",
+        "S_RANK_BASE": "#fed37e",
+        "S_RANK_SHADOW": "#fed37e",
+        "S_RANK_TEXT": "#2d2d2d",
+        "A_RANK_BASE": "#79D4D5",
+        "A_RANK_SHADOW": "#79D4D5",
+        "A_RANK_TEXT": "#2d2d2d",
+        "B_RANK_BASE": "#f58e8e",
+        "B_RANK_SHADOW": "#f58e8e",
+        "B_RANK_TEXT": "#2d2d2d",
+        "DEFAULT_RANK_BASE": "#75715e",
+        "DEFAULT_RANK_SHADOW": "#75715e",
+        "DEFAULT_RANK_TEXT": "#2d2d2d"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/alduin-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/alduin-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/alduin-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/alduin-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "algolia",
+      "displayName": "algolia",
+      "previewColors": [
+        "#00AEFF",
+        "#050F2C",
+        "#2DDE98"
+      ],
+      "colors": {
+        "title": {
+          "hex": "00AEFF"
+        },
+        "icon": {
+          "hex": "2DDE98"
+        },
+        "text": {
+          "hex": "FFFFFF"
+        },
+        "background": {
+          "hex": "050F2C"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#050f2c",
+        "TITLE": "#00aeff",
+        "ICON_CIRCLE": "#f0f6fb",
+        "TEXT": "#7eace9",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff79c6",
+        "SECRET_RANK_3": "#388bfd",
+        "SECRET_RANK_TEXT": "#ff79c6",
+        "NEXT_RANK_BAR": "#00aeff",
+        "S_RANK_BASE": "#ffb86c",
+        "S_RANK_SHADOW": "#ffb86c",
+        "S_RANK_TEXT": "#0d1117",
+        "A_RANK_BASE": "#2dde98",
+        "A_RANK_TEXT": "#0d1117",
+        "A_RANK_SHADOW": "#2dde98",
+        "B_RANK_BASE": "#8be9fd",
+        "B_RANK_SHADOW": "#8be9fd",
+        "B_RANK_TEXT": "#0d1117",
+        "DEFAULT_RANK_BASE": "#5c75c3",
+        "DEFAULT_RANK_SHADOW": "#6272a4",
+        "DEFAULT_RANK_TEXT": "#0d1117"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/algolia-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/algolia-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/algolia-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/algolia-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "ambient_gradient",
+      "displayName": "ambient_gradient",
+      "previewColors": [
+        "#ffffff",
+        "#35,4158d0,c850c0,ffcc70",
+        "#ffffff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffffff"
+        },
+        "icon": {
+          "hex": "ffffff"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "35,4158d0,c850c0,ffcc70"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/ambient_gradient-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/ambient_gradient-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/ambient_gradient-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/ambient_gradient-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "apprentice",
+      "displayName": "apprentice",
+      "previewColors": [
+        "#ffffff",
+        "#262626",
+        "#ffffaf"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffffff"
+        },
+        "icon": {
+          "hex": "ffffaf"
+        },
+        "text": {
+          "hex": "bcbcbc"
+        },
+        "background": {
+          "hex": "262626"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#262626",
+        "TITLE": "#BCBCBC",
+        "ICON_CIRCLE": "#BCBCBC",
+        "TEXT": "#5F875F",
+        "LAUREL": "#5F8787",
+        "SECRET_RANK_1": "#FF8700",
+        "SECRET_RANK_2": "#8787AF",
+        "SECRET_RANK_3": "#5F87AF",
+        "SECRET_RANK_TEXT": "#5F5F87",
+        "NEXT_RANK_BAR": "#FFFFA9",
+        "S_RANK_BASE": "#FFFFAF",
+        "S_RANK_SHADOW": "#FFFFAF",
+        "S_RANK_TEXT": "#87875F",
+        "A_RANK_BASE": "#8FAFD7",
+        "A_RANK_SHADOW": "#8FAFD7",
+        "A_RANK_TEXT": "#5F875F",
+        "B_RANK_BASE": "#AF5F5F",
+        "B_RANK_SHADOW": "#AF5F5F",
+        "B_RANK_TEXT": "#AF5F5F",
+        "DEFAULT_RANK_BASE": "#6C6C6C",
+        "DEFAULT_RANK_SHADOW": "#6C6C6C",
+        "DEFAULT_RANK_TEXT": "#1C1C1C"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/apprentice-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/apprentice-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/apprentice-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/apprentice-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "aura",
+      "displayName": "aura",
+      "previewColors": [
+        "#a277ff",
+        "#15141b",
+        "#ffca85"
+      ],
+      "colors": {
+        "title": {
+          "hex": "a277ff"
+        },
+        "icon": {
+          "hex": "ffca85"
+        },
+        "text": {
+          "hex": "61ffca"
+        },
+        "background": {
+          "hex": "15141b"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#1E1D26",
+        "TITLE": "#FFFFFF",
+        "ICON_CIRCLE": "#FFFFFF",
+        "TEXT": "#dbffe6",
+        "LAUREL": "#a9fcca",
+        "SECRET_RANK_1": "#c273ff",
+        "SECRET_RANK_2": "#c273ff",
+        "SECRET_RANK_3": "#c273ff",
+        "SECRET_RANK_TEXT": "#bd93f9",
+        "NEXT_RANK_BAR": "#715df5",
+        "S_RANK_BASE": "#8e57ff",
+        "S_RANK_SHADOW": "#2361ad",
+        "S_RANK_TEXT": "#6272a4",
+        "A_RANK_BASE": "#7c71f5",
+        "A_RANK_SHADOW": "#3ae056",
+        "A_RANK_TEXT": "#6272a4",
+        "B_RANK_BASE": "#226a80",
+        "B_RANK_SHADOW": "#226a80",
+        "B_RANK_TEXT": "#6272a4",
+        "DEFAULT_RANK_BASE": "#5e8c2a",
+        "DEFAULT_RANK_SHADOW": "#5e8c2a",
+        "DEFAULT_RANK_TEXT": "#5e8c2a"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/aura-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/aura-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/aura-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/aura-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "aura_dark",
+      "displayName": "aura_dark",
+      "previewColors": [
+        "#ff7372",
+        "#252334",
+        "#6cffd0"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ff7372"
+        },
+        "icon": {
+          "hex": "6cffd0"
+        },
+        "text": {
+          "hex": "dbdbdb"
+        },
+        "background": {
+          "hex": "252334"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/aura_dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/aura_dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/aura_dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/aura_dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "ayu-mirage",
+      "displayName": "ayu-mirage",
+      "previewColors": [
+        "#f4cd7c",
+        "#1f2430",
+        "#73d0ff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "f4cd7c"
+        },
+        "icon": {
+          "hex": "73d0ff"
+        },
+        "text": {
+          "hex": "c7c8c2"
+        },
+        "background": {
+          "hex": "1f2430"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/ayu-mirage-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/ayu-mirage-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/ayu-mirage-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/ayu-mirage-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "bear",
+      "displayName": "bear",
+      "previewColors": [
+        "#e03c8a",
+        "#1f2023",
+        "#00AEFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e03c8a"
+        },
+        "icon": {
+          "hex": "00AEFF"
+        },
+        "text": {
+          "hex": "bcb28d"
+        },
+        "background": {
+          "hex": "1f2023"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/bear-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/bear-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/bear-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/bear-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "blue_navy",
+      "displayName": "blue_navy",
+      "previewColors": [
+        "#82AAFF",
+        "#000000",
+        "#82AAFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "82AAFF"
+        },
+        "icon": {
+          "hex": "82AAFF"
+        },
+        "text": {
+          "hex": "82AAFF"
+        },
+        "background": {
+          "hex": "000000"
+        },
+        "border": {
+          "hex": "ffffff"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/blue_navy-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/blue_navy-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/blue_navy-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/blue_navy-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "blue-green",
+      "displayName": "blue-green",
+      "previewColors": [
+        "#2f97c1",
+        "#040f0f",
+        "#f5b700"
+      ],
+      "colors": {
+        "title": {
+          "hex": "2f97c1"
+        },
+        "icon": {
+          "hex": "f5b700"
+        },
+        "text": {
+          "hex": "0cf574"
+        },
+        "background": {
+          "hex": "040f0f"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/blue-green-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/blue-green-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/blue-green-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/blue-green-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "blueberry",
+      "displayName": "blueberry",
+      "previewColors": [
+        "#82aaff",
+        "#242938",
+        "#89ddff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "82aaff"
+        },
+        "icon": {
+          "hex": "89ddff"
+        },
+        "text": {
+          "hex": "27e8a7"
+        },
+        "background": {
+          "hex": "242938"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/blueberry-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/blueberry-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/blueberry-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/blueberry-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "buddhism",
+      "displayName": "buddhism",
+      "previewColors": [
+        "#FFF",
+        "#ffc20e",
+        "#FFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "FFF"
+        },
+        "text": {
+          "hex": "FFF"
+        },
+        "icon": {
+          "hex": "FFF"
+        },
+        "background": {
+          "hex": "ffc20e"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#ffc20e",
+        "TITLE": "#FFF",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#FFF",
+        "LAUREL": "#27c5ff",
+        "SECRET_RANK_1": "#FFF",
+        "SECRET_RANK_2": "#f73155",
+        "SECRET_RANK_3": "#fff",
+        "SECRET_RANK_TEXT": "#f73155",
+        "NEXT_RANK_BAR": "#f73155",
+        "S_RANK_BASE": "#ff8400",
+        "S_RANK_SHADOW": "#ff8400",
+        "S_RANK_TEXT": "#ffc20e",
+        "A_RANK_BASE": "#fff",
+        "A_RANK_SHADOW": "#fff",
+        "A_RANK_TEXT": "#ffc20e",
+        "B_RANK_BASE": "#f73155",
+        "B_RANK_SHADOW": "#f73155",
+        "B_RANK_TEXT": "#ffc20e",
+        "DEFAULT_RANK_BASE": "#27c5ff",
+        "DEFAULT_RANK_SHADOW": "#27c5ff",
+        "DEFAULT_RANK_TEXT": "#ffc20e"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/buddhism-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/buddhism-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/buddhism-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/buddhism-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "buefy",
+      "displayName": "buefy",
+      "previewColors": [
+        "#7957d5",
+        "#ffffff",
+        "#ff3860"
+      ],
+      "colors": {
+        "title": {
+          "hex": "7957d5"
+        },
+        "icon": {
+          "hex": "ff3860"
+        },
+        "text": {
+          "hex": "363636"
+        },
+        "background": {
+          "hex": "ffffff"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/buefy-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/buefy-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/buefy-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/buefy-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "calm",
+      "displayName": "calm",
+      "previewColors": [
+        "#e07a5f",
+        "#373f51",
+        "#edae49"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e07a5f"
+        },
+        "icon": {
+          "hex": "edae49"
+        },
+        "text": {
+          "hex": "ebcfb2"
+        },
+        "background": {
+          "hex": "373f51"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/calm-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/calm-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/calm-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/calm-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "calm_pink",
+      "displayName": "calm_pink",
+      "previewColors": [
+        "#e07a5f",
+        "#2b2d40",
+        "#ebcfb2"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e07a5f"
+        },
+        "icon": {
+          "hex": "ebcfb2"
+        },
+        "text": {
+          "hex": "edae49"
+        },
+        "background": {
+          "hex": "2b2d40"
+        },
+        "border": {
+          "hex": "e1bc29"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/calm_pink-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/calm_pink-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/calm_pink-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/calm_pink-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "catppuccin_latte",
+      "displayName": "catppuccin_latte",
+      "previewColors": [
+        "#137980",
+        "#eff1f5",
+        "#8839ef"
+      ],
+      "colors": {
+        "title": {
+          "hex": "137980"
+        },
+        "icon": {
+          "hex": "8839ef"
+        },
+        "text": {
+          "hex": "4c4f69"
+        },
+        "background": {
+          "hex": "eff1f5"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/catppuccin_latte-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/catppuccin_latte-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/catppuccin_latte-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/catppuccin_latte-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "catppuccin_mocha",
+      "displayName": "catppuccin_mocha",
+      "previewColors": [
+        "#94e2d5",
+        "#1e1e2e",
+        "#cba6f7"
+      ],
+      "colors": {
+        "title": {
+          "hex": "94e2d5"
+        },
+        "icon": {
+          "hex": "cba6f7"
+        },
+        "text": {
+          "hex": "cdd6f4"
+        },
+        "background": {
+          "hex": "1e1e2e"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/catppuccin_mocha-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/catppuccin_mocha-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/catppuccin_mocha-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/catppuccin_mocha-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "catppuccin-mocha",
+      "displayName": "catppuccin-mocha",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "palette": {
+          "bg": [
+            "#1e1e2e",
+            "#45475a",
+            "#45475a"
+          ],
+          "text": [
+            "#cdd6f4",
+            "#bac2de"
+          ],
+          "color": [
+            "#fab387",
+            "#a6e3a1",
+            "#f9e2af",
+            "#f38ba8"
+          ]
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/catppuccin-mocha-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/catppuccin-mocha-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/catppuccin-mocha-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/catppuccin-mocha-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "chalk",
+      "displayName": "chalk",
+      "previewColors": [
+        "#fed37e",
+        "#2d2d2d",
+        "#e4e4e4"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fed37e"
+        },
+        "text": {
+          "hex": "d4d4d4"
+        },
+        "icon": {
+          "hex": "e4e4e4"
+        },
+        "background": {
+          "hex": "2d2d2d"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#2d2d2d",
+        "TITLE": "#fed37e",
+        "ICON_CIRCLE": "#e4e4e4",
+        "TEXT": "#d4d4d4",
+        "LAUREL": "#a9d3ab",
+        "SECRET_RANK_1": "#f58e8e",
+        "SECRET_RANK_2": "#d6add5",
+        "SECRET_RANK_3": "#66d9ef",
+        "SECRET_RANK_TEXT": "#f58e8e",
+        "NEXT_RANK_BAR": "#7aabd4",
+        "S_RANK_BASE": "#fed37e",
+        "S_RANK_SHADOW": "#fed37e",
+        "S_RANK_TEXT": "#2d2d2d",
+        "A_RANK_BASE": "#79D4D5",
+        "A_RANK_SHADOW": "#79D4D5",
+        "A_RANK_TEXT": "#2d2d2d",
+        "B_RANK_BASE": "#f58e8e",
+        "B_RANK_SHADOW": "#f58e8e",
+        "B_RANK_TEXT": "#2d2d2d",
+        "DEFAULT_RANK_BASE": "#75715e",
+        "DEFAULT_RANK_SHADOW": "#75715e",
+        "DEFAULT_RANK_TEXT": "#2d2d2d"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/chalk-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/chalk-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/chalk-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/chalk-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "chartreuse",
+      "displayName": "chartreuse",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "palette": {
+          "bg": [
+            "#000",
+            "#fff"
+          ],
+          "text": [
+            "#00AEFF",
+            "#7fff00"
+          ],
+          "color": [
+            "#ffa116",
+            "#5cb85c",
+            "#f0ad4e",
+            "#d9534f"
+          ]
+        },
+        "css": "#L{fill:#fff}"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/chartreuse-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/chartreuse-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/chartreuse-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/chartreuse-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "chartreuse-dark",
+      "displayName": "chartreuse-dark",
+      "previewColors": [
+        "#7fff00",
+        "#000",
+        "#00AEFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "7fff00"
+        },
+        "icon": {
+          "hex": "00AEFF"
+        },
+        "text": {
+          "hex": "fff"
+        },
+        "background": {
+          "hex": "000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/chartreuse-dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/chartreuse-dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/chartreuse-dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/chartreuse-dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "city_lights",
+      "displayName": "city_lights",
+      "previewColors": [
+        "#5D8CB3",
+        "#1D252C",
+        "#4798FF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "5D8CB3"
+        },
+        "icon": {
+          "hex": "4798FF"
+        },
+        "text": {
+          "hex": "718CA1"
+        },
+        "background": {
+          "hex": "1D252C"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/city_lights-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/city_lights-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/city_lights-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/city_lights-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "cobalt",
+      "displayName": "cobalt",
+      "previewColors": [
+        "#e683d9",
+        "#193549",
+        "#0480ef"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e683d9"
+        },
+        "icon": {
+          "hex": "0480ef"
+        },
+        "text": {
+          "hex": "75eeb2"
+        },
+        "background": {
+          "hex": "193549"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/cobalt-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/cobalt-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/cobalt-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/cobalt-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "cobalt2",
+      "displayName": "cobalt2",
+      "previewColors": [
+        "#ffc600",
+        "#193549",
+        "#ffffff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffc600"
+        },
+        "icon": {
+          "hex": "ffffff"
+        },
+        "text": {
+          "hex": "0088ff"
+        },
+        "background": {
+          "hex": "193549"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/cobalt2-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/cobalt2-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/cobalt2-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/cobalt2-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "codeSTACKr",
+      "displayName": "codeSTACKr",
+      "previewColors": [
+        "#ff652f",
+        "#09131B",
+        "#FFE400"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ff652f"
+        },
+        "icon": {
+          "hex": "FFE400"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "09131B"
+        },
+        "border": {
+          "hex": "0c1a25"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/codeSTACKr-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/codeSTACKr-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/codeSTACKr-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/codeSTACKr-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "darcula",
+      "displayName": "darcula",
+      "previewColors": [
+        "#BA5F17",
+        "#242424",
+        "#84628F"
+      ],
+      "colors": {
+        "title": {
+          "hex": "BA5F17"
+        },
+        "icon": {
+          "hex": "84628F"
+        },
+        "text": {
+          "hex": "BEBEBE"
+        },
+        "background": {
+          "hex": "242424"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/darcula-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/darcula-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/darcula-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/darcula-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "dark",
+      "displayName": "dark",
+      "previewColors": [
+        "#fff",
+        "#151515",
+        "#79ff97"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fff"
+        },
+        "icon": {
+          "hex": "79ff97"
+        },
+        "text": {
+          "hex": "9f9f9f"
+        },
+        "background": {
+          "hex": "151515"
+        },
+        "palette": {
+          "bg": [
+            "#101010",
+            "#404040"
+          ],
+          "text": [
+            "#f0f0f0",
+            "#dcdcdc"
+          ],
+          "color": [
+            "#ffa116",
+            "#5cb85c",
+            "#f0ad4e",
+            "#d9534f"
+          ]
+        },
+        "css": "#L{fill:#fff}"
+      },
+      "streak": {
+        "background": "#151515",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#FB8C00",
+        "fire": "#FB8C00",
+        "currStreakNum": "#FEFEFE",
+        "sideNums": "#FEFEFE",
+        "currStreakLabel": "#FB8C00",
+        "sideLabels": "#FEFEFE",
+        "dates": "#9E9E9E",
+        "excludeDaysLabel": "#9E9E9E"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "dark_dimmed",
+      "displayName": "dark_dimmed",
+      "previewColors": [
+        "#adbac7",
+        "#22272e",
+        "#002200"
+      ],
+      "colors": {
+        "title": {
+          "hex": "adbac7"
+        },
+        "text": {
+          "hex": "adbac7"
+        },
+        "icon": {
+          "hex": "002200"
+        },
+        "background": {
+          "hex": "22272e"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#22272e",
+        "TITLE": "#adbac7",
+        "ICON_CIRCLE": "#002200",
+        "TEXT": "#adbac7",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "red",
+        "SECRET_RANK_2": "fuchsia",
+        "SECRET_RANK_3": "blue",
+        "SECRET_RANK_TEXT": "fuchsia",
+        "NEXT_RANK_BAR": "#0366d6",
+        "S_RANK_BASE": "#FAD200",
+        "S_RANK_SHADOW": "#C8A090",
+        "S_RANK_TEXT": "#886000",
+        "A_RANK_BASE": "#B0B0B0",
+        "A_RANK_SHADOW": "#9090C0",
+        "A_RANK_TEXT": "#505050",
+        "B_RANK_BASE": "#A18D66",
+        "B_RANK_SHADOW": "#816D96",
+        "B_RANK_TEXT": "#412D06",
+        "DEFAULT_RANK_BASE": "#777",
+        "DEFAULT_RANK_SHADOW": "#333",
+        "DEFAULT_RANK_TEXT": "#333"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/dark_dimmed-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/dark_dimmed-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/dark_dimmed-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/dark_dimmed-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "dark_lover",
+      "displayName": "dark_lover",
+      "previewColors": [
+        "#e8aa64",
+        "#0d0d0d",
+        "#white"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e8aa64"
+        },
+        "text": {
+          "hex": "e8aa64"
+        },
+        "icon": {
+          "hex": "white"
+        },
+        "background": {
+          "hex": "0d0d0d"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#0d0d0d",
+        "TITLE": "#e8aa64",
+        "ICON_CIRCLE": "white",
+        "TEXT": "#e8aa64",
+        "LAUREL": "#e86464",
+        "SECRET_RANK_1": "#e05555",
+        "SECRET_RANK_2": "#e05555",
+        "SECRET_RANK_3": "#e05555",
+        "SECRET_RANK_TEXT": "#e05555",
+        "NEXT_RANK_BAR": "#e05555",
+        "S_RANK_BASE": "#f2c635",
+        "S_RANK_SHADOW": "#e0d7b8",
+        "S_RANK_TEXT": "#b35707",
+        "A_RANK_BASE": "#f25755",
+        "A_RANK_SHADOW": "#e69493",
+        "A_RANK_TEXT": "#f5352f",
+        "B_RANK_BASE": "#63db93",
+        "B_RANK_SHADOW": "#8cd1a8",
+        "B_RANK_TEXT": "#07b84e",
+        "DEFAULT_RANK_BASE": "#7f6ceb",
+        "DEFAULT_RANK_SHADOW": "#a598ed",
+        "DEFAULT_RANK_TEXT": "#7f6ceb"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/dark_lover-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/dark_lover-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/dark_lover-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/dark_lover-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "darkhub",
+      "displayName": "darkhub",
+      "previewColors": [
+        "#c9d1d9",
+        "#0d1117",
+        "#f0f6fb"
+      ],
+      "colors": {
+        "title": {
+          "hex": "c9d1d9"
+        },
+        "text": {
+          "hex": "8b949e"
+        },
+        "icon": {
+          "hex": "f0f6fb"
+        },
+        "background": {
+          "hex": "0d1117"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#0d1117",
+        "TITLE": "#c9d1d9",
+        "ICON_CIRCLE": "#f0f6fb",
+        "TEXT": "#8b949e",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff79c6",
+        "SECRET_RANK_3": "#388bfd",
+        "SECRET_RANK_TEXT": "#ff79c6",
+        "NEXT_RANK_BAR": "#ff79c6",
+        "S_RANK_BASE": "#ffb86c",
+        "S_RANK_SHADOW": "#ffb86c",
+        "S_RANK_TEXT": "#0d1117",
+        "A_RANK_BASE": "#8be9fd",
+        "A_RANK_SHADOW": "#8be9fd",
+        "A_RANK_TEXT": "#0d1117",
+        "B_RANK_BASE": "#ff5555",
+        "B_RANK_SHADOW": "#ff5555",
+        "B_RANK_TEXT": "#0d1117",
+        "DEFAULT_RANK_BASE": "#6272a4",
+        "DEFAULT_RANK_SHADOW": "#6272a4",
+        "DEFAULT_RANK_TEXT": "#0d1117"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/darkhub-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/darkhub-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/darkhub-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/darkhub-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "date_night",
+      "displayName": "date_night",
+      "previewColors": [
+        "#DA7885",
+        "#170F0C",
+        "#BB8470"
+      ],
+      "colors": {
+        "title": {
+          "hex": "DA7885"
+        },
+        "icon": {
+          "hex": "BB8470"
+        },
+        "text": {
+          "hex": "E1B2A2"
+        },
+        "background": {
+          "hex": "170F0C"
+        },
+        "border": {
+          "hex": "170F0C"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/date_night-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/date_night-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/date_night-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/date_night-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "default",
+      "displayName": "default",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "title": {
+          "hex": "2f80ed"
+        },
+        "icon": {
+          "hex": "4c71f2"
+        },
+        "text": {
+          "hex": "434d58"
+        },
+        "background": {
+          "hex": "fffefe"
+        },
+        "border": {
+          "hex": "e4e2e2"
+        }
+      },
+      "streak": {
+        "background": "#FFFEFE",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#FB8C00",
+        "fire": "#FB8C00",
+        "currStreakNum": "#151515",
+        "sideNums": "#151515",
+        "currStreakLabel": "#FB8C00",
+        "sideLabels": "#151515",
+        "dates": "#464646",
+        "excludeDaysLabel": "#464646"
+      },
+      "trophy": {
+        "BACKGROUND": "#FFF",
+        "TITLE": "#000",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#666",
+        "LAUREL": "#009366",
+        "SECRET_RANK_1": "red",
+        "SECRET_RANK_2": "fuchsia",
+        "SECRET_RANK_3": "blue",
+        "SECRET_RANK_TEXT": "fuchsia",
+        "NEXT_RANK_BAR": "#0366d6",
+        "S_RANK_BASE": "#FAD200",
+        "S_RANK_SHADOW": "#C8A090",
+        "S_RANK_TEXT": "#886000",
+        "A_RANK_BASE": "#B0B0B0",
+        "A_RANK_SHADOW": "#9090C0",
+        "A_RANK_TEXT": "#505050",
+        "B_RANK_BASE": "#A18D66",
+        "B_RANK_SHADOW": "#816D96",
+        "B_RANK_TEXT": "#412D06",
+        "DEFAULT_RANK_BASE": "#777",
+        "DEFAULT_RANK_SHADOW": "#333",
+        "DEFAULT_RANK_TEXT": "#333"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/default-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/default-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/default-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/default-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "default_repocard",
+      "displayName": "default_repocard",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#586069"
+      ],
+      "colors": {
+        "title": {
+          "hex": "2f80ed"
+        },
+        "icon": {
+          "hex": "586069"
+        },
+        "text": {
+          "hex": "434d58"
+        },
+        "background": {
+          "hex": "fffefe"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/default_repocard-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/default_repocard-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/default_repocard-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/default_repocard-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "discord",
+      "displayName": "discord",
+      "previewColors": [
+        "#7289DA",
+        "#23272A",
+        "#FFFFFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "7289DA"
+        },
+        "text": {
+          "hex": "FFFFFF"
+        },
+        "icon": {
+          "hex": "FFFFFF"
+        },
+        "background": {
+          "hex": "23272A"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#23272A",
+        "TITLE": "#7289DA",
+        "ICON_CIRCLE": "#FFFFFF",
+        "TEXT": "#FFFFFF",
+        "LAUREL": "#57F287",
+        "SECRET_RANK_1": "#ED4245",
+        "SECRET_RANK_2": "#57F287",
+        "SECRET_RANK_3": "#5865F2",
+        "SECRET_RANK_TEXT": "#000000",
+        "NEXT_RANK_BAR": "#5865F2",
+        "S_RANK_BASE": "#FEE75C",
+        "S_RANK_SHADOW": "#FEE75C",
+        "S_RANK_TEXT": "#000000",
+        "A_RANK_BASE": "#EB459E",
+        "A_RANK_SHADOW": "#ED4245",
+        "A_RANK_TEXT": "#000000",
+        "B_RANK_BASE": "#ED4245",
+        "B_RANK_SHADOW": "#ED4245",
+        "B_RANK_TEXT": "#000000",
+        "DEFAULT_RANK_BASE": "#5865F2",
+        "DEFAULT_RANK_SHADOW": "#5865F2",
+        "DEFAULT_RANK_TEXT": "#000000"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/discord-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/discord-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/discord-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/discord-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "discord_old_blurple",
+      "displayName": "discord_old_blurple",
+      "previewColors": [
+        "#7289DA",
+        "#2C2F33",
+        "#7289DA"
+      ],
+      "colors": {
+        "title": {
+          "hex": "7289DA"
+        },
+        "icon": {
+          "hex": "7289DA"
+        },
+        "text": {
+          "hex": "FFFFFF"
+        },
+        "background": {
+          "hex": "2C2F33"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/discord_old_blurple-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/discord_old_blurple-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/discord_old_blurple-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/discord_old_blurple-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "dracula",
+      "displayName": "dracula",
+      "previewColors": [
+        "#ff6e96",
+        "#282a36",
+        "#79dafa"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ff6e96"
+        },
+        "icon": {
+          "hex": "79dafa"
+        },
+        "text": {
+          "hex": "f8f8f2"
+        },
+        "background": {
+          "hex": "282a36"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#282a36",
+        "TITLE": "#ff79c6",
+        "ICON_CIRCLE": "#f8f8f2",
+        "TEXT": "#f8f8f2",
+        "LAUREL": "#50fa7b",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff79c6",
+        "SECRET_RANK_3": "#bd93f9",
+        "SECRET_RANK_TEXT": "#bd93f9",
+        "NEXT_RANK_BAR": "#ff79c6",
+        "S_RANK_BASE": "#ffb86c",
+        "S_RANK_SHADOW": "#ffb86c",
+        "S_RANK_TEXT": "#6272a4",
+        "A_RANK_BASE": "#8be9fd",
+        "A_RANK_SHADOW": "#8be9fd",
+        "A_RANK_TEXT": "#6272a4",
+        "B_RANK_BASE": "#ff5555",
+        "B_RANK_SHADOW": "#ff5555",
+        "B_RANK_TEXT": "#6272a4",
+        "DEFAULT_RANK_BASE": "#6272a4",
+        "DEFAULT_RANK_SHADOW": "#6272a4",
+        "DEFAULT_RANK_TEXT": "#6272a4"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/dracula-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/dracula-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/dracula-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/dracula-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "flag-india",
+      "displayName": "flag-india",
+      "previewColors": [
+        "#ff8f1c",
+        "#ffffff",
+        "#250E62"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ff8f1c"
+        },
+        "icon": {
+          "hex": "250E62"
+        },
+        "text": {
+          "hex": "509E2F"
+        },
+        "background": {
+          "hex": "ffffff"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/flag-india-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/flag-india-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/flag-india-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/flag-india-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "flat",
+      "displayName": "flat",
+      "previewColors": [
+        "#000",
+        "#FFF",
+        "#FFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "000"
+        },
+        "text": {
+          "hex": "666"
+        },
+        "icon": {
+          "hex": "FFF"
+        },
+        "background": {
+          "hex": "FFF"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#FFF",
+        "TITLE": "#000",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#666",
+        "LAUREL": "#009366",
+        "SECRET_RANK_1": "red",
+        "SECRET_RANK_2": "fuchsia",
+        "SECRET_RANK_3": "blue",
+        "SECRET_RANK_TEXT": "fuchsia",
+        "NEXT_RANK_BAR": "#0366d6",
+        "S_RANK_BASE": "#eac200",
+        "S_RANK_SHADOW": "#eac200",
+        "S_RANK_TEXT": "#886000",
+        "A_RANK_BASE": "#B0B0B0",
+        "A_RANK_SHADOW": "#B0B0B0",
+        "A_RANK_TEXT": "#505050",
+        "B_RANK_BASE": "#A18D66",
+        "B_RANK_SHADOW": "#A18D66",
+        "B_RANK_TEXT": "#412D06",
+        "DEFAULT_RANK_BASE": "#777",
+        "DEFAULT_RANK_SHADOW": "#777",
+        "DEFAULT_RANK_TEXT": "#333"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/flat-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/flat-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/flat-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/flat-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "forest",
+      "displayName": "forest",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "palette": {
+          "bg": [
+            "#fff9dd",
+            "#ffec96"
+          ],
+          "color": [
+            "#80c600",
+            "#1abc97",
+            "#8ec941",
+            "#a36d00"
+          ]
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/forest-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/forest-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/forest-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/forest-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "gitdimmed",
+      "displayName": "gitdimmed",
+      "previewColors": [
+        "#f0f6fb",
+        "#333",
+        "#f0f6fb"
+      ],
+      "colors": {
+        "title": {
+          "hex": "f0f6fb"
+        },
+        "text": {
+          "hex": "FFF"
+        },
+        "icon": {
+          "hex": "f0f6fb"
+        },
+        "background": {
+          "hex": "333"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#333",
+        "TITLE": "#f0f6fb",
+        "ICON_CIRCLE": "#f0f6fb",
+        "TEXT": "#FFF",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff79c6",
+        "SECRET_RANK_3": "#388bfd",
+        "SECRET_RANK_TEXT": "#ff79c6",
+        "NEXT_RANK_BAR": "#00aeff",
+        "S_RANK_BASE": "#ffb86c",
+        "S_RANK_SHADOW": "#ffb86c",
+        "S_RANK_TEXT": "#0d1117",
+        "A_RANK_BASE": "#2dde98",
+        "A_RANK_TEXT": "#0d1117",
+        "A_RANK_SHADOW": "#2dde98",
+        "B_RANK_BASE": "#8be9fd",
+        "B_RANK_SHADOW": "#8be9fd",
+        "B_RANK_TEXT": "#0d1117",
+        "DEFAULT_RANK_BASE": "#5c75c3",
+        "DEFAULT_RANK_SHADOW": "#6272a4",
+        "DEFAULT_RANK_TEXT": "#0d1117"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/gitdimmed-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/gitdimmed-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/gitdimmed-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/gitdimmed-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "github_dark",
+      "displayName": "github_dark",
+      "previewColors": [
+        "#58A6FF",
+        "#0D1117",
+        "#1F6FEB"
+      ],
+      "colors": {
+        "title": {
+          "hex": "58A6FF"
+        },
+        "icon": {
+          "hex": "1F6FEB"
+        },
+        "text": {
+          "hex": "C3D1D9"
+        },
+        "background": {
+          "hex": "0D1117"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/github_dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/github_dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/github_dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/github_dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "github_dark_dimmed",
+      "displayName": "github_dark_dimmed",
+      "previewColors": [
+        "#539bf5",
+        "#24292F",
+        "#539bf5"
+      ],
+      "colors": {
+        "title": {
+          "hex": "539bf5"
+        },
+        "icon": {
+          "hex": "539bf5"
+        },
+        "text": {
+          "hex": "ADBAC7"
+        },
+        "background": {
+          "hex": "24292F"
+        },
+        "border": {
+          "hex": "373E47"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/github_dark_dimmed-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/github_dark_dimmed-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/github_dark_dimmed-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/github_dark_dimmed-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "gotham",
+      "displayName": "gotham",
+      "previewColors": [
+        "#2aa889",
+        "#0c1014",
+        "#599cab"
+      ],
+      "colors": {
+        "title": {
+          "hex": "2aa889"
+        },
+        "icon": {
+          "hex": "599cab"
+        },
+        "text": {
+          "hex": "99d1ce"
+        },
+        "background": {
+          "hex": "0c1014"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/gotham-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/gotham-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/gotham-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/gotham-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "graywhite",
+      "displayName": "graywhite",
+      "previewColors": [
+        "#24292e",
+        "#ffffff",
+        "#24292e"
+      ],
+      "colors": {
+        "title": {
+          "hex": "24292e"
+        },
+        "icon": {
+          "hex": "24292e"
+        },
+        "text": {
+          "hex": "24292e"
+        },
+        "background": {
+          "hex": "ffffff"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/graywhite-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/graywhite-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/graywhite-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/graywhite-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "great-gatsby",
+      "displayName": "great-gatsby",
+      "previewColors": [
+        "#ffa726",
+        "#000000",
+        "#ffb74d"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffa726"
+        },
+        "icon": {
+          "hex": "ffb74d"
+        },
+        "text": {
+          "hex": "ffd95b"
+        },
+        "background": {
+          "hex": "000000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/great-gatsby-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/great-gatsby-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/great-gatsby-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/great-gatsby-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "gruvbox",
+      "displayName": "gruvbox",
+      "previewColors": [
+        "#fabd2f",
+        "#282828",
+        "#fe8019"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fabd2f"
+        },
+        "icon": {
+          "hex": "fe8019"
+        },
+        "text": {
+          "hex": "8ec07c"
+        },
+        "background": {
+          "hex": "282828"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#282828",
+        "TITLE": "#ebdbb2",
+        "ICON_CIRCLE": "#ebdbb2",
+        "TEXT": "#98971a",
+        "LAUREL": "#689d6a",
+        "SECRET_RANK_1": "#fb4934",
+        "SECRET_RANK_2": "#d3869b",
+        "SECRET_RANK_3": "#458588",
+        "SECRET_RANK_TEXT": "#b16286",
+        "NEXT_RANK_BAR": "#fabd26",
+        "S_RANK_BASE": "#fabd2f",
+        "S_RANK_SHADOW": "#fabd2f",
+        "S_RANK_TEXT": "#322301",
+        "A_RANK_BASE": "#83a598",
+        "A_RANK_SHADOW": "#83a598",
+        "A_RANK_TEXT": "#151e1a",
+        "B_RANK_BASE": "#d65d0e",
+        "B_RANK_SHADOW": "#d65d0e",
+        "B_RANK_TEXT": "#301503",
+        "DEFAULT_RANK_BASE": "#928374",
+        "DEFAULT_RANK_SHADOW": "#928374",
+        "DEFAULT_RANK_TEXT": "#282828"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/gruvbox-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/gruvbox-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/gruvbox-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/gruvbox-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "gruvbox_light",
+      "displayName": "gruvbox_light",
+      "previewColors": [
+        "#b57614",
+        "#fbf1c7",
+        "#af3a03"
+      ],
+      "colors": {
+        "title": {
+          "hex": "b57614"
+        },
+        "icon": {
+          "hex": "af3a03"
+        },
+        "text": {
+          "hex": "427b58"
+        },
+        "background": {
+          "hex": "fbf1c7"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/gruvbox_light-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/gruvbox_light-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/gruvbox_light-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/gruvbox_light-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "highcontrast",
+      "displayName": "highcontrast",
+      "previewColors": [
+        "#e7f216",
+        "#000",
+        "#00ffff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e7f216"
+        },
+        "icon": {
+          "hex": "00ffff"
+        },
+        "text": {
+          "hex": "fff"
+        },
+        "background": {
+          "hex": "000"
+        }
+      },
+      "streak": {
+        "background": "#000000",
+        "border": "#BEBEBE",
+        "stroke": "#BEBEBE",
+        "ring": "#FB8C00",
+        "fire": "#FB8C00",
+        "currStreakNum": "#FFFFFF",
+        "sideNums": "#FFFFFF",
+        "currStreakLabel": "#FB8C00",
+        "sideLabels": "#FFFFFF",
+        "dates": "#C5C5C5",
+        "excludeDaysLabel": "#C5C5C5"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/highcontrast-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/highcontrast-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/highcontrast-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/highcontrast-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "holi",
+      "displayName": "holi",
+      "previewColors": [
+        "#5FABEE",
+        "#030314",
+        "#5FABEE"
+      ],
+      "colors": {
+        "title": {
+          "hex": "5FABEE"
+        },
+        "icon": {
+          "hex": "5FABEE"
+        },
+        "text": {
+          "hex": "D6E7FF"
+        },
+        "background": {
+          "hex": "030314"
+        },
+        "border": {
+          "hex": "85A4C0"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/holi-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/holi-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/holi-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/holi-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "jolly",
+      "displayName": "jolly",
+      "previewColors": [
+        "#ff64da",
+        "#291B3E",
+        "#a960ff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ff64da"
+        },
+        "icon": {
+          "hex": "a960ff"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "291B3E"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/jolly-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/jolly-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/jolly-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/jolly-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "juicyfresh",
+      "displayName": "juicyfresh",
+      "previewColors": [
+        "#f7d745",
+        "#0d0c15",
+        "#FFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "f7d745"
+        },
+        "text": {
+          "hex": "b2d76c"
+        },
+        "icon": {
+          "hex": "FFF"
+        },
+        "background": {
+          "hex": "0d0c15"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#0d0c15",
+        "TITLE": "#f7d745",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#b2d76c",
+        "LAUREL": "#8bb071",
+        "SECRET_RANK_1": "#a8d937",
+        "SECRET_RANK_2": "#f7e662",
+        "SECRET_RANK_3": "#4d9b1c",
+        "SECRET_RANK_TEXT": "#ff5700",
+        "NEXT_RANK_BAR": "#6562af",
+        "S_RANK_BASE": "#f7d644",
+        "S_RANK_SHADOW": "#f69e44",
+        "S_RANK_TEXT": "#ff5700",
+        "A_RANK_BASE": "#f69e44",
+        "A_RANK_SHADOW": "#f46d5a",
+        "A_RANK_TEXT": "#ff5700",
+        "B_RANK_BASE": "#f46d5a",
+        "B_RANK_SHADOW": "#f73155",
+        "B_RANK_TEXT": "#ff5700",
+        "DEFAULT_RANK_BASE": "#f0d7d6",
+        "DEFAULT_RANK_SHADOW": "#f58867",
+        "DEFAULT_RANK_TEXT": "#ff5700"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/juicyfresh-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/juicyfresh-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/juicyfresh-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/juicyfresh-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "kacho_ga",
+      "displayName": "kacho_ga",
+      "previewColors": [
+        "#bf4a3f",
+        "#402b23",
+        "#a64833"
+      ],
+      "colors": {
+        "title": {
+          "hex": "bf4a3f"
+        },
+        "icon": {
+          "hex": "a64833"
+        },
+        "text": {
+          "hex": "d9c8a9"
+        },
+        "background": {
+          "hex": "402b23"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/kacho_ga-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/kacho_ga-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/kacho_ga-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/kacho_ga-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "kimbie_dark",
+      "displayName": "kimbie_dark",
+      "previewColors": [
+        "#d3af86",
+        "#221a0f",
+        "#7e602c"
+      ],
+      "colors": {
+        "title": {
+          "hex": "d3af86"
+        },
+        "text": {
+          "hex": "d3af86"
+        },
+        "icon": {
+          "hex": "7e602c"
+        },
+        "background": {
+          "hex": "221a0f"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#221a0f",
+        "TITLE": "#d3af86",
+        "ICON_CIRCLE": "#7e602c",
+        "TEXT": "#d3af86",
+        "LAUREL": "#889b4a",
+        "SECRET_RANK_1": "#f14a68",
+        "SECRET_RANK_2": "#f14a68",
+        "SECRET_RANK_3": "#dc3958",
+        "SECRET_RANK_TEXT": "#dc3958",
+        "NEXT_RANK_BAR": "#dc3958",
+        "S_RANK_BASE": "#fcac51",
+        "S_RANK_SHADOW": "#f79a32",
+        "S_RANK_TEXT": "#d3af86",
+        "A_RANK_BASE": "#a3B95a",
+        "A_RANK_SHADOW": "#889b4a",
+        "A_RANK_TEXT": "#d3af86",
+        "B_RANK_BASE": "#4c96a8",
+        "B_RANK_SHADOW": "#418292",
+        "B_RANK_TEXT": "#d3af86",
+        "DEFAULT_RANK_BASE": "#8ab1b0",
+        "DEFAULT_RANK_SHADOW": "#719190",
+        "DEFAULT_RANK_TEXT": "#d3af86"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/kimbie_dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/kimbie_dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/kimbie_dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/kimbie_dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "light",
+      "displayName": "light",
+      "previewColors": [
+        "#2f80ed",
+        "#ffffff",
+        "#4c71f2"
+      ],
+      "colors": {
+        "title": {
+          "hex": "2f80ed"
+        },
+        "icon": {
+          "hex": "4c71f2"
+        },
+        "text": {
+          "hex": "434d58"
+        },
+        "background": {
+          "hex": "ffffff"
+        },
+        "border": {
+          "hex": "e4e2e2"
+        },
+        "palette": {
+          "bg": [
+            "#fff",
+            "#e5e5e5"
+          ],
+          "text": [
+            "#000",
+            "#808080"
+          ],
+          "color": []
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/light-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/light-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/light-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/light-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "maroongold",
+      "displayName": "maroongold",
+      "previewColors": [
+        "#F7EF8A",
+        "#260000",
+        "#F7EF8A"
+      ],
+      "colors": {
+        "title": {
+          "hex": "F7EF8A"
+        },
+        "icon": {
+          "hex": "F7EF8A"
+        },
+        "text": {
+          "hex": "E0AA3E"
+        },
+        "background": {
+          "hex": "260000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/maroongold-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/maroongold-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/maroongold-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/maroongold-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "material-palenight",
+      "displayName": "material-palenight",
+      "previewColors": [
+        "#c792ea",
+        "#292d3e",
+        "#89ddff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "c792ea"
+        },
+        "icon": {
+          "hex": "89ddff"
+        },
+        "text": {
+          "hex": "a6accd"
+        },
+        "background": {
+          "hex": "292d3e"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/material-palenight-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/material-palenight-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/material-palenight-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/material-palenight-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "matrix",
+      "displayName": "matrix",
+      "previewColors": [
+        "#00cc00",
+        "#000000",
+        "#002200"
+      ],
+      "colors": {
+        "title": {
+          "hex": "00cc00"
+        },
+        "text": {
+          "hex": "00cc00"
+        },
+        "icon": {
+          "hex": "002200"
+        },
+        "background": {
+          "hex": "000000"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#000000",
+        "TITLE": "#00cc00",
+        "ICON_CIRCLE": "#002200",
+        "TEXT": "#00cc00",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "#ffd700",
+        "SECRET_RANK_2": "#ffffff",
+        "SECRET_RANK_3": "#ffd700",
+        "SECRET_RANK_TEXT": "#00ff00",
+        "NEXT_RANK_BAR": "#00ff00",
+        "S_RANK_BASE": "#ffd700",
+        "S_RANK_SHADOW": "#ffd700",
+        "S_RANK_TEXT": "#00ff00",
+        "A_RANK_BASE": "#c0c0c0",
+        "A_RANK_TEXT": "#00ff00",
+        "A_RANK_SHADOW": "#c0c0c0",
+        "B_RANK_BASE": "#b08d57",
+        "B_RANK_SHADOW": "#b08d57",
+        "B_RANK_TEXT": "#00ff00",
+        "DEFAULT_RANK_BASE": "#b08d57",
+        "DEFAULT_RANK_SHADOW": "#b08d57",
+        "DEFAULT_RANK_TEXT": "#00ff00"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/matrix-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/matrix-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/matrix-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/matrix-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "merko",
+      "displayName": "merko",
+      "previewColors": [
+        "#abd200",
+        "#0a0f0b",
+        "#b7d364"
+      ],
+      "colors": {
+        "title": {
+          "hex": "abd200"
+        },
+        "icon": {
+          "hex": "b7d364"
+        },
+        "text": {
+          "hex": "68b587"
+        },
+        "background": {
+          "hex": "0a0f0b"
+        }
+      },
+      "streak": {
+        "background": "#0A0F0B",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#ABD200",
+        "fire": "#ABD200",
+        "currStreakNum": "#B7D364",
+        "sideNums": "#ABD200",
+        "currStreakLabel": "#B7D364",
+        "sideLabels": "#ABD200",
+        "dates": "#68B587",
+        "excludeDaysLabel": "#68B587"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/merko-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/merko-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/merko-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/merko-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "midnight-purple",
+      "displayName": "midnight-purple",
+      "previewColors": [
+        "#9745f5",
+        "#000000",
+        "#9f4bff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "9745f5"
+        },
+        "icon": {
+          "hex": "9f4bff"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "000000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/midnight-purple-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/midnight-purple-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/midnight-purple-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/midnight-purple-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "moltack",
+      "displayName": "moltack",
+      "previewColors": [
+        "#86092C",
+        "#F5E1C0",
+        "#86092C"
+      ],
+      "colors": {
+        "title": {
+          "hex": "86092C"
+        },
+        "icon": {
+          "hex": "86092C"
+        },
+        "text": {
+          "hex": "574038"
+        },
+        "background": {
+          "hex": "F5E1C0"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/moltack-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/moltack-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/moltack-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/moltack-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "monokai",
+      "displayName": "monokai",
+      "previewColors": [
+        "#eb1f6a",
+        "#272822",
+        "#e28905"
+      ],
+      "colors": {
+        "title": {
+          "hex": "eb1f6a"
+        },
+        "icon": {
+          "hex": "e28905"
+        },
+        "text": {
+          "hex": "f1f1eb"
+        },
+        "background": {
+          "hex": "272822"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#272822",
+        "TITLE": "#f92672",
+        "ICON_CIRCLE": "#fff",
+        "TEXT": "#fff",
+        "LAUREL": "#a6e22e",
+        "SECRET_RANK_1": "#f92672",
+        "SECRET_RANK_2": "#ae81ff",
+        "SECRET_RANK_3": "#66d9ef",
+        "SECRET_RANK_TEXT": "#b16286",
+        "NEXT_RANK_BAR": "#f92672",
+        "S_RANK_BASE": "#e6db74",
+        "S_RANK_SHADOW": "#e6db74",
+        "S_RANK_TEXT": "#272822",
+        "A_RANK_BASE": "#66d9ef",
+        "A_RANK_SHADOW": "#66d9ef",
+        "A_RANK_TEXT": "#272822",
+        "B_RANK_BASE": "#fd971f",
+        "B_RANK_SHADOW": "#fd971f",
+        "B_RANK_TEXT": "#272822",
+        "DEFAULT_RANK_BASE": "#75715e",
+        "DEFAULT_RANK_SHADOW": "#75715e",
+        "DEFAULT_RANK_TEXT": "#282828"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/monokai-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/monokai-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/monokai-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/monokai-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "neon",
+      "displayName": "neon",
+      "previewColors": [
+        "#00EAD3",
+        "#000000",
+        "#00EAD3"
+      ],
+      "colors": {
+        "title": {
+          "hex": "00EAD3"
+        },
+        "icon": {
+          "hex": "00EAD3"
+        },
+        "text": {
+          "hex": "FF449F"
+        },
+        "background": {
+          "hex": "000000"
+        },
+        "border": {
+          "hex": "ffffff"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/neon-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/neon-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/neon-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/neon-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "nightowl",
+      "displayName": "nightowl",
+      "previewColors": [
+        "#c792ea",
+        "#011627",
+        "#ffeb95"
+      ],
+      "colors": {
+        "title": {
+          "hex": "c792ea"
+        },
+        "icon": {
+          "hex": "ffeb95"
+        },
+        "text": {
+          "hex": "7fdbca"
+        },
+        "background": {
+          "hex": "011627"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/nightowl-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/nightowl-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/nightowl-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/nightowl-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "noctis_minimus",
+      "displayName": "noctis_minimus",
+      "previewColors": [
+        "#d3b692",
+        "#1b2932",
+        "#72b7c0"
+      ],
+      "colors": {
+        "title": {
+          "hex": "d3b692"
+        },
+        "icon": {
+          "hex": "72b7c0"
+        },
+        "text": {
+          "hex": "c5cdd3"
+        },
+        "background": {
+          "hex": "1b2932"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/noctis_minimus-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/noctis_minimus-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/noctis_minimus-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/noctis_minimus-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "nord",
+      "displayName": "nord",
+      "previewColors": [
+        "#81a1c1",
+        "#2e3440",
+        "#88c0d0"
+      ],
+      "colors": {
+        "title": {
+          "hex": "81a1c1"
+        },
+        "icon": {
+          "hex": "88c0d0"
+        },
+        "text": {
+          "hex": "d8dee9"
+        },
+        "background": {
+          "hex": "2e3440"
+        },
+        "palette": {
+          "bg": [
+            "#2e3440",
+            "#3b4252",
+            "#434c5e",
+            "#4c566a"
+          ],
+          "text": [
+            "#eceff4",
+            "#e5e9f0",
+            "#d8dee9"
+          ],
+          "color": [
+            "#d08770",
+            "#a3be8c",
+            "#ebcb8b",
+            "#bf616a"
+          ]
+        },
+        "css": "#L{fill:#eceff4}"
+      },
+      "trophy": {
+        "BACKGROUND": "#2E3440",
+        "TITLE": "#81A1C1",
+        "ICON_CIRCLE": "#D8DEE9",
+        "TEXT": "#ECEFF4",
+        "LAUREL": "#A3BE8C",
+        "SECRET_RANK_1": "#BF616A",
+        "SECRET_RANK_2": "#B48EAD",
+        "SECRET_RANK_3": "#81A1C1",
+        "SECRET_RANK_TEXT": "#B48EAD",
+        "NEXT_RANK_BAR": "#81A1C1",
+        "S_RANK_BASE": "#EBCB8B",
+        "S_RANK_SHADOW": "#EBCB8B",
+        "S_RANK_TEXT": "#3B4252",
+        "A_RANK_BASE": "#8FBCBB",
+        "A_RANK_SHADOW": "#8FBCBB",
+        "A_RANK_TEXT": "#3B4252",
+        "B_RANK_BASE": "#D08770",
+        "B_RANK_SHADOW": "#D08770",
+        "B_RANK_TEXT": "#3B4252",
+        "DEFAULT_RANK_BASE": "#5E81AC",
+        "DEFAULT_RANK_SHADOW": "#5E81AC",
+        "DEFAULT_RANK_TEXT": "#3B4252"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/nord-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/nord-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/nord-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/nord-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "ocean_dark",
+      "displayName": "ocean_dark",
+      "previewColors": [
+        "#8957B2",
+        "#151A28",
+        "#FFFFFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "8957B2"
+        },
+        "icon": {
+          "hex": "FFFFFF"
+        },
+        "text": {
+          "hex": "92D534"
+        },
+        "background": {
+          "hex": "151A28"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/ocean_dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/ocean_dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/ocean_dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/ocean_dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "oldie",
+      "displayName": "oldie",
+      "previewColors": [
+        "#111",
+        "#F0F0F0",
+        "#FFF"
+      ],
+      "colors": {
+        "title": {
+          "hex": "111"
+        },
+        "text": {
+          "hex": "666"
+        },
+        "icon": {
+          "hex": "FFF"
+        },
+        "background": {
+          "hex": "F0F0F0"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#F0F0F0",
+        "TITLE": "#111",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#666",
+        "LAUREL": "#535353",
+        "SECRET_RANK_1": "#738986",
+        "SECRET_RANK_2": "#B36154",
+        "SECRET_RANK_3": "#91A16A",
+        "SECRET_RANK_TEXT": "#4D4D4D",
+        "NEXT_RANK_BAR": "#8E8680",
+        "S_RANK_BASE": "#8E8E8E",
+        "S_RANK_SHADOW": "#8E8E8E",
+        "S_RANK_TEXT": "#4D4D4D",
+        "A_RANK_BASE": "#AFAFAF",
+        "A_RANK_SHADOW": "#AFAFAF",
+        "A_RANK_TEXT": "#4D4D4D",
+        "B_RANK_BASE": "#858585",
+        "B_RANK_SHADOW": "#858585",
+        "B_RANK_TEXT": "#4D4D4D",
+        "DEFAULT_RANK_BASE": "#535353",
+        "DEFAULT_RANK_SHADOW": "#535353",
+        "DEFAULT_RANK_TEXT": "#4D4D4D"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/oldie-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/oldie-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/oldie-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/oldie-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "omni",
+      "displayName": "omni",
+      "previewColors": [
+        "#FF79C6",
+        "#191622",
+        "#e7de79"
+      ],
+      "colors": {
+        "title": {
+          "hex": "FF79C6"
+        },
+        "icon": {
+          "hex": "e7de79"
+        },
+        "text": {
+          "hex": "E1E1E6"
+        },
+        "background": {
+          "hex": "191622"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/omni-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/omni-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/omni-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/omni-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "one_dark_pro",
+      "displayName": "one_dark_pro",
+      "previewColors": [
+        "#61AFEF",
+        "#23272E",
+        "#C678DD"
+      ],
+      "colors": {
+        "title": {
+          "hex": "61AFEF"
+        },
+        "icon": {
+          "hex": "C678DD"
+        },
+        "text": {
+          "hex": "E5C06E"
+        },
+        "background": {
+          "hex": "23272E"
+        },
+        "border": {
+          "hex": "3B4048"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/one_dark_pro-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/one_dark_pro-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/one_dark_pro-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/one_dark_pro-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "onedark",
+      "displayName": "onedark",
+      "previewColors": [
+        "#e4bf7a",
+        "#282c34",
+        "#8eb573"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e4bf7a"
+        },
+        "icon": {
+          "hex": "8eb573"
+        },
+        "text": {
+          "hex": "df6d74"
+        },
+        "background": {
+          "hex": "282c34"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#282c34",
+        "TITLE": "#e5c07b",
+        "ICON_CIRCLE": "#FFF",
+        "TEXT": "#e06c75",
+        "LAUREL": "#98c379",
+        "SECRET_RANK_1": "#e06c75",
+        "SECRET_RANK_2": "#c678dd",
+        "SECRET_RANK_3": "#61afef",
+        "SECRET_RANK_TEXT": "#c678dd",
+        "NEXT_RANK_BAR": "#e5c07b",
+        "S_RANK_BASE": "#e5c07b",
+        "S_RANK_SHADOW": "#e5c07b",
+        "S_RANK_TEXT": "#282c34",
+        "A_RANK_BASE": "#56b6c2",
+        "A_RANK_SHADOW": "#56b6c2",
+        "A_RANK_TEXT": "#282c34",
+        "B_RANK_BASE": "#c678dd",
+        "B_RANK_SHADOW": "#c678dd",
+        "B_RANK_TEXT": "#282c34",
+        "DEFAULT_RANK_BASE": "#abb2bf",
+        "DEFAULT_RANK_SHADOW": "#abb2bf",
+        "DEFAULT_RANK_TEXT": "#282c34"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/onedark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/onedark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/onedark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/onedark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "onestar",
+      "displayName": "onestar",
+      "previewColors": [
+        "#EEEEEE",
+        "#0d1117",
+        "#EEEEEE"
+      ],
+      "colors": {
+        "title": {
+          "hex": "EEEEEE"
+        },
+        "text": {
+          "hex": "c7c7c7"
+        },
+        "icon": {
+          "hex": "EEEEEE"
+        },
+        "background": {
+          "hex": "0d1117"
+        }
+      },
+      "trophy": {
+        "BACKGROUND": "#0d1117",
+        "ICON_CIRCLE": "#EEEEEE",
+        "TITLE": "#EEEEEE",
+        "TEXT": "#c7c7c7",
+        "LAUREL": "#0dbc79",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#d861d8",
+        "SECRET_RANK_3": "#3b8eea",
+        "SECRET_RANK_TEXT": "#ff61c6",
+        "NEXT_RANK_BAR": "#9e9e9e",
+        "S_RANK_BASE": "#FFD54F",
+        "S_RANK_SHADOW": "#FFE082",
+        "S_RANK_TEXT": "#CB8A30",
+        "A_RANK_BASE": "#23d18b",
+        "A_RANK_SHADOW": "#8DF7B5",
+        "A_RANK_TEXT": "#3A3A3A",
+        "B_RANK_BASE": "#d13b3b",
+        "B_RANK_SHADOW": "#fa4b4b",
+        "B_RANK_TEXT": "#3A3A3A",
+        "DEFAULT_RANK_BASE": "#2472c8",
+        "DEFAULT_RANK_SHADOW": "#3b8eea",
+        "DEFAULT_RANK_TEXT": "#3A3A3A"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/onestar-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/onestar-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/onestar-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/onestar-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "outrun",
+      "displayName": "outrun",
+      "previewColors": [
+        "#ffcc00",
+        "#141439",
+        "#ff1aff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffcc00"
+        },
+        "icon": {
+          "hex": "ff1aff"
+        },
+        "text": {
+          "hex": "8080ff"
+        },
+        "background": {
+          "hex": "141439"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/outrun-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/outrun-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/outrun-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/outrun-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "panda",
+      "displayName": "panda",
+      "previewColors": [
+        "#19f9d899",
+        "#31353a",
+        "#19f9d899"
+      ],
+      "colors": {
+        "title": {
+          "hex": "19f9d899"
+        },
+        "icon": {
+          "hex": "19f9d899"
+        },
+        "text": {
+          "hex": "FF75B5"
+        },
+        "background": {
+          "hex": "31353a"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/panda-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/panda-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/panda-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/panda-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "prussian",
+      "displayName": "prussian",
+      "previewColors": [
+        "#bddfff",
+        "#172f45",
+        "#38a0ff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "bddfff"
+        },
+        "icon": {
+          "hex": "38a0ff"
+        },
+        "text": {
+          "hex": "6e93b5"
+        },
+        "background": {
+          "hex": "172f45"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/prussian-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/prussian-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/prussian-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/prussian-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "radical",
+      "displayName": "radical",
+      "previewColors": [
+        "#fe428e",
+        "#141321",
+        "#f8d847"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fe428e"
+        },
+        "icon": {
+          "hex": "f8d847"
+        },
+        "text": {
+          "hex": "a9fef7"
+        },
+        "background": {
+          "hex": "141321"
+        },
+        "palette": {
+          "bg": [
+            "#101010",
+            "#ffff"
+          ],
+          "text": [
+            "#fe428e",
+            "#a9fef7"
+          ],
+          "color": [
+            "#ffa116",
+            "#5cb85c",
+            "#f0ad4e",
+            "#d9534f"
+          ]
+        },
+        "css": "#L{fill:#fff}"
+      },
+      "streak": {
+        "background": "#141321",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#FE428E",
+        "fire": "#FE428E",
+        "currStreakNum": "#F8D847",
+        "sideNums": "#FE428E",
+        "currStreakLabel": "#F8D847",
+        "sideLabels": "#FE428E",
+        "dates": "#A9FEF7",
+        "excludeDaysLabel": "#A9FEF7"
+      },
+      "trophy": {
+        "BACKGROUND": "#141321",
+        "ICON_CIRCLE": "#EEEEEE",
+        "TITLE": "#fe428e",
+        "TEXT": "#a9fef7",
+        "LAUREL": "#50fa7b",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff15d9",
+        "SECRET_RANK_3": "#1E65F5",
+        "SECRET_RANK_TEXT": "#ff61c6",
+        "NEXT_RANK_BAR": "#fe428e",
+        "S_RANK_BASE": "#ffce32",
+        "S_RANK_SHADOW": "#ffce32",
+        "S_RANK_TEXT": "#CB8A30",
+        "A_RANK_BASE": "#8DF7B5",
+        "A_RANK_SHADOW": "#8DF7B5",
+        "A_RANK_TEXT": "#3A3A3A",
+        "B_RANK_BASE": "#EA3F25",
+        "B_RANK_SHADOW": "#EA3F25",
+        "B_RANK_TEXT": "#3A3A3A",
+        "DEFAULT_RANK_BASE": "#1E65F5",
+        "DEFAULT_RANK_SHADOW": "#1E65F5",
+        "DEFAULT_RANK_TEXT": "#3A3A3A"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/radical-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/radical-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/radical-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/radical-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "react",
+      "displayName": "react",
+      "previewColors": [
+        "#61dafb",
+        "#20232a",
+        "#61dafb"
+      ],
+      "colors": {
+        "title": {
+          "hex": "61dafb"
+        },
+        "icon": {
+          "hex": "61dafb"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "20232a"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/react-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/react-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/react-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/react-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "rose",
+      "displayName": "rose",
+      "previewColors": [
+        "#8d192b",
+        "#e9d8d4",
+        "#B71F36"
+      ],
+      "colors": {
+        "title": {
+          "hex": "8d192b"
+        },
+        "icon": {
+          "hex": "B71F36"
+        },
+        "text": {
+          "hex": "862931"
+        },
+        "background": {
+          "hex": "e9d8d4"
+        },
+        "border": {
+          "hex": "e9d8d4"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/rose-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/rose-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/rose-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/rose-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "rose_pine",
+      "displayName": "rose_pine",
+      "previewColors": [
+        "#9ccfd8",
+        "#191724",
+        "#ebbcba"
+      ],
+      "colors": {
+        "title": {
+          "hex": "9ccfd8"
+        },
+        "icon": {
+          "hex": "ebbcba"
+        },
+        "text": {
+          "hex": "e0def4"
+        },
+        "background": {
+          "hex": "191724"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/rose_pine-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/rose_pine-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/rose_pine-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/rose_pine-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "shades-of-purple",
+      "displayName": "shades-of-purple",
+      "previewColors": [
+        "#fad000",
+        "#2d2b55",
+        "#b362ff"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fad000"
+        },
+        "icon": {
+          "hex": "b362ff"
+        },
+        "text": {
+          "hex": "a599e9"
+        },
+        "background": {
+          "hex": "2d2b55"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/shades-of-purple-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/shades-of-purple-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/shades-of-purple-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/shades-of-purple-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "shadow_blue",
+      "displayName": "shadow_blue",
+      "previewColors": [
+        "#00779A",
+        "#ffffff00",
+        "#004450"
+      ],
+      "colors": {
+        "title": {
+          "hex": "00779A"
+        },
+        "icon": {
+          "hex": "004450"
+        },
+        "text": {
+          "hex": "444"
+        },
+        "background": {
+          "hex": "ffffff00"
+        },
+        "border": {
+          "hex": "004490"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/shadow_blue-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/shadow_blue-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/shadow_blue-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/shadow_blue-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "shadow_green",
+      "displayName": "shadow_green",
+      "previewColors": [
+        "#007A00",
+        "#ffffff00",
+        "#003D00"
+      ],
+      "colors": {
+        "title": {
+          "hex": "007A00"
+        },
+        "icon": {
+          "hex": "003D00"
+        },
+        "text": {
+          "hex": "444"
+        },
+        "background": {
+          "hex": "ffffff00"
+        },
+        "border": {
+          "hex": "003D00"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/shadow_green-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/shadow_green-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/shadow_green-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/shadow_green-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "shadow_red",
+      "displayName": "shadow_red",
+      "previewColors": [
+        "#9A0000",
+        "#ffffff00",
+        "#4F0000"
+      ],
+      "colors": {
+        "title": {
+          "hex": "9A0000"
+        },
+        "icon": {
+          "hex": "4F0000"
+        },
+        "text": {
+          "hex": "444"
+        },
+        "background": {
+          "hex": "ffffff00"
+        },
+        "border": {
+          "hex": "4F0000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/shadow_red-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/shadow_red-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/shadow_red-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/shadow_red-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "slateorange",
+      "displayName": "slateorange",
+      "previewColors": [
+        "#faa627",
+        "#36393f",
+        "#faa627"
+      ],
+      "colors": {
+        "title": {
+          "hex": "faa627"
+        },
+        "icon": {
+          "hex": "faa627"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "36393f"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/slateorange-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/slateorange-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/slateorange-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/slateorange-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "solarized-dark",
+      "displayName": "solarized-dark",
+      "previewColors": [
+        "#268bd2",
+        "#002b36",
+        "#b58900"
+      ],
+      "colors": {
+        "title": {
+          "hex": "268bd2"
+        },
+        "icon": {
+          "hex": "b58900"
+        },
+        "text": {
+          "hex": "859900"
+        },
+        "background": {
+          "hex": "002b36"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/solarized-dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/solarized-dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/solarized-dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/solarized-dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "solarized-light",
+      "displayName": "solarized-light",
+      "previewColors": [
+        "#268bd2",
+        "#fdf6e3",
+        "#b58900"
+      ],
+      "colors": {
+        "title": {
+          "hex": "268bd2"
+        },
+        "icon": {
+          "hex": "b58900"
+        },
+        "text": {
+          "hex": "859900"
+        },
+        "background": {
+          "hex": "fdf6e3"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/solarized-light-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/solarized-light-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/solarized-light-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/solarized-light-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "swift",
+      "displayName": "swift",
+      "previewColors": [
+        "#000000",
+        "#f7f7f7",
+        "#f05237"
+      ],
+      "colors": {
+        "title": {
+          "hex": "000000"
+        },
+        "icon": {
+          "hex": "f05237"
+        },
+        "text": {
+          "hex": "000000"
+        },
+        "background": {
+          "hex": "f7f7f7"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/swift-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/swift-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/swift-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/swift-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "synthwave",
+      "displayName": "synthwave",
+      "previewColors": [
+        "#e2e9ec",
+        "#2b213a",
+        "#ef8539"
+      ],
+      "colors": {
+        "title": {
+          "hex": "e2e9ec"
+        },
+        "icon": {
+          "hex": "ef8539"
+        },
+        "text": {
+          "hex": "e5289e"
+        },
+        "background": {
+          "hex": "2b213a"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/synthwave-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/synthwave-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/synthwave-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/synthwave-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "tokyonight",
+      "displayName": "tokyonight",
+      "previewColors": [
+        "#70a5fd",
+        "#1a1b27",
+        "#bf91f3"
+      ],
+      "colors": {
+        "title": {
+          "hex": "70a5fd"
+        },
+        "icon": {
+          "hex": "bf91f3"
+        },
+        "text": {
+          "hex": "38bdae"
+        },
+        "background": {
+          "hex": "1a1b27"
+        }
+      },
+      "streak": {
+        "background": "#1A1B27",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#70A5FD",
+        "fire": "#70A5FD",
+        "currStreakNum": "#BF91F3",
+        "sideNums": "#70A5FD",
+        "currStreakLabel": "#BF91F3",
+        "sideLabels": "#70A5FD",
+        "dates": "#38BDAE",
+        "excludeDaysLabel": "#38BDAE"
+      },
+      "trophy": {
+        "BACKGROUND": "#1a1b27",
+        "TITLE": "#70a5fd",
+        "ICON_CIRCLE": "#bf91f3",
+        "TEXT": "#38bdae",
+        "LAUREL": "#178600",
+        "SECRET_RANK_1": "#ff5555",
+        "SECRET_RANK_2": "#ff79c6",
+        "SECRET_RANK_3": "#388bfd",
+        "SECRET_RANK_TEXT": "#ff79c6",
+        "NEXT_RANK_BAR": "#00aeff",
+        "S_RANK_BASE": "#ffb86c",
+        "S_RANK_SHADOW": "#ffb86c",
+        "S_RANK_TEXT": "#0d1117",
+        "A_RANK_BASE": "#2dde98",
+        "A_RANK_TEXT": "#0d1117",
+        "A_RANK_SHADOW": "#2dde98",
+        "B_RANK_BASE": "#8be9fd",
+        "B_RANK_SHADOW": "#8be9fd",
+        "B_RANK_TEXT": "#0d1117",
+        "DEFAULT_RANK_BASE": "#5c75c3",
+        "DEFAULT_RANK_SHADOW": "#6272a4",
+        "DEFAULT_RANK_TEXT": "#0d1117"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/tokyonight-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/tokyonight-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/tokyonight-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/tokyonight-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "transparent",
+      "displayName": "transparent",
+      "previewColors": [
+        "#006AFF",
+        "#ffffff00",
+        "#0579C3"
+      ],
+      "colors": {
+        "title": {
+          "hex": "006AFF"
+        },
+        "icon": {
+          "hex": "0579C3"
+        },
+        "text": {
+          "hex": "417E87"
+        },
+        "background": {
+          "hex": "ffffff00"
+        },
+        "palette": {
+          "bg": [
+            "rgba(16, 16, 16, 0.5)",
+            "rgba(0, 0, 0, 0.5)"
+          ],
+          "text": [
+            "#417E87",
+            "#417E87"
+          ],
+          "color": [
+            "#ffa116",
+            "#5cb85c",
+            "#f0ad4e",
+            "#d9534f"
+          ]
+        },
+        "css": "#L{fill:#fff}"
+      },
+      "streak": {
+        "background": "#0000",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#006AFF",
+        "fire": "#006AFF",
+        "currStreakNum": "#0579C3",
+        "sideNums": "#006AFF",
+        "currStreakLabel": "#0579C3",
+        "sideLabels": "#006AFF",
+        "dates": "#417E87",
+        "excludeDaysLabel": "#417E87"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/transparent-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/transparent-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/transparent-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/transparent-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "unicorn",
+      "displayName": "unicorn",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "palette": {
+          "bg": [
+            "url(#g-bg)",
+            "#ffffffaa"
+          ],
+          "text": [
+            "url(#g-text)"
+          ],
+          "color": [
+            "url(#g-text)",
+            "#6ee7b7",
+            "#fcd34d",
+            "#fca5a5"
+          ]
+        },
+        "css": "#background{stroke:url(#g-text)}"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/unicorn-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/unicorn-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/unicorn-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/unicorn-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "vision-friendly-dark",
+      "displayName": "vision-friendly-dark",
+      "previewColors": [
+        "#ffb000",
+        "#000000",
+        "#785ef0"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffb000"
+        },
+        "icon": {
+          "hex": "785ef0"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "000000"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/vision-friendly-dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/vision-friendly-dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/vision-friendly-dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/vision-friendly-dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "vue",
+      "displayName": "vue",
+      "previewColors": [
+        "#41b883",
+        "#fffefe",
+        "#41b883"
+      ],
+      "colors": {
+        "title": {
+          "hex": "41b883"
+        },
+        "icon": {
+          "hex": "41b883"
+        },
+        "text": {
+          "hex": "273849"
+        },
+        "background": {
+          "hex": "fffefe"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/vue-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/vue-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/vue-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/vue-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "vue-dark",
+      "displayName": "vue-dark",
+      "previewColors": [
+        "#41b883",
+        "#273849",
+        "#41b883"
+      ],
+      "colors": {
+        "title": {
+          "hex": "41b883"
+        },
+        "icon": {
+          "hex": "41b883"
+        },
+        "text": {
+          "hex": "fffefe"
+        },
+        "background": {
+          "hex": "273849"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/vue-dark-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/vue-dark-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/vue-dark-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/vue-dark-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "watchdog",
+      "displayName": "watchdog",
+      "previewColors": [
+        "#fe428e",
+        "#45,520806,021D4A",
+        "#f8d847"
+      ],
+      "colors": {
+        "title": {
+          "hex": "fe428e"
+        },
+        "icon": {
+          "hex": "f8d847"
+        },
+        "text": {
+          "hex": "a9fef7"
+        },
+        "background": {
+          "hex": "45,520806,021D4A"
+        },
+        "border": {
+          "hex": "e4e2e2"
+        },
+        "palette": {
+          "bg": [
+            "url(#g-watchdog-bg)",
+            "#021D4A",
+            "#1a1f35",
+            "#2a2f45"
+          ],
+          "text": [
+            "#FFFFFF",
+            "#A9FEF7",
+            "#FE428E",
+            "#E4E2E2"
+          ],
+          "color": [
+            "url(#g-ring)",
+            "#43E97B",
+            "#FFBB00",
+            "#FF4757"
+          ]
+        },
+        "css": "\n\t\t/* Background with gradient - premium red-to-blue diagonal sweep */\n\t\t#background{\n\t\t\trx:12px;\n\t\t\tstroke:rgba(255,255,255,0.08);\n\t\t\tstroke-width:1.5px;\n\t\t}\n\t\t\n\t\t/* Icon - sophisticated multi-tone design */\n\t\t#icon{\n\t\t\topacity:1;\n\t\t}\n\t\t#L{\n\t\t\tfill:#00D9FF!important;\n\t\t\topacity:1;\n\t\t\tfilter:drop-shadow(0 2px 8px rgba(0,217,255,0.5));\n\t\t}\n\t\t#C{\n\t\t\tfill:#00D9FF!important;\n\t\t\topacity:0.85;\n\t\t}\n\t\t#dash{\n\t\t\tfill:#FFBB00!important;\n\t\t\topacity:0.95;\n\t\t\tfilter:drop-shadow(0 1px 4px rgba(255,187,0,0.4));\n\t\t}\n\t\t\n\t\t/* Username - crisp white with cyan glow, hot pink hover */\n\t\t#username-text{\n\t\t\tfont-weight:700!important;\n\t\t\tfont-size:24px!important;\n\t\t\tletter-spacing:0.5px;\n\t\t\tfill:#FFFFFF!important;\n\t\t\tfilter:drop-shadow(0 2px 4px rgba(169,254,247,0.3));\n\t\t\ttransition:all 0.3s cubic-bezier(0.4,0,0.2,1);\n\t\t}\n\t\t#username:hover #username-text{\n\t\t\tfill:#FE428E!important;\n\t\t\tfilter:drop-shadow(0 2px 8px rgba(254,66,142,0.6));\n\t\t\ttransform:translateY(-1px);\n\t\t}\n\t\t\n\t\t/* Ranking - elegant cyan with subtle emphasis */\n\t\t#ranking{\n\t\t\tfont-weight:600!important;\n\t\t\tfont-size:18px!important;\n\t\t\tletter-spacing:0.3px;\n\t\t\tfill:#A9FEF7!important;\n\t\t\topacity:0.92;\n\t\t}\n\t\t\n\t\t/* Total solved circle - premium gradient ring with white text */\n\t\t#total-solved-text{\n\t\t\tfont-weight:900!important;\n\t\t\tfont-size:38px!important;\n\t\t\tletter-spacing:-0.5px;\n\t\t\tfill:#FFFFFF!important;\n\t\t\tfilter:drop-shadow(0 3px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,255,255,0.3));\n\t\t}\n\t\t#total-solved-ring{\n\t\t\tstroke:url(#g-ring)!important;\n\t\t\tstroke-width:8px!important;\n\t\t\topacity:1;\n\t\t\tfilter:drop-shadow(0 0 12px rgba(67,233,123,0.6));\n\t\t}\n\t\t#total-solved-bg{\n\t\t\tstroke:rgba(255,255,255,0.12)!important;\n\t\t\tstroke-width:8px!important;\n\t\t\topacity:1;\n\t\t}\n\t\t\n\t\t/* Difficulty labels - refined white with subtle opacity */\n\t\t#easy-solved-type,#medium-solved-type,#hard-solved-type{\n\t\t\tfont-weight:600!important;\n\t\t\tfont-size:16px!important;\n\t\t\tletter-spacing:0.3px;\n\t\t\tfill:#FFFFFF!important;\n\t\t\topacity:0.85;\n\t\t}\n\t\t\n\t\t/* Difficulty counts - cyan emphasis for readability */\n\t\t#easy-solved-count,#medium-solved-count,#hard-solved-count{\n\t\t\tfont-weight:700!important;\n\t\t\tfont-size:16px!important;\n\t\t\tletter-spacing:0.2px;\n\t\t\tfill:#A9FEF7!important;\n\t\t\topacity:1;\n\t\t}\n\t\t\n\t\t/* Progress bars - vibrant semantic colors with enhanced glows */\n\t\t#easy-solved-progress{\n\t\t\tstroke:#43E97B!important;\n\t\t\tstroke-width:6px!important;\n\t\t\tfilter:drop-shadow(0 0 6px rgba(67,233,123,0.7));\n\t\t}\n\t\t#medium-solved-progress{\n\t\t\tstroke:#FFBB00!important;\n\t\t\tstroke-width:6px!important;\n\t\t\tfilter:drop-shadow(0 0 6px rgba(255,187,0,0.7));\n\t\t}\n\t\t#hard-solved-progress{\n\t\t\tstroke:#FF4757!important;\n\t\t\tstroke-width:6px!important;\n\t\t\tfilter:drop-shadow(0 0 6px rgba(255,71,87,0.7));\n\t\t}\n\t\t#easy-solved-bg,#medium-solved-bg,#hard-solved-bg{\n\t\t\topacity:1!important;\n\t\t\tstroke-width:6px!important;\n\t\t\tstroke:rgba(255,255,255,0.1)!important;\n\t\t}\n\t\t\n\t\t/* Animations - smooth entrance */\n\t\t@keyframes fadeIn{\n\t\t\t0%{opacity:0;transform:translateY(-5px)}\n\t\t\t100%{opacity:1;transform:translateY(0)}\n\t\t}\n\t\t\n\t\t/* Hover effects - gold highlight for interactivity */\n\t\t#solved g:hover #easy-solved-count,\n\t\t#solved g:hover #medium-solved-count,\n\t\t#solved g:hover #hard-solved-count{\n\t\t\tfill:#FFBB00!important;\n\t\t\ttransition:fill 0.3s cubic-bezier(0.4,0,0.2,1);\n\t\t}\n\t\t\n\t\t#solved g:hover #easy-solved-type,\n\t\t#solved g:hover #medium-solved-type,\n\t\t#solved g:hover #hard-solved-type{\n\t\t\tfill:#FFFFFF!important;\n\t\t\topacity:1!important;\n\t\t}\n\t"
+      },
+      "streak": {
+        "background": "45,#520806,#021D4A",
+        "border": "#E4E2E2",
+        "stroke": "#E4E2E2",
+        "ring": "#FE428E",
+        "fire": "#EB8C30",
+        "currStreakNum": "#F8D847",
+        "sideNums": "#FE428E",
+        "currStreakLabel": "#F8D847",
+        "sideLabels": "#FE428E",
+        "dates": "#A9FEF7",
+        "excludeDaysLabel": "#A9FEF7"
+      },
+      "trophy": {
+        "BACKGROUND": "45,#520806,#021D4A",
+        "TITLE": "#FE428E",
+        "ICON_CIRCLE": "#F8D847",
+        "TEXT": "#A9FEF7",
+        "LAUREL": "#FE428E",
+        "SECRET_RANK_1": "#EB8C30",
+        "SECRET_RANK_2": "#EB8C30",
+        "SECRET_RANK_3": "#EB8C30",
+        "SECRET_RANK_TEXT": "#EB8C30",
+        "NEXT_RANK_BAR": "#EB8C30",
+        "S_RANK_BASE": "#F8D847",
+        "S_RANK_SHADOW": "#F8D847",
+        "S_RANK_TEXT": "#3A3A3A",
+        "A_RANK_BASE": "#A9FEF7",
+        "A_RANK_SHADOW": "#A9FEF7",
+        "A_RANK_TEXT": "#505050",
+        "B_RANK_BASE": "#EB8C30",
+        "B_RANK_SHADOW": "#EB8C30",
+        "B_RANK_TEXT": "#3A3A3A",
+        "DEFAULT_RANK_BASE": "#777",
+        "DEFAULT_RANK_SHADOW": "#333",
+        "DEFAULT_RANK_TEXT": "#333"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/watchdog-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/watchdog-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/watchdog-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/watchdog-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "wtf",
+      "displayName": "wtf",
+      "previewColors": [
+        "#2f80ed",
+        "#fffefe",
+        "#4c71f2"
+      ],
+      "colors": {
+        "css": "#root { animation: wtf_animation 1s linear 0s infinite forwards } @keyframes wtf_animation {from { filter: hue-rotate(0deg) } to { filter: hue-rotate(360deg) }}"
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/wtf-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/wtf-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/wtf-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/wtf-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    },
+    {
+      "name": "yeblu",
+      "displayName": "yeblu",
+      "previewColors": [
+        "#ffff00",
+        "#002046",
+        "#ffff00"
+      ],
+      "colors": {
+        "title": {
+          "hex": "ffff00"
+        },
+        "icon": {
+          "hex": "ffff00"
+        },
+        "text": {
+          "hex": "ffffff"
+        },
+        "background": {
+          "hex": "002046"
+        }
+      },
+      "widgets": {
+        "stats": {
+          "src": "./assets/yeblu-stats.svg",
+          "width": 495,
+          "height": 195
+        },
+        "streak": {
+          "src": "./assets/yeblu-streak.svg",
+          "width": 495,
+          "height": 195
+        },
+        "trophy": {
+          "src": "./assets/yeblu-trophy.svg",
+          "width": 500,
+          "height": 125
+        },
+        "leetcode": {
+          "src": "./assets/yeblu-leetcode.svg",
+          "width": 500,
+          "height": 200
+        }
+      }
+    }
+  ],
+  "aliases": [
+    {
+      "theme": "catppuccin-mocha",
+      "normalized": "catppuccin-mocha",
+      "note": "streak lookup normalizes _ to -, so this theme resolves to the earlier-registered theme at runtime"
+    }
+  ]
+}

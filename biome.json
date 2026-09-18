@@ -29,6 +29,9 @@
 			"!trophy/dist",
 			"!streak/dist",
 			"!stats/api",
+			"!demo/theme-registry.json",
+			"!demo/mock-data.json",
+			"!demo/assets",
 			"!./tmp",
 			"!tmp",
 			"!.git/",
@@ -45,7 +48,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"preset": "recommended",
+			"recommended": true,
 			"suspicious": {
 				"noExplicitAny": "off"
 			}

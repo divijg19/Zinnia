@@ -3,6 +3,10 @@ import type { Item as Base } from "./types.js";
 
 let counter = 0;
 
+export function resetItemCounter(): void {
+	counter = 0;
+}
+
 export class Item implements Base {
 	public type: string;
 	public attr: Record<string, string[] | string | number>;

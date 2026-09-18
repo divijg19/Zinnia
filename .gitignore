@@ -145,7 +145,8 @@ vite.config.ts.timestamp-*
 _vendor_backup/
 _vendor_backup/**
 
-scripts/
+scripts/*
+!scripts/generate-demo-assets.js
 .vercel
 cache/
 

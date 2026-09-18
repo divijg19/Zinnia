@@ -1,3 +1,8 @@
+/**
+ * Legacy stats theme map.
+ * @deprecated Use the canonical registry (`lib/themes/registry.ts`) with
+ * `toStatsTheme` from `lib/themes/adapters/stats.ts` instead.
+ */
 export const themes = {
 	default: {
 		title_color: "2f80ed",
@@ -470,5 +475,11 @@ export const themes = {
 		border_color: "e4e2e2",
 	},
 };
+
+/**
+ * @deprecated Re-exported helper. Use the canonical registry via
+ * `toStatsTheme` from `../../lib/themes/adapters/stats` instead.
+ */
+export { toStatsTheme } from "../../lib/themes/adapters/stats.js";
 
 export default themes;
