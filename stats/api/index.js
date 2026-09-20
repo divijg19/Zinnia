@@ -84,6 +84,16 @@ var themes = {
       excludeDaysLabel: "#417E87"
     }
   },
+  light: {
+    name: "light",
+    colors: {
+      title: { hex: "2f80ed" },
+      icon: { hex: "4c71f2" },
+      text: { hex: "434d58" },
+      background: { hex: "ffffff" },
+      border: { hex: "e4e2e2" }
+    }
+  },
   shadow_red: {
     name: "shadow_red",
     colors: {
