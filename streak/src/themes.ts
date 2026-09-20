@@ -1,107 +1,14 @@
-// Auto-generated and normalized
-export const THEMES: import("./types.ts").Themes = {
-	default: {
-		background: "#FFFEFE",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#FB8C00",
-		fire: "#FB8C00",
-		currStreakNum: "#151515",
-		sideNums: "#151515",
-		currStreakLabel: "#FB8C00",
-		sideLabels: "#151515",
-		dates: "#464646",
-		excludeDaysLabel: "#464646",
-	},
-	dark: {
-		background: "#151515",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#FB8C00",
-		fire: "#FB8C00",
-		currStreakNum: "#FEFEFE",
-		sideNums: "#FEFEFE",
-		currStreakLabel: "#FB8C00",
-		sideLabels: "#FEFEFE",
-		dates: "#9E9E9E",
-		excludeDaysLabel: "#9E9E9E",
-	},
-	highcontrast: {
-		background: "#000000",
-		border: "#BEBEBE",
-		stroke: "#BEBEBE",
-		ring: "#FB8C00",
-		fire: "#FB8C00",
-		currStreakNum: "#FFFFFF",
-		sideNums: "#FFFFFF",
-		currStreakLabel: "#FB8C00",
-		sideLabels: "#FFFFFF",
-		dates: "#C5C5C5",
-		excludeDaysLabel: "#C5C5C5",
-	},
-	transparent: {
-		background: "#0000",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#006AFF",
-		fire: "#006AFF",
-		currStreakNum: "#0579C3",
-		sideNums: "#006AFF",
-		currStreakLabel: "#0579C3",
-		sideLabels: "#006AFF",
-		dates: "#417E87",
-		excludeDaysLabel: "#417E87",
-	},
-	radical: {
-		background: "#141321",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#FE428E",
-		fire: "#FE428E",
-		currStreakNum: "#F8D847",
-		sideNums: "#FE428E",
-		currStreakLabel: "#F8D847",
-		sideLabels: "#FE428E",
-		dates: "#A9FEF7",
-		excludeDaysLabel: "#A9FEF7",
-	},
-	watchdog: {
-		background: "45,#520806,#021D4A",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#FE428E",
-		fire: "#EB8C30",
-		currStreakNum: "#F8D847",
-		sideNums: "#FE428E",
-		currStreakLabel: "#F8D847",
-		sideLabels: "#FE428E",
-		dates: "#A9FEF7",
-		excludeDaysLabel: "#A9FEF7",
-	},
-	merko: {
-		background: "#0A0F0B",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#ABD200",
-		fire: "#ABD200",
-		currStreakNum: "#B7D364",
-		sideNums: "#ABD200",
-		currStreakLabel: "#B7D364",
-		sideLabels: "#ABD200",
-		dates: "#68B587",
-		excludeDaysLabel: "#68B587",
-	},
-	tokyonight: {
-		background: "#1A1B27",
-		border: "#E4E2E2",
-		stroke: "#E4E2E2",
-		ring: "#70A5FD",
-		fire: "#70A5FD",
-		currStreakNum: "#BF91F3",
-		sideNums: "#70A5FD",
-		currStreakLabel: "#BF91F3",
-		sideLabels: "#70A5FD",
-		dates: "#38BDAE",
-		excludeDaysLabel: "#38BDAE",
-	},
-};
+// Auto-generated and normalized from canonical registry
+
+import { toStreakTheme } from "../../lib/themes/adapters/streak.js";
+import { themes } from "../../lib/themes/registry.js";
+
+const adaptedThemes: Record<string, ReturnType<typeof toStreakTheme>> = {};
+for (const name of Object.keys(themes)) {
+	const def = themes[name];
+	if (def) {
+		adaptedThemes[name] = toStreakTheme(def);
+	}
+}
+
+export const THEMES = adaptedThemes;

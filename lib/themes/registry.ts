@@ -9,8 +9,8 @@
 
 /**
  * A single color value. `hex` holds the exact source token — for solid
- * colors this is a bare hex string (e.g. "2f80ed"); for backgrounds it may
- * be a gradient token string (e.g. "45,520806,021D4A") that the renderer
+ * colors this is a bare hex string (e.g. 2f80ed); for backgrounds it may
+ * be a gradient token string (e.g. 45,520806,021D4A) that the renderer
  * parses. Values are stored without a leading '#' and without normalization;
  * adapters and renderers apply hex/gradient handling as they did historically.
  */
@@ -27,6 +27,23 @@ export interface GradientToken {
 	type: "linear" | "radial";
 	angle?: number;
 	stops: ColorToken[];
+}
+
+/**
+ * Streak-specific override properties for themes with explicit streak designs.
+ */
+export interface StreakThemeProperties {
+	background?: string;
+	border?: string;
+	stroke?: string;
+	ring?: string;
+	fire?: string;
+	currStreakNum?: string;
+	sideNums?: string;
+	currStreakLabel?: string;
+	sideLabels?: string;
+	dates?: string;
+	excludeDaysLabel?: string;
 }
 
 /**
@@ -64,6 +81,7 @@ export interface ThemeDefinition {
 	name: string;
 	displayName?: string;
 	colors: ThemeColors;
+	streak?: Partial<StreakThemeProperties>;
 }
 
 // ---------------------------------------------------------------------------
@@ -72,9 +90,8 @@ export interface ThemeDefinition {
 
 /**
  * The canonical theme registry. Color values are duplicated from the former
- * `stats/themes/index.js` so parity with the historical stats renderer is
- * provable by test. The stats widget consumes this registry via the
- * `toStatsTheme` adapter.
+ * `stats/themes/index.js` and `streak/src/themes.ts` so parity with historical
+ * renderers is provable by test.
  */
 export const themes: Record<string, ThemeDefinition> = {
 	default: {
@@ -85,6 +102,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			text: { hex: "434d58" },
 			background: { hex: "fffefe" },
 			border: { hex: "e4e2e2" },
+		},
+		streak: {
+			background: "#FFFEFE",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#FB8C00",
+			fire: "#FB8C00",
+			currStreakNum: "#151515",
+			sideNums: "#151515",
+			currStreakLabel: "#FB8C00",
+			sideLabels: "#151515",
+			dates: "#464646",
+			excludeDaysLabel: "#464646",
 		},
 	},
 	default_repocard: {
@@ -103,6 +133,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			icon: { hex: "0579C3" },
 			text: { hex: "417E87" },
 			background: { hex: "ffffff00" },
+		},
+		streak: {
+			background: "#0000",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#006AFF",
+			fire: "#006AFF",
+			currStreakNum: "#0579C3",
+			sideNums: "#006AFF",
+			currStreakLabel: "#0579C3",
+			sideLabels: "#006AFF",
+			dates: "#417E87",
+			excludeDaysLabel: "#417E87",
 		},
 	},
 	shadow_red: {
@@ -143,6 +186,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			text: { hex: "9f9f9f" },
 			background: { hex: "151515" },
 		},
+		streak: {
+			background: "#151515",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#FB8C00",
+			fire: "#FB8C00",
+			currStreakNum: "#FEFEFE",
+			sideNums: "#FEFEFE",
+			currStreakLabel: "#FB8C00",
+			sideLabels: "#FEFEFE",
+			dates: "#9E9E9E",
+			excludeDaysLabel: "#9E9E9E",
+		},
 	},
 	radical: {
 		name: "radical",
@@ -152,6 +208,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			text: { hex: "a9fef7" },
 			background: { hex: "141321" },
 		},
+		streak: {
+			background: "#141321",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#FE428E",
+			fire: "#FE428E",
+			currStreakNum: "#F8D847",
+			sideNums: "#FE428E",
+			currStreakLabel: "#F8D847",
+			sideLabels: "#FE428E",
+			dates: "#A9FEF7",
+			excludeDaysLabel: "#A9FEF7",
+		},
 	},
 	merko: {
 		name: "merko",
@@ -160,6 +229,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			icon: { hex: "b7d364" },
 			text: { hex: "68b587" },
 			background: { hex: "0a0f0b" },
+		},
+		streak: {
+			background: "#0A0F0B",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#ABD200",
+			fire: "#ABD200",
+			currStreakNum: "#B7D364",
+			sideNums: "#ABD200",
+			currStreakLabel: "#B7D364",
+			sideLabels: "#ABD200",
+			dates: "#68B587",
+			excludeDaysLabel: "#68B587",
 		},
 	},
 	gruvbox: {
@@ -187,6 +269,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			icon: { hex: "bf91f3" },
 			text: { hex: "38bdae" },
 			background: { hex: "1a1b27" },
+		},
+		streak: {
+			background: "#1A1B27",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#70A5FD",
+			fire: "#70A5FD",
+			currStreakNum: "#BF91F3",
+			sideNums: "#70A5FD",
+			currStreakLabel: "#BF91F3",
+			sideLabels: "#70A5FD",
+			dates: "#38BDAE",
+			excludeDaysLabel: "#38BDAE",
 		},
 	},
 	onedark: {
@@ -223,6 +318,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			icon: { hex: "00ffff" },
 			text: { hex: "fff" },
 			background: { hex: "000" },
+		},
+		streak: {
+			background: "#000000",
+			border: "#BEBEBE",
+			stroke: "#BEBEBE",
+			ring: "#FB8C00",
+			fire: "#FB8C00",
+			currStreakNum: "#FFFFFF",
+			sideNums: "#FFFFFF",
+			currStreakLabel: "#FB8C00",
+			sideLabels: "#FFFFFF",
+			dates: "#C5C5C5",
+			excludeDaysLabel: "#C5C5C5",
 		},
 	},
 	dracula: {
@@ -773,6 +881,19 @@ export const themes: Record<string, ThemeDefinition> = {
 			text: { hex: "a9fef7" },
 			background: { hex: "45,520806,021D4A" },
 			border: { hex: "e4e2e2" },
+		},
+		streak: {
+			background: "45,#520806,#021D4A",
+			border: "#E4E2E2",
+			stroke: "#E4E2E2",
+			ring: "#FE428E",
+			fire: "#EB8C30",
+			currStreakNum: "#F8D847",
+			sideNums: "#FE428E",
+			currStreakLabel: "#F8D847",
+			sideLabels: "#FE428E",
+			dates: "#A9FEF7",
+			excludeDaysLabel: "#A9FEF7",
 		},
 	},
 };

@@ -3,6 +3,8 @@
 
 export type { StatsThemeProperties } from "./adapters/stats";
 export { toStatsTheme } from "./adapters/stats";
+export type { StreakThemeProperties } from "./adapters/streak";
+export { toStreakTheme } from "./adapters/streak";
 export type {
 	ColorToken,
 	GradientToken,
