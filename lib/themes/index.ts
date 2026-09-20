@@ -5,6 +5,8 @@ export type { StatsThemeProperties } from "./adapters/stats";
 export { toStatsTheme } from "./adapters/stats";
 export type { StreakThemeProperties } from "./adapters/streak";
 export { toStreakTheme } from "./adapters/streak";
+export type { TrophyThemeProperties } from "./adapters/trophy";
+export { toTrophyTheme } from "./adapters/trophy";
 export type {
 	ColorToken,
 	GradientToken,
