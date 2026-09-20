@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WATCHDOG } from "../../lib/themes.js";
+import { WATCHDOG } from "../../lib/themes";
 import { generateCard } from "../../streak/src/card.js";
 import type { Stats } from "../../streak/src/types_public";
 

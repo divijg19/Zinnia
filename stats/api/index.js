@@ -4,480 +4,749 @@ import { createRequire as createRequire2 } from "module";
 // stats/src/common/utils.ts
 import { createRequire } from "module";
 
-// stats/themes/index.js
+// lib/themes/registry.ts
 var themes = {
   default: {
-    title_color: "2f80ed",
-    icon_color: "4c71f2",
-    text_color: "434d58",
-    bg_color: "fffefe",
-    border_color: "e4e2e2"
+    name: "default",
+    colors: {
+      title: { hex: "2f80ed" },
+      icon: { hex: "4c71f2" },
+      text: { hex: "434d58" },
+      background: { hex: "fffefe" },
+      border: { hex: "e4e2e2" }
+    }
   },
   default_repocard: {
-    title_color: "2f80ed",
-    icon_color: "586069",
-    // icon color is different
-    text_color: "434d58",
-    bg_color: "fffefe"
+    name: "default_repocard",
+    colors: {
+      title: { hex: "2f80ed" },
+      icon: { hex: "586069" },
+      text: { hex: "434d58" },
+      background: { hex: "fffefe" }
+    }
   },
   transparent: {
-    title_color: "006AFF",
-    icon_color: "0579C3",
-    text_color: "417E87",
-    bg_color: "ffffff00"
+    name: "transparent",
+    colors: {
+      title: { hex: "006AFF" },
+      icon: { hex: "0579C3" },
+      text: { hex: "417E87" },
+      background: { hex: "ffffff00" }
+    }
   },
   shadow_red: {
-    title_color: "9A0000",
-    text_color: "444",
-    icon_color: "4F0000",
-    border_color: "4F0000",
-    bg_color: "ffffff00"
+    name: "shadow_red",
+    colors: {
+      title: { hex: "9A0000" },
+      icon: { hex: "4F0000" },
+      text: { hex: "444" },
+      background: { hex: "ffffff00" },
+      border: { hex: "4F0000" }
+    }
   },
   shadow_green: {
-    title_color: "007A00",
-    text_color: "444",
-    icon_color: "003D00",
-    border_color: "003D00",
-    bg_color: "ffffff00"
+    name: "shadow_green",
+    colors: {
+      title: { hex: "007A00" },
+      icon: { hex: "003D00" },
+      text: { hex: "444" },
+      background: { hex: "ffffff00" },
+      border: { hex: "003D00" }
+    }
   },
   shadow_blue: {
-    title_color: "00779A",
-    text_color: "444",
-    icon_color: "004450",
-    border_color: "004490",
-    bg_color: "ffffff00"
+    name: "shadow_blue",
+    colors: {
+      title: { hex: "00779A" },
+      icon: { hex: "004450" },
+      text: { hex: "444" },
+      background: { hex: "ffffff00" },
+      border: { hex: "004490" }
+    }
   },
   dark: {
-    title_color: "fff",
-    icon_color: "79ff97",
-    text_color: "9f9f9f",
-    bg_color: "151515"
+    name: "dark",
+    colors: {
+      title: { hex: "fff" },
+      icon: { hex: "79ff97" },
+      text: { hex: "9f9f9f" },
+      background: { hex: "151515" }
+    }
   },
   radical: {
-    title_color: "fe428e",
-    icon_color: "f8d847",
-    text_color: "a9fef7",
-    bg_color: "141321"
+    name: "radical",
+    colors: {
+      title: { hex: "fe428e" },
+      icon: { hex: "f8d847" },
+      text: { hex: "a9fef7" },
+      background: { hex: "141321" }
+    }
   },
   merko: {
-    title_color: "abd200",
-    icon_color: "b7d364",
-    text_color: "68b587",
-    bg_color: "0a0f0b"
+    name: "merko",
+    colors: {
+      title: { hex: "abd200" },
+      icon: { hex: "b7d364" },
+      text: { hex: "68b587" },
+      background: { hex: "0a0f0b" }
+    }
   },
   gruvbox: {
-    title_color: "fabd2f",
-    icon_color: "fe8019",
-    text_color: "8ec07c",
-    bg_color: "282828"
+    name: "gruvbox",
+    colors: {
+      title: { hex: "fabd2f" },
+      icon: { hex: "fe8019" },
+      text: { hex: "8ec07c" },
+      background: { hex: "282828" }
+    }
   },
   gruvbox_light: {
-    title_color: "b57614",
-    icon_color: "af3a03",
-    text_color: "427b58",
-    bg_color: "fbf1c7"
+    name: "gruvbox_light",
+    colors: {
+      title: { hex: "b57614" },
+      icon: { hex: "af3a03" },
+      text: { hex: "427b58" },
+      background: { hex: "fbf1c7" }
+    }
   },
   tokyonight: {
-    title_color: "70a5fd",
-    icon_color: "bf91f3",
-    text_color: "38bdae",
-    bg_color: "1a1b27"
+    name: "tokyonight",
+    colors: {
+      title: { hex: "70a5fd" },
+      icon: { hex: "bf91f3" },
+      text: { hex: "38bdae" },
+      background: { hex: "1a1b27" }
+    }
   },
   onedark: {
-    title_color: "e4bf7a",
-    icon_color: "8eb573",
-    text_color: "df6d74",
-    bg_color: "282c34"
+    name: "onedark",
+    colors: {
+      title: { hex: "e4bf7a" },
+      icon: { hex: "8eb573" },
+      text: { hex: "df6d74" },
+      background: { hex: "282c34" }
+    }
   },
   cobalt: {
-    title_color: "e683d9",
-    icon_color: "0480ef",
-    text_color: "75eeb2",
-    bg_color: "193549"
+    name: "cobalt",
+    colors: {
+      title: { hex: "e683d9" },
+      icon: { hex: "0480ef" },
+      text: { hex: "75eeb2" },
+      background: { hex: "193549" }
+    }
   },
   synthwave: {
-    title_color: "e2e9ec",
-    icon_color: "ef8539",
-    text_color: "e5289e",
-    bg_color: "2b213a"
+    name: "synthwave",
+    colors: {
+      title: { hex: "e2e9ec" },
+      icon: { hex: "ef8539" },
+      text: { hex: "e5289e" },
+      background: { hex: "2b213a" }
+    }
   },
   highcontrast: {
-    title_color: "e7f216",
-    icon_color: "00ffff",
-    text_color: "fff",
-    bg_color: "000"
+    name: "highcontrast",
+    colors: {
+      title: { hex: "e7f216" },
+      icon: { hex: "00ffff" },
+      text: { hex: "fff" },
+      background: { hex: "000" }
+    }
   },
   dracula: {
-    title_color: "ff6e96",
-    icon_color: "79dafa",
-    text_color: "f8f8f2",
-    bg_color: "282a36"
+    name: "dracula",
+    colors: {
+      title: { hex: "ff6e96" },
+      icon: { hex: "79dafa" },
+      text: { hex: "f8f8f2" },
+      background: { hex: "282a36" }
+    }
   },
   prussian: {
-    title_color: "bddfff",
-    icon_color: "38a0ff",
-    text_color: "6e93b5",
-    bg_color: "172f45"
+    name: "prussian",
+    colors: {
+      title: { hex: "bddfff" },
+      icon: { hex: "38a0ff" },
+      text: { hex: "6e93b5" },
+      background: { hex: "172f45" }
+    }
   },
   monokai: {
-    title_color: "eb1f6a",
-    icon_color: "e28905",
-    text_color: "f1f1eb",
-    bg_color: "272822"
+    name: "monokai",
+    colors: {
+      title: { hex: "eb1f6a" },
+      icon: { hex: "e28905" },
+      text: { hex: "f1f1eb" },
+      background: { hex: "272822" }
+    }
   },
   vue: {
-    title_color: "41b883",
-    icon_color: "41b883",
-    text_color: "273849",
-    bg_color: "fffefe"
+    name: "vue",
+    colors: {
+      title: { hex: "41b883" },
+      icon: { hex: "41b883" },
+      text: { hex: "273849" },
+      background: { hex: "fffefe" }
+    }
   },
   "vue-dark": {
-    title_color: "41b883",
-    icon_color: "41b883",
-    text_color: "fffefe",
-    bg_color: "273849"
+    name: "vue-dark",
+    colors: {
+      title: { hex: "41b883" },
+      icon: { hex: "41b883" },
+      text: { hex: "fffefe" },
+      background: { hex: "273849" }
+    }
   },
   "shades-of-purple": {
-    title_color: "fad000",
-    icon_color: "b362ff",
-    text_color: "a599e9",
-    bg_color: "2d2b55"
+    name: "shades-of-purple",
+    colors: {
+      title: { hex: "fad000" },
+      icon: { hex: "b362ff" },
+      text: { hex: "a599e9" },
+      background: { hex: "2d2b55" }
+    }
   },
   nightowl: {
-    title_color: "c792ea",
-    icon_color: "ffeb95",
-    text_color: "7fdbca",
-    bg_color: "011627"
+    name: "nightowl",
+    colors: {
+      title: { hex: "c792ea" },
+      icon: { hex: "ffeb95" },
+      text: { hex: "7fdbca" },
+      background: { hex: "011627" }
+    }
   },
   buefy: {
-    title_color: "7957d5",
-    icon_color: "ff3860",
-    text_color: "363636",
-    bg_color: "ffffff"
+    name: "buefy",
+    colors: {
+      title: { hex: "7957d5" },
+      icon: { hex: "ff3860" },
+      text: { hex: "363636" },
+      background: { hex: "ffffff" }
+    }
   },
   "blue-green": {
-    title_color: "2f97c1",
-    icon_color: "f5b700",
-    text_color: "0cf574",
-    bg_color: "040f0f"
+    name: "blue-green",
+    colors: {
+      title: { hex: "2f97c1" },
+      icon: { hex: "f5b700" },
+      text: { hex: "0cf574" },
+      background: { hex: "040f0f" }
+    }
   },
   algolia: {
-    title_color: "00AEFF",
-    icon_color: "2DDE98",
-    text_color: "FFFFFF",
-    bg_color: "050F2C"
+    name: "algolia",
+    colors: {
+      title: { hex: "00AEFF" },
+      icon: { hex: "2DDE98" },
+      text: { hex: "FFFFFF" },
+      background: { hex: "050F2C" }
+    }
   },
   "great-gatsby": {
-    title_color: "ffa726",
-    icon_color: "ffb74d",
-    text_color: "ffd95b",
-    bg_color: "000000"
+    name: "great-gatsby",
+    colors: {
+      title: { hex: "ffa726" },
+      icon: { hex: "ffb74d" },
+      text: { hex: "ffd95b" },
+      background: { hex: "000000" }
+    }
   },
   darcula: {
-    title_color: "BA5F17",
-    icon_color: "84628F",
-    text_color: "BEBEBE",
-    bg_color: "242424"
+    name: "darcula",
+    colors: {
+      title: { hex: "BA5F17" },
+      icon: { hex: "84628F" },
+      text: { hex: "BEBEBE" },
+      background: { hex: "242424" }
+    }
   },
   bear: {
-    title_color: "e03c8a",
-    icon_color: "00AEFF",
-    text_color: "bcb28d",
-    bg_color: "1f2023"
+    name: "bear",
+    colors: {
+      title: { hex: "e03c8a" },
+      icon: { hex: "00AEFF" },
+      text: { hex: "bcb28d" },
+      background: { hex: "1f2023" }
+    }
   },
   "solarized-dark": {
-    title_color: "268bd2",
-    icon_color: "b58900",
-    text_color: "859900",
-    bg_color: "002b36"
+    name: "solarized-dark",
+    colors: {
+      title: { hex: "268bd2" },
+      icon: { hex: "b58900" },
+      text: { hex: "859900" },
+      background: { hex: "002b36" }
+    }
   },
   "solarized-light": {
-    title_color: "268bd2",
-    icon_color: "b58900",
-    text_color: "859900",
-    bg_color: "fdf6e3"
+    name: "solarized-light",
+    colors: {
+      title: { hex: "268bd2" },
+      icon: { hex: "b58900" },
+      text: { hex: "859900" },
+      background: { hex: "fdf6e3" }
+    }
   },
   "chartreuse-dark": {
-    title_color: "7fff00",
-    icon_color: "00AEFF",
-    text_color: "fff",
-    bg_color: "000"
+    name: "chartreuse-dark",
+    colors: {
+      title: { hex: "7fff00" },
+      icon: { hex: "00AEFF" },
+      text: { hex: "fff" },
+      background: { hex: "000" }
+    }
   },
   nord: {
-    title_color: "81a1c1",
-    text_color: "d8dee9",
-    icon_color: "88c0d0",
-    bg_color: "2e3440"
+    name: "nord",
+    colors: {
+      title: { hex: "81a1c1" },
+      icon: { hex: "88c0d0" },
+      text: { hex: "d8dee9" },
+      background: { hex: "2e3440" }
+    }
   },
   gotham: {
-    title_color: "2aa889",
-    icon_color: "599cab",
-    text_color: "99d1ce",
-    bg_color: "0c1014"
+    name: "gotham",
+    colors: {
+      title: { hex: "2aa889" },
+      icon: { hex: "599cab" },
+      text: { hex: "99d1ce" },
+      background: { hex: "0c1014" }
+    }
   },
   "material-palenight": {
-    title_color: "c792ea",
-    icon_color: "89ddff",
-    text_color: "a6accd",
-    bg_color: "292d3e"
+    name: "material-palenight",
+    colors: {
+      title: { hex: "c792ea" },
+      icon: { hex: "89ddff" },
+      text: { hex: "a6accd" },
+      background: { hex: "292d3e" }
+    }
   },
   graywhite: {
-    title_color: "24292e",
-    icon_color: "24292e",
-    text_color: "24292e",
-    bg_color: "ffffff"
+    name: "graywhite",
+    colors: {
+      title: { hex: "24292e" },
+      icon: { hex: "24292e" },
+      text: { hex: "24292e" },
+      background: { hex: "ffffff" }
+    }
   },
   "vision-friendly-dark": {
-    title_color: "ffb000",
-    icon_color: "785ef0",
-    text_color: "ffffff",
-    bg_color: "000000"
+    name: "vision-friendly-dark",
+    colors: {
+      title: { hex: "ffb000" },
+      icon: { hex: "785ef0" },
+      text: { hex: "ffffff" },
+      background: { hex: "000000" }
+    }
   },
   "ayu-mirage": {
-    title_color: "f4cd7c",
-    icon_color: "73d0ff",
-    text_color: "c7c8c2",
-    bg_color: "1f2430"
+    name: "ayu-mirage",
+    colors: {
+      title: { hex: "f4cd7c" },
+      icon: { hex: "73d0ff" },
+      text: { hex: "c7c8c2" },
+      background: { hex: "1f2430" }
+    }
   },
   "midnight-purple": {
-    title_color: "9745f5",
-    icon_color: "9f4bff",
-    text_color: "ffffff",
-    bg_color: "000000"
+    name: "midnight-purple",
+    colors: {
+      title: { hex: "9745f5" },
+      icon: { hex: "9f4bff" },
+      text: { hex: "ffffff" },
+      background: { hex: "000000" }
+    }
   },
   calm: {
-    title_color: "e07a5f",
-    icon_color: "edae49",
-    text_color: "ebcfb2",
-    bg_color: "373f51"
+    name: "calm",
+    colors: {
+      title: { hex: "e07a5f" },
+      icon: { hex: "edae49" },
+      text: { hex: "ebcfb2" },
+      background: { hex: "373f51" }
+    }
   },
   "flag-india": {
-    title_color: "ff8f1c",
-    icon_color: "250E62",
-    text_color: "509E2F",
-    bg_color: "ffffff"
+    name: "flag-india",
+    colors: {
+      title: { hex: "ff8f1c" },
+      icon: { hex: "250E62" },
+      text: { hex: "509E2F" },
+      background: { hex: "ffffff" }
+    }
   },
   omni: {
-    title_color: "FF79C6",
-    icon_color: "e7de79",
-    text_color: "E1E1E6",
-    bg_color: "191622"
+    name: "omni",
+    colors: {
+      title: { hex: "FF79C6" },
+      icon: { hex: "e7de79" },
+      text: { hex: "E1E1E6" },
+      background: { hex: "191622" }
+    }
   },
   react: {
-    title_color: "61dafb",
-    icon_color: "61dafb",
-    text_color: "ffffff",
-    bg_color: "20232a"
+    name: "react",
+    colors: {
+      title: { hex: "61dafb" },
+      icon: { hex: "61dafb" },
+      text: { hex: "ffffff" },
+      background: { hex: "20232a" }
+    }
   },
   jolly: {
-    title_color: "ff64da",
-    icon_color: "a960ff",
-    text_color: "ffffff",
-    bg_color: "291B3E"
+    name: "jolly",
+    colors: {
+      title: { hex: "ff64da" },
+      icon: { hex: "a960ff" },
+      text: { hex: "ffffff" },
+      background: { hex: "291B3E" }
+    }
   },
   maroongold: {
-    title_color: "F7EF8A",
-    icon_color: "F7EF8A",
-    text_color: "E0AA3E",
-    bg_color: "260000"
+    name: "maroongold",
+    colors: {
+      title: { hex: "F7EF8A" },
+      icon: { hex: "F7EF8A" },
+      text: { hex: "E0AA3E" },
+      background: { hex: "260000" }
+    }
   },
   yeblu: {
-    title_color: "ffff00",
-    icon_color: "ffff00",
-    text_color: "ffffff",
-    bg_color: "002046"
+    name: "yeblu",
+    colors: {
+      title: { hex: "ffff00" },
+      icon: { hex: "ffff00" },
+      text: { hex: "ffffff" },
+      background: { hex: "002046" }
+    }
   },
   blueberry: {
-    title_color: "82aaff",
-    icon_color: "89ddff",
-    text_color: "27e8a7",
-    bg_color: "242938"
+    name: "blueberry",
+    colors: {
+      title: { hex: "82aaff" },
+      icon: { hex: "89ddff" },
+      text: { hex: "27e8a7" },
+      background: { hex: "242938" }
+    }
   },
   slateorange: {
-    title_color: "faa627",
-    icon_color: "faa627",
-    text_color: "ffffff",
-    bg_color: "36393f"
+    name: "slateorange",
+    colors: {
+      title: { hex: "faa627" },
+      icon: { hex: "faa627" },
+      text: { hex: "ffffff" },
+      background: { hex: "36393f" }
+    }
   },
   kacho_ga: {
-    title_color: "bf4a3f",
-    icon_color: "a64833",
-    text_color: "d9c8a9",
-    bg_color: "402b23"
+    name: "kacho_ga",
+    colors: {
+      title: { hex: "bf4a3f" },
+      icon: { hex: "a64833" },
+      text: { hex: "d9c8a9" },
+      background: { hex: "402b23" }
+    }
   },
   outrun: {
-    title_color: "ffcc00",
-    icon_color: "ff1aff",
-    text_color: "8080ff",
-    bg_color: "141439"
+    name: "outrun",
+    colors: {
+      title: { hex: "ffcc00" },
+      icon: { hex: "ff1aff" },
+      text: { hex: "8080ff" },
+      background: { hex: "141439" }
+    }
   },
   ocean_dark: {
-    title_color: "8957B2",
-    icon_color: "FFFFFF",
-    text_color: "92D534",
-    bg_color: "151A28"
+    name: "ocean_dark",
+    colors: {
+      title: { hex: "8957B2" },
+      icon: { hex: "FFFFFF" },
+      text: { hex: "92D534" },
+      background: { hex: "151A28" }
+    }
   },
   city_lights: {
-    title_color: "5D8CB3",
-    icon_color: "4798FF",
-    text_color: "718CA1",
-    bg_color: "1D252C"
+    name: "city_lights",
+    colors: {
+      title: { hex: "5D8CB3" },
+      icon: { hex: "4798FF" },
+      text: { hex: "718CA1" },
+      background: { hex: "1D252C" }
+    }
   },
   github_dark: {
-    title_color: "58A6FF",
-    icon_color: "1F6FEB",
-    text_color: "C3D1D9",
-    bg_color: "0D1117"
+    name: "github_dark",
+    colors: {
+      title: { hex: "58A6FF" },
+      icon: { hex: "1F6FEB" },
+      text: { hex: "C3D1D9" },
+      background: { hex: "0D1117" }
+    }
   },
   github_dark_dimmed: {
-    title_color: "539bf5",
-    icon_color: "539bf5",
-    text_color: "ADBAC7",
-    bg_color: "24292F",
-    border_color: "373E47"
+    name: "github_dark_dimmed",
+    colors: {
+      title: { hex: "539bf5" },
+      icon: { hex: "539bf5" },
+      text: { hex: "ADBAC7" },
+      background: { hex: "24292F" },
+      border: { hex: "373E47" }
+    }
   },
   discord_old_blurple: {
-    title_color: "7289DA",
-    icon_color: "7289DA",
-    text_color: "FFFFFF",
-    bg_color: "2C2F33"
+    name: "discord_old_blurple",
+    colors: {
+      title: { hex: "7289DA" },
+      icon: { hex: "7289DA" },
+      text: { hex: "FFFFFF" },
+      background: { hex: "2C2F33" }
+    }
   },
   aura_dark: {
-    title_color: "ff7372",
-    icon_color: "6cffd0",
-    text_color: "dbdbdb",
-    bg_color: "252334"
+    name: "aura_dark",
+    colors: {
+      title: { hex: "ff7372" },
+      icon: { hex: "6cffd0" },
+      text: { hex: "dbdbdb" },
+      background: { hex: "252334" }
+    }
   },
   panda: {
-    title_color: "19f9d899",
-    icon_color: "19f9d899",
-    text_color: "FF75B5",
-    bg_color: "31353a"
+    name: "panda",
+    colors: {
+      title: { hex: "19f9d899" },
+      icon: { hex: "19f9d899" },
+      text: { hex: "FF75B5" },
+      background: { hex: "31353a" }
+    }
   },
   noctis_minimus: {
-    title_color: "d3b692",
-    icon_color: "72b7c0",
-    text_color: "c5cdd3",
-    bg_color: "1b2932"
+    name: "noctis_minimus",
+    colors: {
+      title: { hex: "d3b692" },
+      icon: { hex: "72b7c0" },
+      text: { hex: "c5cdd3" },
+      background: { hex: "1b2932" }
+    }
   },
   cobalt2: {
-    title_color: "ffc600",
-    icon_color: "ffffff",
-    text_color: "0088ff",
-    bg_color: "193549"
+    name: "cobalt2",
+    colors: {
+      title: { hex: "ffc600" },
+      icon: { hex: "ffffff" },
+      text: { hex: "0088ff" },
+      background: { hex: "193549" }
+    }
   },
   swift: {
-    title_color: "000000",
-    icon_color: "f05237",
-    text_color: "000000",
-    bg_color: "f7f7f7"
+    name: "swift",
+    colors: {
+      title: { hex: "000000" },
+      icon: { hex: "f05237" },
+      text: { hex: "000000" },
+      background: { hex: "f7f7f7" }
+    }
   },
   aura: {
-    title_color: "a277ff",
-    icon_color: "ffca85",
-    text_color: "61ffca",
-    bg_color: "15141b"
+    name: "aura",
+    colors: {
+      title: { hex: "a277ff" },
+      icon: { hex: "ffca85" },
+      text: { hex: "61ffca" },
+      background: { hex: "15141b" }
+    }
   },
   apprentice: {
-    title_color: "ffffff",
-    icon_color: "ffffaf",
-    text_color: "bcbcbc",
-    bg_color: "262626"
+    name: "apprentice",
+    colors: {
+      title: { hex: "ffffff" },
+      icon: { hex: "ffffaf" },
+      text: { hex: "bcbcbc" },
+      background: { hex: "262626" }
+    }
   },
   moltack: {
-    title_color: "86092C",
-    icon_color: "86092C",
-    text_color: "574038",
-    bg_color: "F5E1C0"
+    name: "moltack",
+    colors: {
+      title: { hex: "86092C" },
+      icon: { hex: "86092C" },
+      text: { hex: "574038" },
+      background: { hex: "F5E1C0" }
+    }
   },
   codeSTACKr: {
-    title_color: "ff652f",
-    icon_color: "FFE400",
-    text_color: "ffffff",
-    bg_color: "09131B",
-    border_color: "0c1a25"
+    name: "codeSTACKr",
+    colors: {
+      title: { hex: "ff652f" },
+      icon: { hex: "FFE400" },
+      text: { hex: "ffffff" },
+      background: { hex: "09131B" },
+      border: { hex: "0c1a25" }
+    }
   },
   rose_pine: {
-    title_color: "9ccfd8",
-    icon_color: "ebbcba",
-    text_color: "e0def4",
-    bg_color: "191724"
+    name: "rose_pine",
+    colors: {
+      title: { hex: "9ccfd8" },
+      icon: { hex: "ebbcba" },
+      text: { hex: "e0def4" },
+      background: { hex: "191724" }
+    }
   },
   catppuccin_latte: {
-    title_color: "137980",
-    icon_color: "8839ef",
-    text_color: "4c4f69",
-    bg_color: "eff1f5"
+    name: "catppuccin_latte",
+    colors: {
+      title: { hex: "137980" },
+      icon: { hex: "8839ef" },
+      text: { hex: "4c4f69" },
+      background: { hex: "eff1f5" }
+    }
   },
   catppuccin_mocha: {
-    title_color: "94e2d5",
-    icon_color: "cba6f7",
-    text_color: "cdd6f4",
-    bg_color: "1e1e2e"
+    name: "catppuccin_mocha",
+    colors: {
+      title: { hex: "94e2d5" },
+      icon: { hex: "cba6f7" },
+      text: { hex: "cdd6f4" },
+      background: { hex: "1e1e2e" }
+    }
   },
   date_night: {
-    title_color: "DA7885",
-    text_color: "E1B2A2",
-    icon_color: "BB8470",
-    border_color: "170F0C",
-    bg_color: "170F0C"
+    name: "date_night",
+    colors: {
+      title: { hex: "DA7885" },
+      icon: { hex: "BB8470" },
+      text: { hex: "E1B2A2" },
+      background: { hex: "170F0C" },
+      border: { hex: "170F0C" }
+    }
   },
   one_dark_pro: {
-    title_color: "61AFEF",
-    text_color: "E5C06E",
-    icon_color: "C678DD",
-    border_color: "3B4048",
-    bg_color: "23272E"
+    name: "one_dark_pro",
+    colors: {
+      title: { hex: "61AFEF" },
+      icon: { hex: "C678DD" },
+      text: { hex: "E5C06E" },
+      background: { hex: "23272E" },
+      border: { hex: "3B4048" }
+    }
   },
   rose: {
-    title_color: "8d192b",
-    text_color: "862931",
-    icon_color: "B71F36",
-    border_color: "e9d8d4",
-    bg_color: "e9d8d4"
+    name: "rose",
+    colors: {
+      title: { hex: "8d192b" },
+      icon: { hex: "B71F36" },
+      text: { hex: "862931" },
+      background: { hex: "e9d8d4" },
+      border: { hex: "e9d8d4" }
+    }
   },
   holi: {
-    title_color: "5FABEE",
-    text_color: "D6E7FF",
-    icon_color: "5FABEE",
-    border_color: "85A4C0",
-    bg_color: "030314"
+    name: "holi",
+    colors: {
+      title: { hex: "5FABEE" },
+      icon: { hex: "5FABEE" },
+      text: { hex: "D6E7FF" },
+      background: { hex: "030314" },
+      border: { hex: "85A4C0" }
+    }
   },
   neon: {
-    title_color: "00EAD3",
-    text_color: "FF449F",
-    icon_color: "00EAD3",
-    border_color: "ffffff",
-    bg_color: "000000"
+    name: "neon",
+    colors: {
+      title: { hex: "00EAD3" },
+      icon: { hex: "00EAD3" },
+      text: { hex: "FF449F" },
+      background: { hex: "000000" },
+      border: { hex: "ffffff" }
+    }
   },
   blue_navy: {
-    title_color: "82AAFF",
-    text_color: "82AAFF",
-    icon_color: "82AAFF",
-    border_color: "ffffff",
-    bg_color: "000000"
+    name: "blue_navy",
+    colors: {
+      title: { hex: "82AAFF" },
+      icon: { hex: "82AAFF" },
+      text: { hex: "82AAFF" },
+      background: { hex: "000000" },
+      border: { hex: "ffffff" }
+    }
   },
   calm_pink: {
-    title_color: "e07a5f",
-    text_color: "edae49",
-    icon_color: "ebcfb2",
-    border_color: "e1bc29",
-    bg_color: "2b2d40"
+    name: "calm_pink",
+    colors: {
+      title: { hex: "e07a5f" },
+      icon: { hex: "ebcfb2" },
+      text: { hex: "edae49" },
+      background: { hex: "2b2d40" },
+      border: { hex: "e1bc29" }
+    }
   },
   ambient_gradient: {
-    title_color: "ffffff",
-    text_color: "ffffff",
-    icon_color: "ffffff",
-    bg_color: "35,4158d0,c850c0,ffcc70"
+    name: "ambient_gradient",
+    colors: {
+      title: { hex: "ffffff" },
+      icon: { hex: "ffffff" },
+      text: { hex: "ffffff" },
+      background: { hex: "35,4158d0,c850c0,ffcc70" }
+    }
   },
   watchdog: {
-    title_color: "fe428e",
-    icon_color: "f8d847",
-    text_color: "a9fef7",
-    bg_color: "45,520806,021D4A",
-    border_color: "e4e2e2"
+    name: "watchdog",
+    colors: {
+      title: { hex: "fe428e" },
+      icon: { hex: "f8d847" },
+      text: { hex: "a9fef7" },
+      background: { hex: "45,520806,021D4A" },
+      border: { hex: "e4e2e2" }
+    }
   }
 };
+
+// lib/themes/adapters/stats.ts
+var DEFAULT_THEME_NAME = "default";
+var fieldMap = {
+  title_color: "title",
+  icon_color: "icon",
+  text_color: "text",
+  bg_color: "background",
+  border_color: "border",
+  ring_color: "ring"
+};
+function tokenHex(colors, token) {
+  const value = colors?.[token];
+  if (!value) {
+    return void 0;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if ("hex" in value) {
+    return value.hex;
+  }
+  if ("stops" in value) {
+    const stops = value.stops.map((s) => s.hex).join(",");
+    return value.angle !== void 0 ? `${value.angle},${stops}` : stops;
+  }
+  return void 0;
+}
+function toStatsTheme(theme, fallback) {
+  const resolved = fallback ?? themes[DEFAULT_THEME_NAME] ?? { name: DEFAULT_THEME_NAME, colors: {} };
+  const s = theme.colors;
+  const d = resolved.colors;
+  const pick = (key) => tokenHex(s, fieldMap[key]) ?? tokenHex(d, fieldMap[key]);
+  return {
+    title_color: pick("title_color") ?? "",
+    icon_color: pick("icon_color") ?? "",
+    text_color: pick("text_color") ?? "",
+    bg_color: pick("bg_color") ?? "",
+    border_color: pick("border_color"),
+    ring_color: pick("ring_color")
+  };
+}
 
 // stats/src/common/error.ts
 var TRY_AGAIN_LATER = "Please try again later";
@@ -610,36 +879,39 @@ var getCardColors = ({
   theme,
   fallbackTheme = "default"
 }) => {
-  const themesMap = themes;
-  const defaultTheme = themesMap[fallbackTheme];
+  const defaultTheme = themes[fallbackTheme];
   if (!defaultTheme) {
     throw new Error(`Fallback theme '${fallbackTheme}' not found`);
   }
-  const selectedTheme = themesMap[theme || ""] || defaultTheme;
-  const defaultBorderColor = selectedTheme.border_color || defaultTheme.border_color;
+  const defaultThemeColors = defaultTheme.colors;
+  const defaultStats = {
+    title_color: defaultThemeColors.title?.hex,
+    icon_color: defaultThemeColors.icon?.hex,
+    text_color: defaultThemeColors.text?.hex,
+    bg_color: defaultThemeColors.background ? "hex" in defaultThemeColors.background ? defaultThemeColors.background.hex : void 0 : void 0
+  };
+  const selectedTheme = themes[theme || ""] || defaultTheme;
+  const adapted = toStatsTheme(selectedTheme, defaultTheme);
   const titleColor = fallbackColor(
-    title_color || selectedTheme.title_color,
-    `#${defaultTheme.title_color}`
+    title_color || adapted.title_color,
+    `#${defaultStats.title_color}`
   );
-  const ringColor = fallbackColor(
-    ring_color || selectedTheme.ring_color,
-    titleColor
-  );
+  const ringColor = fallbackColor(ring_color || adapted.ring_color, titleColor);
   const iconColor = fallbackColor(
-    icon_color || selectedTheme.icon_color,
-    `#${defaultTheme.icon_color}`
+    icon_color || adapted.icon_color,
+    `#${defaultStats.icon_color}`
   );
   const textColor = fallbackColor(
-    text_color || selectedTheme.text_color,
-    `#${defaultTheme.text_color}`
+    text_color || adapted.text_color,
+    `#${defaultStats.text_color}`
   );
   const bgColor = fallbackColor(
-    bg_color || selectedTheme.bg_color,
-    `#${defaultTheme.bg_color}`
+    bg_color || adapted.bg_color,
+    `#${defaultStats.bg_color}`
   );
   const borderColor = fallbackColor(
-    border_color || defaultBorderColor,
-    `#${defaultBorderColor}`
+    border_color || adapted.border_color,
+    `#${adapted.border_color}`
   );
   if (typeof titleColor !== "string" || typeof textColor !== "string" || typeof ringColor !== "string" || typeof iconColor !== "string" || typeof borderColor !== "string") {
     throw new Error(
