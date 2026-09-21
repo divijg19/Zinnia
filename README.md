@@ -160,6 +160,12 @@ CI does **not** auto-deploy.
 * **Setup:**
   Connect the repository in the Vercel dashboard and configure the required environment variables.
 
+* **Demo homepage:**
+  Production root `/` serves the theme demo (`/demo/index.html`). Demo
+  assets are generated at build time via `bun run demo:build` (96 themes ×
+  4 widgets, deterministic, byte-identical on rebuild) and are never
+  committed. Run `bun run demo:dev` for a local preview.
+
 ### Optional: Upstash / Redis
 
 For persistent token rotation and cache counters:
