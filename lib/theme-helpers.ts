@@ -13,19 +13,16 @@ export function parseBackgroundToken(
 		const colorTokens = (arr: string[]) =>
 			arr.map((c) => (c?.startsWith("#") ? c : `#${c}`));
 
-		let id = "bggrad-";
-		try {
-			// use node crypto when available for deterministic ids
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const crypto = require("node:crypto");
-			const h = crypto
-				.createHash("sha1")
-				.update(String(bgRaw), "utf8")
-				.digest("hex");
-			id += h.slice(0, 8);
-		} catch {
-			id += Math.random().toString(16).slice(2, 10);
+		// Deterministic FNV-1a hash so gradient IDs are stable across
+		// runtimes (node, edge, bundled) without depending on node:crypto.
+		// IDs are internal to a single SVG document (`url(#...)` references
+		// match by construction), so only stability matters, not the scheme.
+		let hash = 0x811c9dc5;
+		for (let i = 0; i < bgRaw.length; i++) {
+			hash ^= bgRaw.charCodeAt(i);
+			hash = Math.imul(hash, 0x01000193);
 		}
+		const id = `bggrad-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 
 		if (head === "radial") {
 			const colors = colorTokens(parts.slice(1));
