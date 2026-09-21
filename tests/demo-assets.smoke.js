@@ -19,6 +19,9 @@ const registryFile = JSON.parse(
 	).text(),
 );
 console.log("themes in registry:", registryFile.themes.length);
+if (registryFile.themes.length === 0) {
+	throw new Error("smoke: theme registry is empty");
+}
 
 const wf = new WidgetFactory(registryFile);
 const dash = new Dashboard(
@@ -29,5 +32,11 @@ const dash = new Dashboard(
 await dash.updateTheme("default");
 const cards = window.document.querySelectorAll(".widget-card");
 console.log("dashboard cards:", cards.length);
+if (cards.length !== 4) {
+	throw new Error(`smoke: expected 4 dashboard cards, got ${cards.length}`);
+}
 const img = window.document.querySelector(".widget-card img");
 console.log("sample widget html:", img?.outerHTML?.slice(0, 140));
+if (!img?.getAttribute("src")) {
+	throw new Error("smoke: dashboard widget image has no src");
+}

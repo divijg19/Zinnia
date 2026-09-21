@@ -46,6 +46,15 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Demo build + determinism
+        run: |
+          bun run demo:build
+          find demo/assets -type f | sort | xargs sha256sum > /tmp/demo-assets-a.txt
+          bun run demo:build
+          find demo/assets -type f | sort | xargs sha256sum > /tmp/demo-assets-b.txt
+          diff /tmp/demo-assets-a.txt /tmp/demo-assets-b.txt
+          bun tests/demo-assets.smoke.js
+
       - name: Tests
         env:
           CI: true
