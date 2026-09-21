@@ -173,6 +173,7 @@ export class Catalog {
             <div class="widget-cell">${this.renderWidget(widgets[1])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[2])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[3])}</div>
+            <div class="widget-cell">${this.renderWidget(widgets[4])}</div>
         </li>
       `;
 			})
