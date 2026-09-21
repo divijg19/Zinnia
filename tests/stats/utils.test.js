@@ -114,6 +114,30 @@ describe("Test utils.js", () => {
 		});
 	});
 
+	it("getCardColors: should fallback border to a non-default fallback theme", () => {
+		const colors = getCardColors({
+			theme: "dark",
+			fallbackTheme: "shadow_red",
+		});
+		expect(colors).toStrictEqual({
+			titleColor: "#fff",
+			textColor: "#9f9f9f",
+			ringColor: "#fff",
+			iconColor: "#79ff97",
+			bgColor: "#151515",
+			borderColor: "#4F0000",
+		});
+	});
+
+	it("getCardColors: should prefer an explicit border override over fallback themes", () => {
+		const colors = getCardColors({
+			border_color: "fff",
+			theme: "dark",
+			fallbackTheme: "shadow_red",
+		});
+		expect(colors.borderColor).toBe("#fff");
+	});
+
 	it("getCardColors: should return ring color equal to title color if not ring color is defined", () => {
 		const colors = getCardColors({
 			title_color: "f00",

@@ -165,6 +165,7 @@ export const getCardColors = ({
 		title_color: defaultThemeColors.title?.hex,
 		icon_color: defaultThemeColors.icon?.hex,
 		text_color: defaultThemeColors.text?.hex,
+		border_color: defaultThemeColors.border?.hex,
 		bg_color: defaultThemeColors.background
 			? "hex" in defaultThemeColors.background
 				? defaultThemeColors.background.hex
@@ -195,7 +196,7 @@ export const getCardColors = ({
 	);
 	const borderColor = fallbackColor(
 		border_color || adapted.border_color,
-		`#${adapted.border_color}`,
+		`#${defaultStats.border_color}`,
 	);
 	if (
 		typeof titleColor !== "string" ||
