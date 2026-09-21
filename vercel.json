@@ -1,11 +1,16 @@
 {
 	"version": 2,
+	"buildCommand": "bun run build && bun run demo:build",
 	"functions": {
 		"api/**/*.ts": {
 			"includeFiles": "{api/_build/**,stats/api/**,streak/dist/**,leetcode/packages/core/dist/**}"
 		}
 	},
 	"rewrites": [
+		{
+			"source": "/",
+			"destination": "/demo/index.html"
+		},
 		{
 			"source": "/demo",
 			"destination": "/demo/index.html"
@@ -21,11 +26,29 @@
 	],
 	"headers": [
 		{
+			"source": "/",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=0, must-revalidate"
+				}
+			]
+		},
+		{
+			"source": "/demo",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=0, must-revalidate"
+				}
+			]
+		},
+		{
 			"source": "/demo/(.*)",
 			"headers": [
 				{
 					"key": "Cache-Control",
-					"value": "public, max-age=31536000, immutable"
+					"value": "public, max-age=0, must-revalidate"
 				}
 			]
 		}
