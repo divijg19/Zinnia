@@ -145,7 +145,8 @@ vite.config.ts.timestamp-*
 _vendor_backup/
 _vendor_backup/**
 
-scripts/
+scripts/*
+!scripts/generate-demo-assets.js
 .vercel
 cache/
 
@@ -206,3 +207,8 @@ dist/
 # Vendored trophy snapshot (archival) - keep out of active tree unless intentionally edited
 trophy/_vendor/
 .env*.local
+
+# Demo generated assets (generated at build time)
+demo/assets/
+demo/theme-registry.json
+demo/mock-data.json
