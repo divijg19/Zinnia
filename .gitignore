@@ -215,3 +215,4 @@ trophy/_vendor/
 demo/assets/
 demo/theme-registry.json
 demo/mock-data.json
+public/demo/
