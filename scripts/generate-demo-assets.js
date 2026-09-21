@@ -52,21 +52,29 @@ const STREAK_FIXTURE = {
 	excludedDays: [],
 };
 
+// Showcase fixture engineered so the demo trophy card exercises every
+// visible rank tier and secret trophy in one render:
+// Stars=15 -> B, Commits=4500 -> SSS, Followers=450 -> SS,
+// Reviews=150 -> AAA, Repos=35 -> AA, Issues=25 -> A, PRs=5 -> C,
+// Experience (durationDays=42) -> S, plus secrets via languageCount=12,
+// organizations=5, durationYear=12, and the ancient/OG/2020 flags.
+// AllSuperRank is intentionally absent: it requires every base rank to
+// start with S, which is mutually exclusive with a B/C spectrum.
 const TROPHY_FIXTURE = {
-	totalStargazers: 1234,
-	totalCommits: 5678,
-	totalFollowers: 256,
-	totalIssues: 42,
-	totalPullRequests: 128,
-	totalRepositories: 42,
-	totalReviews: 64,
-	languageCount: 4,
-	durationYear: 10,
-	durationDays: 360,
-	ancientAccount: 0,
-	ogAccount: 0,
-	joined2020: 0,
-	totalOrganizations: 2,
+	totalStargazers: 15,
+	totalCommits: 4500,
+	totalFollowers: 450,
+	totalIssues: 25,
+	totalPullRequests: 5,
+	totalRepositories: 35,
+	totalReviews: 150,
+	languageCount: 12,
+	durationYear: 12,
+	durationDays: 42,
+	ancientAccount: 1,
+	ogAccount: 1,
+	joined2020: 1,
+	totalOrganizations: 5,
 };
 
 const LEETCODE_FIXTURE = {
@@ -177,6 +185,18 @@ try {
 		console.warn("Theme name alias collisions (normalized names collide):");
 		for (const a of aliases) {
 			console.warn(`  - ${a.theme} (${a.normalized}): ${a.note}`);
+		}
+	}
+
+	// Completeness gate: every theme must render every widget kind, so a
+	// silently missing card can never reach the demo tabs.
+	const expectedKinds = Object.keys(RENDERERS);
+	for (const [name] of entries) {
+		for (const kind of expectedKinds) {
+			const asset = assets[name]?.[kind];
+			if (!asset?.src) {
+				throw new Error(`missing ${kind} asset for theme '${name}'`);
+			}
 		}
 	}
 } finally {
