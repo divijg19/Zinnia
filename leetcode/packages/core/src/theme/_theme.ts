@@ -1,3 +1,7 @@
+// @deprecated Use `toLeetCodeTheme` (`lib/themes/adapters/leetcode.ts`)
+// which replicates this completion/padding logic against the canonical
+// registry. Retained as a parity fixture.
+
 import type { Item } from "../item.js";
 
 export interface Theme {
