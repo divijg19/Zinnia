@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { renderLeetCode } from "../demo/adapters/leetcode.js";
 import { renderStats } from "../demo/adapters/stats.js";
 import { renderStreak } from "../demo/adapters/streak.js";
+import { renderTopLangs } from "../demo/adapters/toplangs.js";
 import { renderTrophy } from "../demo/adapters/trophy.js";
 import { themes } from "../lib/themes/registry.ts";
 import { normalizeThemeName } from "../streak/src/card_helpers.ts";
@@ -96,8 +97,20 @@ const LEETCODE_FIXTURE = {
 	contest: undefined,
 };
 
+// Six languages with varied sizes exercise the donut/progress layouts,
+// language colors, and theme color application in the top-languages card.
+const TOPLANGS_FIXTURE = {
+	TypeScript: { name: "TypeScript", color: "#3178c6", size: 45000 },
+	JavaScript: { name: "JavaScript", color: "#f1e05a", size: 30000 },
+	Python: { name: "Python", color: "#3572A5", size: 15000 },
+	Rust: { name: "Rust", color: "#dea584", size: 8000 },
+	Go: { name: "Go", color: "#00ADD8", size: 4000 },
+	Shell: { name: "Shell", color: "#89e051", size: 1000 },
+};
+
 const RENDERERS = {
 	stats: renderStats,
+	topLangs: renderTopLangs,
 	streak: renderStreak,
 	trophy: renderTrophy,
 	leetcode: renderLeetCode,
@@ -114,6 +127,7 @@ function assertValidSvg(svg, kind, name) {
 
 const mockData = {
 	stats: STATS_FIXTURE,
+	topLangs: TOPLANGS_FIXTURE,
 	streak: STREAK_FIXTURE,
 	trophy: TROPHY_FIXTURE,
 	leetcode: LEETCODE_FIXTURE,

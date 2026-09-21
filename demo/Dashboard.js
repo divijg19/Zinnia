@@ -1,5 +1,6 @@
 const WIDGET_LABELS = {
 	stats: "GitHub Stats",
+	topLangs: "Top Languages",
 	streak: "GitHub Streak",
 	trophy: "Trophy Case",
 	leetcode: "LeetCode",

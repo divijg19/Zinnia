@@ -32,8 +32,18 @@ const dash = new Dashboard(
 await dash.updateTheme("default");
 const cards = window.document.querySelectorAll(".widget-card");
 console.log("dashboard cards:", cards.length);
-if (cards.length !== 4) {
-	throw new Error(`smoke: expected 4 dashboard cards, got ${cards.length}`);
+const expectedKinds = ["stats", "topLangs", "streak", "trophy", "leetcode"];
+if (cards.length !== expectedKinds.length) {
+	throw new Error(
+		`smoke: expected ${expectedKinds.length} dashboard cards, got ${cards.length}`,
+	);
+}
+for (const kind of expectedKinds) {
+	if (
+		!window.document.querySelector(`.widget-card[data-widget="${kind}"] img`)
+	) {
+		throw new Error(`smoke: dashboard is missing rendered ${kind} widget`);
+	}
 }
 const img = window.document.querySelector(".widget-card img");
 console.log("sample widget html:", img?.outerHTML?.slice(0, 140));

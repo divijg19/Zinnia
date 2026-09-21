@@ -1,6 +1,6 @@
 import { GeneratedAssetWidget } from "./asset-widget.js";
 
-const KINDS = ["stats", "streak", "trophy", "leetcode"];
+const KINDS = ["stats", "topLangs", "streak", "trophy", "leetcode"];
 
 export class WidgetFactory {
 	createAll(themeName, themeRegistry) {
