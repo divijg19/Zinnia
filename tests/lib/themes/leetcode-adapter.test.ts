@@ -64,6 +64,14 @@ describe("lib/themes/adapters/leetcode", () => {
 		]);
 	});
 
+	it("does not mutate canonical registry palette arrays", () => {
+		const before = JSON.stringify(themes.dark.colors?.palette);
+		toLeetCodeTheme(themes.dark);
+		toLeetCodeTheme(themes.dark);
+		expect(JSON.stringify(themes.dark.colors?.palette)).toBe(before);
+		expect(themes.dark.colors?.palette?.bg).toHaveLength(2);
+	});
+
 	it("applies legacy defaults when a theme has no palette", () => {
 		const adapted = toLeetCodeTheme(themes.wtf);
 		expect(adapted.palette.bg).toEqual([
