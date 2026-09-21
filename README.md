@@ -163,8 +163,9 @@ CI does **not** auto-deploy.
 * **Demo homepage:**
   Production root `/` serves the theme demo (`/demo/index.html`). Demo
   assets are generated at build time via `bun run demo:build` (96 themes ×
-  4 widgets, deterministic, byte-identical on rebuild) and are never
-  committed. Run `bun run demo:dev` for a local preview.
+  4 widgets, deterministic, byte-identical on rebuild) into `public/demo/`,
+  which is Vercel's served static directory, and are never committed. Run
+  `bun run demo:dev` for a local preview.
 
 ### Optional: Upstash / Redis
 
