@@ -17,7 +17,7 @@
 	--demo-transition: 0.2s ease;
 
 	/* Layout */
-	--header-height: 135px;
+	--header-height: 60px;
 	--widget-gap: 16px;
 	--container-padding: 24px;
 	--container-max: 1400px;
@@ -69,46 +69,54 @@ body {
 	z-index: 100;
 	background: var(--demo-card-bg);
 	border-bottom: 1px solid var(--demo-border);
-	padding: 16px var(--container-padding);
+	padding: 0 var(--container-padding);
+	min-height: var(--header-height);
+	display: flex;
+	align-items: center;
+}
+
+.header-bar {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	max-width: var(--container-max);
+	margin: 0 auto;
 	min-height: var(--header-height);
 }
 
-.header-content {
-	max-width: var(--container-max);
-	margin: 0 auto 12px;
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
 }
 
-.demo-title {
-	font-size: 1.5rem;
+.brand-mark {
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.brand-name {
+	font-size: 1.125rem;
 	font-weight: 700;
 	color: var(--demo-fg);
 	letter-spacing: -0.02em;
-}
-
-.demo-subtitle {
-	font-size: 0.875rem;
-	color: var(--demo-muted);
-	margin-top: 2px;
-}
-
-.controls {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	flex-wrap: wrap;
-	max-width: var(--container-max);
-	margin: 0 auto;
+	margin: 0;
 }
 
 .theme-selector-container {
+	display: flex;
+	gap: 8px;
 	flex: 1;
-	min-width: 260px;
-	max-width: 420px;
+	min-width: 280px;
+	max-width: 520px;
 }
 
 #theme-select {
-	width: 100%;
+	flex: 1;
+	min-width: 0;
+	width: auto;
 	padding: 8px 12px;
 	font-size: 0.875rem;
 	font-family: inherit;
@@ -124,7 +132,9 @@ body {
 
 .theme-selector-wrapper {
 	position: relative;
-	width: 100%;
+	flex: 1.3;
+	min-width: 0;
+	width: auto;
 }
 
 .theme-selector-wrapper .theme-search-input {
@@ -444,12 +454,13 @@ body {
 @media (max-width: 640px) {
 	:root {
 		--container-padding: 16px;
-		--header-height: 212px;
+		--header-height: 164px;
 	}
 
-	.controls {
-		flex-direction: column;
-		align-items: stretch;
+	.header-bar {
+		flex-wrap: wrap;
+		padding: 12px 0;
+		row-gap: 10px;
 	}
 
 	.theme-selector-container {

@@ -53,13 +53,13 @@ const STREAK_FIXTURE = {
 };
 
 // Showcase fixture engineered so the demo trophy card exercises every
-// visible rank tier and secret trophy in one render:
+// visible rank tier plus one secret trophy in a compact 3x3 grid:
 // Stars=15 -> B, Commits=4500 -> SSS, Followers=450 -> SS,
 // Reviews=150 -> AAA, Repos=35 -> AA, Issues=25 -> A, PRs=5 -> C,
-// Experience (durationDays=42) -> S, plus secrets via languageCount=12,
-// organizations=5, durationYear=12, and the ancient/OG/2020 flags.
-// AllSuperRank is intentionally absent: it requires every base rank to
-// start with S, which is mutually exclusive with a B/C spectrum.
+// Experience (durationDays=42) -> S, plus the MultipleLang secret via
+// languageCount=12. AllSuperRank is intentionally absent: it requires
+// every base rank to start with S, which is mutually exclusive with a
+// B/C spectrum.
 const TROPHY_FIXTURE = {
 	totalStargazers: 15,
 	totalCommits: 4500,
@@ -69,12 +69,12 @@ const TROPHY_FIXTURE = {
 	totalRepositories: 35,
 	totalReviews: 150,
 	languageCount: 12,
-	durationYear: 12,
+	durationYear: 3,
 	durationDays: 42,
-	ancientAccount: 1,
-	ogAccount: 1,
-	joined2020: 1,
-	totalOrganizations: 5,
+	ancientAccount: 0,
+	ogAccount: 0,
+	joined2020: 0,
+	totalOrganizations: 2,
 };
 
 const LEETCODE_FIXTURE = {
