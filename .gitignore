@@ -182,6 +182,8 @@ _vendor_backup/
 
 # API build outputs used at deploy-time; generated, don't commit
 api/_build/**
+stats/api/index.js
+stats/api/index.js.map
 
 # Vercel helper files
 .vercelignore

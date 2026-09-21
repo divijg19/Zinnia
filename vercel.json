@@ -3,7 +3,7 @@
 	"buildCommand": "bun run build && bun run demo:build",
 	"functions": {
 		"api/**/*.ts": {
-			"includeFiles": "{api/_build/**,stats/api/**,streak/dist/**,leetcode/packages/core/dist/**}"
+			"includeFiles": "{api/_build/**,streak/dist/**,leetcode/packages/core/dist/**}"
 		}
 	},
 	"rewrites": [

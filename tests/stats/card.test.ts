@@ -22,6 +22,13 @@ describe("Card", () => {
 		expect((cardBg as Element).getAttribute("stroke-opacity")).toBe("1");
 	});
 
+	it("should emit valid stop offsets for single-stop gradients", () => {
+		const card = new Card({ colors: { bgColor: ["45", "ff0000"] } });
+		const gradient = card.renderGradient();
+		expect(gradient).toContain('offset="0%"');
+		expect(gradient).not.toContain("NaN");
+	});
+
 	it("should have a custom title and setTitle", () => {
 		const card = new Card({
 			customTitle: "custom title",

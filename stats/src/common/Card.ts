@@ -147,7 +147,8 @@ export class Card {
           >
             ${gradients
 							.map((grad, index) => {
-								const offset = (index * 100) / (gradients.length - 1);
+								const offset =
+									(index * 100) / Math.max(1, gradients.length - 1);
 								return `<stop offset="${offset}%" stop-color="#${grad}" />`;
 							})
 							.join("")}
