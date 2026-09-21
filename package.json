@@ -15,11 +15,12 @@
 		"lint": "biome check . && tsc --noEmit",
 		"format": "biome format . --write",
 		"type-check": "tsc --noEmit",
-		"test:stats": "vitest --run --config ./vitest.config.ts -- -t 'tests/stats'",
-		"test:api": "vitest --run --config ./vitest.config.ts -- -t 'tests/api'",
+		"test:stats": "vitest --run --config ./vitest.config.ts tests/stats",
+		"test:api": "vitest --run --config ./vitest.config.ts tests/api",
+		"test:demo": "bun run demo:build && bun tests/demo-assets.smoke.js",
 		"test:leetcode": "cd leetcode && vitest --run --pool=threads",
 		"test": "vitest --run",
-		"e2e:local": "bun run build && (bunx vercel dev --listen 3000 & sleep 3) && bash scripts/e2e_smoke.sh http://localhost:3000"
+		"e2e:local": "bun run build && bun run demo:build && (bunx vercel dev --listen 3000 & sleep 3) && bash scripts/e2e_smoke.sh http://localhost:3000"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.11",

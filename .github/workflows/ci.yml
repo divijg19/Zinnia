@@ -37,8 +37,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check & Format 
-        run: bun biome check . --write --unsafe && bun biome format . --write 
+      - name: Check & Format
+        run: bunx biome check .
 
       - name: Lint / typecheck
         run: bun run lint
