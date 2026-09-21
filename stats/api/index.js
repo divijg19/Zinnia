@@ -68,7 +68,13 @@ var themes = {
       title: { hex: "006AFF" },
       icon: { hex: "0579C3" },
       text: { hex: "417E87" },
-      background: { hex: "ffffff00" }
+      background: { hex: "ffffff00" },
+      palette: {
+        bg: ["rgba(16, 16, 16, 0.5)", "rgba(0, 0, 0, 0.5)"],
+        text: ["#417E87", "#417E87"],
+        color: ["#ffa116", "#5cb85c", "#f0ad4e", "#d9534f"]
+      },
+      css: "#L{fill:#fff}"
     },
     streak: {
       background: "#0000",
@@ -91,7 +97,12 @@ var themes = {
       icon: { hex: "4c71f2" },
       text: { hex: "434d58" },
       background: { hex: "ffffff" },
-      border: { hex: "e4e2e2" }
+      border: { hex: "e4e2e2" },
+      palette: {
+        bg: ["#fff", "#e5e5e5"],
+        text: ["#000", "#808080"],
+        color: []
+      }
     }
   },
   shadow_red: {
@@ -130,7 +141,13 @@ var themes = {
       title: { hex: "fff" },
       icon: { hex: "79ff97" },
       text: { hex: "9f9f9f" },
-      background: { hex: "151515" }
+      background: { hex: "151515" },
+      palette: {
+        bg: ["#101010", "#404040"],
+        text: ["#f0f0f0", "#dcdcdc"],
+        color: ["#ffa116", "#5cb85c", "#f0ad4e", "#d9534f"]
+      },
+      css: "#L{fill:#fff}"
     },
     streak: {
       background: "#151515",
@@ -152,7 +169,13 @@ var themes = {
       title: { hex: "fe428e" },
       icon: { hex: "f8d847" },
       text: { hex: "a9fef7" },
-      background: { hex: "141321" }
+      background: { hex: "141321" },
+      palette: {
+        bg: ["#101010", "#ffff"],
+        text: ["#fe428e", "#a9fef7"],
+        color: ["#ffa116", "#5cb85c", "#f0ad4e", "#d9534f"]
+      },
+      css: "#L{fill:#fff}"
     },
     streak: {
       background: "#141321",
@@ -597,7 +620,13 @@ var themes = {
       title: { hex: "81a1c1" },
       icon: { hex: "88c0d0" },
       text: { hex: "d8dee9" },
-      background: { hex: "2e3440" }
+      background: { hex: "2e3440" },
+      palette: {
+        bg: ["#2e3440", "#3b4252", "#434c5e", "#4c566a"],
+        text: ["#eceff4", "#e5e9f0", "#d8dee9"],
+        color: ["#d08770", "#a3be8c", "#ebcb8b", "#bf616a"]
+      },
+      css: "#L{fill:#eceff4}"
     },
     trophy: {
       BACKGROUND: "#2E3440",
@@ -1066,7 +1095,144 @@ var themes = {
       icon: { hex: "f8d847" },
       text: { hex: "a9fef7" },
       background: { hex: "45,520806,021D4A" },
-      border: { hex: "e4e2e2" }
+      border: { hex: "e4e2e2" },
+      palette: {
+        bg: ["url(#g-watchdog-bg)", "#021D4A", "#1a1f35", "#2a2f45"],
+        text: ["#FFFFFF", "#A9FEF7", "#FE428E", "#E4E2E2"],
+        color: ["url(#g-ring)", "#43E97B", "#FFBB00", "#FF4757"]
+      },
+      css: `
+		/* Background with gradient - premium red-to-blue diagonal sweep */
+		#background{
+			rx:12px;
+			stroke:rgba(255,255,255,0.08);
+			stroke-width:1.5px;
+		}
+		
+		/* Icon - sophisticated multi-tone design */
+		#icon{
+			opacity:1;
+		}
+		#L{
+			fill:#00D9FF!important;
+			opacity:1;
+			filter:drop-shadow(0 2px 8px rgba(0,217,255,0.5));
+		}
+		#C{
+			fill:#00D9FF!important;
+			opacity:0.85;
+		}
+		#dash{
+			fill:#FFBB00!important;
+			opacity:0.95;
+			filter:drop-shadow(0 1px 4px rgba(255,187,0,0.4));
+		}
+		
+		/* Username - crisp white with cyan glow, hot pink hover */
+		#username-text{
+			font-weight:700!important;
+			font-size:24px!important;
+			letter-spacing:0.5px;
+			fill:#FFFFFF!important;
+			filter:drop-shadow(0 2px 4px rgba(169,254,247,0.3));
+			transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+		}
+		#username:hover #username-text{
+			fill:#FE428E!important;
+			filter:drop-shadow(0 2px 8px rgba(254,66,142,0.6));
+			transform:translateY(-1px);
+		}
+		
+		/* Ranking - elegant cyan with subtle emphasis */
+		#ranking{
+			font-weight:600!important;
+			font-size:18px!important;
+			letter-spacing:0.3px;
+			fill:#A9FEF7!important;
+			opacity:0.92;
+		}
+		
+		/* Total solved circle - premium gradient ring with white text */
+		#total-solved-text{
+			font-weight:900!important;
+			font-size:38px!important;
+			letter-spacing:-0.5px;
+			fill:#FFFFFF!important;
+			filter:drop-shadow(0 3px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,255,255,0.3));
+		}
+		#total-solved-ring{
+			stroke:url(#g-ring)!important;
+			stroke-width:8px!important;
+			opacity:1;
+			filter:drop-shadow(0 0 12px rgba(67,233,123,0.6));
+		}
+		#total-solved-bg{
+			stroke:rgba(255,255,255,0.12)!important;
+			stroke-width:8px!important;
+			opacity:1;
+		}
+		
+		/* Difficulty labels - refined white with subtle opacity */
+		#easy-solved-type,#medium-solved-type,#hard-solved-type{
+			font-weight:600!important;
+			font-size:16px!important;
+			letter-spacing:0.3px;
+			fill:#FFFFFF!important;
+			opacity:0.85;
+		}
+		
+		/* Difficulty counts - cyan emphasis for readability */
+		#easy-solved-count,#medium-solved-count,#hard-solved-count{
+			font-weight:700!important;
+			font-size:16px!important;
+			letter-spacing:0.2px;
+			fill:#A9FEF7!important;
+			opacity:1;
+		}
+		
+		/* Progress bars - vibrant semantic colors with enhanced glows */
+		#easy-solved-progress{
+			stroke:#43E97B!important;
+			stroke-width:6px!important;
+			filter:drop-shadow(0 0 6px rgba(67,233,123,0.7));
+		}
+		#medium-solved-progress{
+			stroke:#FFBB00!important;
+			stroke-width:6px!important;
+			filter:drop-shadow(0 0 6px rgba(255,187,0,0.7));
+		}
+		#hard-solved-progress{
+			stroke:#FF4757!important;
+			stroke-width:6px!important;
+			filter:drop-shadow(0 0 6px rgba(255,71,87,0.7));
+		}
+		#easy-solved-bg,#medium-solved-bg,#hard-solved-bg{
+			opacity:1!important;
+			stroke-width:6px!important;
+			stroke:rgba(255,255,255,0.1)!important;
+		}
+		
+		/* Animations - smooth entrance */
+		@keyframes fadeIn{
+			0%{opacity:0;transform:translateY(-5px)}
+			100%{opacity:1;transform:translateY(0)}
+		}
+		
+		/* Hover effects - gold highlight for interactivity */
+		#solved g:hover #easy-solved-count,
+		#solved g:hover #medium-solved-count,
+		#solved g:hover #hard-solved-count{
+			fill:#FFBB00!important;
+			transition:fill 0.3s cubic-bezier(0.4,0,0.2,1);
+		}
+		
+		#solved g:hover #easy-solved-type,
+		#solved g:hover #medium-solved-type,
+		#solved g:hover #hard-solved-type{
+			fill:#FFFFFF!important;
+			opacity:1!important;
+		}
+	`
     },
     streak: {
       background: "45,#520806,#021D4A",
@@ -1566,6 +1732,53 @@ var themes = {
       DEFAULT_RANK_BASE: "#8ab1b0",
       DEFAULT_RANK_SHADOW: "#719190",
       DEFAULT_RANK_TEXT: "#d3af86"
+    }
+  },
+  "catppuccin-mocha": {
+    name: "catppuccin-mocha",
+    colors: {
+      palette: {
+        bg: ["#1e1e2e", "#45475a", "#45475a"],
+        text: ["#cdd6f4", "#bac2de"],
+        color: ["#fab387", "#a6e3a1", "#f9e2af", "#f38ba8"]
+      }
+    }
+  },
+  chartreuse: {
+    name: "chartreuse",
+    colors: {
+      palette: {
+        bg: ["#000", "#fff"],
+        text: ["#00AEFF", "#7fff00"],
+        color: ["#ffa116", "#5cb85c", "#f0ad4e", "#d9534f"]
+      },
+      css: "#L{fill:#fff}"
+    }
+  },
+  forest: {
+    name: "forest",
+    colors: {
+      palette: {
+        bg: ["#fff9dd", "#ffec96"],
+        color: ["#80c600", "#1abc97", "#8ec941", "#a36d00"]
+      }
+    }
+  },
+  unicorn: {
+    name: "unicorn",
+    colors: {
+      palette: {
+        bg: ["url(#g-bg)", "#ffffffaa"],
+        text: ["url(#g-text)"],
+        color: ["url(#g-text)", "#6ee7b7", "#fcd34d", "#fca5a5"]
+      },
+      css: "#background{stroke:url(#g-text)}"
+    }
+  },
+  wtf: {
+    name: "wtf",
+    colors: {
+      css: "#root { animation: wtf_animation 1s linear 0s infinite forwards } @keyframes wtf_animation {from { filter: hue-rotate(0deg) } to { filter: hue-rotate(360deg) }}"
     }
   }
 };

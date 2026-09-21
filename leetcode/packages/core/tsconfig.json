@@ -8,7 +8,8 @@
 		"moduleResolution": "bundler",
 		"paths": {
 			"leetcode-query": ["./src/shims/leetcode-query.ts"],
-			"nano-font/fonts/*": ["./src/shims/fonts/*"]
+			"nano-font/fonts/*": ["./src/shims/fonts/*"],
+			"@lib/*": ["../../../lib/*"]
 		},
 		"typeRoots": ["../../../types", "./node_modules/@types"],
 		"esModuleInterop": true
