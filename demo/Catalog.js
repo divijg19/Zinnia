@@ -11,6 +11,7 @@ export class Catalog {
 		this.onThemeChangeCallback = null;
 
 		this.initKeyboardNav();
+		this.initRowSelection();
 	}
 
 	initKeyboardNav() {
@@ -23,6 +24,67 @@ export class Catalog {
 				}
 			});
 		}
+	}
+
+	initRowSelection() {
+		// Mouse selection: clicking a row selects its theme everywhere.
+		if (this.container) {
+			this.container.addEventListener("click", (e) => {
+				const copyBtn = e.target.closest("[data-copy-theme]");
+				if (copyBtn) {
+					e.stopPropagation();
+					this.copyThemeJson(copyBtn.dataset.copyTheme, copyBtn);
+					return;
+				}
+				const row = e.target.closest(".catalog-row");
+				if (row?.dataset.theme) {
+					this.selectTheme(row.dataset.theme);
+				}
+			});
+		}
+	}
+
+	selectTheme(themeName) {
+		if (!themeName || themeName === this.currentTheme) return;
+		this.currentTheme = themeName;
+		this.render();
+		if (this.onThemeChangeCallback) {
+			this.onThemeChangeCallback(themeName);
+		}
+	}
+
+	themeJson(themeName) {
+		const theme = this.themeRegistry.find((t) => t.name === themeName);
+		if (!theme) return null;
+		const { widgets: _widgets, ...definition } = theme;
+		return JSON.stringify(definition, null, 2);
+	}
+
+	async copyThemeJson(themeName, button) {
+		const json = this.themeJson(themeName);
+		if (!json) return false;
+		try {
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(json);
+			} else {
+				const area = document.createElement("textarea");
+				area.value = json;
+				document.body.appendChild(area);
+				area.select();
+				document.execCommand("copy");
+				area.remove();
+			}
+		} catch {
+			return false;
+		}
+		if (button) {
+			const original = button.textContent;
+			button.textContent = "Copied!";
+			setTimeout(() => {
+				button.textContent = original;
+			}, 1200);
+		}
+		return true;
 	}
 
 	setThemeRegistry(themeRegistry) {
@@ -69,16 +131,9 @@ export class Catalog {
 		if (nextIndex >= rows.length) nextIndex = 0;
 
 		const nextRow = rows[nextIndex];
-		if (nextRow) {
-			const themeName = nextRow.dataset.theme;
-			if (themeName) {
-				this.currentTheme = themeName;
-				nextRow.scrollIntoView({ behavior: "smooth", block: "center" });
-
-				if (this.onThemeChangeCallback) {
-					this.onThemeChangeCallback(themeName);
-				}
-			}
+		if (nextRow?.dataset.theme) {
+			nextRow.scrollIntoView?.({ behavior: "smooth", block: "center" });
+			this.selectTheme(nextRow.dataset.theme);
 		}
 	}
 
@@ -112,6 +167,7 @@ export class Catalog {
 								.join("")}
               </div>
               <span>${theme.displayName || theme.name}</span>
+              <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
             </div>
             <div class="widget-cell">${this.renderWidget(widgets[0])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[1])}</div>
