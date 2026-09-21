@@ -37,12 +37,11 @@ export default defineConfig({
 		testTimeout: 60000,
 		// Leverage the existing leetcode setup and also run root setup cleanup
 		setupFiles: [setupFile, rootSetup],
-		// --- Pool isolation: run each test file in its own process to prevent
-		// shared-state bleeding (streak dist cache, theme registries, etc.)
+		// --- Pool isolation: each test file runs in its own worker process
+		// to prevent shared-state bleeding (streak dist cache, theme
+		// registries, etc.). Note: vitest 4 removed poolOptions.singleFork;
+		// the forks pool isolates files by default (isolate: true).
 		pool: "forks",
-		poolOptions: {
-			singleFork: true,
-		},
 		include: includeGlobs,
 		coverage: {
 			provider: "v8",

@@ -190,6 +190,7 @@ api/_build/**
 # Trophy and stats package-specific ignores
 deno.lock
 *.sh
+!scripts/e2e_smoke.sh
 vercel_token
 benchmarks
 !streak/src/demo/preview.ts
