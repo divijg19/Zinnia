@@ -7,8 +7,27 @@
 	},
 	"rewrites": [
 		{
+			"source": "/demo",
+			"destination": "/demo/index.html"
+		},
+		{
+			"source": "/demo/(.*)",
+			"destination": "/demo/$1"
+		},
+		{
 			"source": "/(.*)",
 			"destination": "/api/$1"
+		}
+	],
+	"headers": [
+		{
+			"source": "/demo/(.*)",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "public, max-age=31536000, immutable"
+				}
+			]
 		}
 	]
 }

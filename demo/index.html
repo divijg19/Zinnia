@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Zinnia Theme Demo - Preview all 96 themes across 4 widgets">
+  <title>Zinnia Theme Demo</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+</head>
+<body>
+  <header class="demo-header">
+    <div class="header-content">
+      <h1 class="demo-title">Zinnia Theme Demo</h1>
+      <p class="demo-subtitle">Preview all 96 themes across 4 widgets</p>
+    </div>
+    <div class="controls">
+      <div class="theme-selector-container">
+        <label for="theme-select" class="visually-hidden">Select theme</label>
+        <select id="theme-select" aria-label="Select theme"></select>
+      </div>
+      <div class="tab-nav" role="tablist" aria-label="Demo tabs">
+        <button type="button" role="tab" id="tab-dashboard" data-tab="dashboard" aria-selected="true" aria-controls="panel-dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" role="tab" id="tab-catalog" data-tab="catalog" aria-selected="false" aria-controls="panel-catalog">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="18"/>
+          </svg>
+          <span>Catalog</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section id="panel-dashboard" role="tabpanel" class="tab-panel active" aria-labelledby="tab-dashboard">
+      <div class="widget-grid" id="widget-grid"></div>
+    </section>
+    <section id="panel-catalog" role="tabpanel" class="tab-panel" hidden aria-labelledby="tab-catalog">
+      <div class="catalog-header">
+        <span class="catalog-count" id="catalog-count" role="status" aria-live="polite"></span>
+      </div>
+      <ul class="catalog-list" id="catalog-list"></ul>
+    </section>
+  </main>
+
+  <footer class="demo-footer">
+    <p>Zinnia Theme Demo — <a href="https://github.com/divijg19/Zinnia" target="_blank" rel="noopener">GitHub</a> • <a href="https://vercel.com" target="_blank" rel="noopener">Deployed on Vercel</a></p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
