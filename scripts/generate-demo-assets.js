@@ -6,6 +6,7 @@ import { renderStats } from "../demo/adapters/stats.js";
 import { renderStreak } from "../demo/adapters/streak.js";
 import { renderTrophy } from "../demo/adapters/trophy.js";
 import { themes } from "../lib/themes/registry.ts";
+import { normalizeThemeName } from "../streak/src/card_helpers.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -118,18 +119,16 @@ globalThis.fetch = () => {
 const themeRegistry = [];
 const assets = {};
 const aliases = [];
-const seenStreak = new Set();
 
-try {
-	mkdirSync(svgDir, { recursive: true });
-
-	const entries = Object.entries(themes).sort(([a], [b]) => a.localeCompare(b));
-
-	for (const [name, def] of entries) {
-		const normalized = name.replace(/_/g, "-").toLowerCase();
+// Detect streak name collisions in registry order with the same
+// normalization the runtime uses, so the recorded winner always matches
+// runtime first-wins resolution (streak/src/themes.ts).
+{
+	const seenStreak = new Set();
+	for (const name of Object.keys(themes)) {
+		const normalized = normalizeThemeName(name);
 		const streakKey = `streak:${normalized}`;
-		const streakCollision = seenStreak.has(streakKey);
-		if (streakCollision) {
+		if (seenStreak.has(streakKey)) {
 			aliases.push({
 				theme: name,
 				normalized,
@@ -138,7 +137,15 @@ try {
 		} else {
 			seenStreak.add(streakKey);
 		}
+	}
+}
 
+try {
+	mkdirSync(svgDir, { recursive: true });
+
+	const entries = Object.entries(themes).sort(([a], [b]) => a.localeCompare(b));
+
+	for (const [name, def] of entries) {
 		assets[name] = {};
 		for (const [kind, render] of Object.entries(RENDERERS)) {
 			const svg = await render(def, mockData[kind]);
