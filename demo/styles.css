@@ -315,6 +315,31 @@ body {
 	box-shadow: var(--demo-shadow-hover);
 }
 
+.catalog-row[data-theme] {
+	cursor: pointer;
+}
+
+.copy-json-btn {
+	margin-left: auto;
+	padding: 2px 8px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	font-family: inherit;
+	color: var(--demo-muted);
+	background: transparent;
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius-sm);
+	cursor: pointer;
+	transition:
+		color var(--demo-transition),
+		border-color var(--demo-transition);
+}
+
+.copy-json-btn:hover {
+	color: var(--demo-accent);
+	border-color: var(--demo-accent);
+}
+
 .catalog-row.theme-row {
 	--theme-bg: var(--demo-card-bg);
 }
