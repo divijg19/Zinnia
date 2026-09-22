@@ -8,6 +8,7 @@ export class Catalog {
 		this.themeRegistry = themeRegistry || [];
 		this.currentTheme = "default";
 		this.filteredThemes = [...this.themeRegistry];
+		this.currentQuery = "";
 		this.onThemeChangeCallback = null;
 
 		this.initKeyboardNav();
@@ -98,7 +99,28 @@ export class Catalog {
 		this.render();
 	}
 
+	selectFirstMatch() {
+		const first = this.filteredThemes[0];
+		if (!first) return null;
+		const row = this.container.querySelector(`[data-theme="${first.name}"]`);
+		row?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+		this.selectTheme(first.name);
+		return first.name;
+	}
+
+	highlightMatch(text, query) {
+		const escaped = String(text)
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+		const q = String(query || "").trim();
+		if (!q) return escaped;
+		const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		return escaped.replace(new RegExp(`(${safe})`, "gi"), "<mark>$1</mark>");
+	}
+
 	filter(query) {
+		this.currentQuery = query || "";
 		if (!query) {
 			this.filteredThemes = [...this.themeRegistry];
 		} else {
@@ -166,7 +188,7 @@ export class Catalog {
 								)
 								.join("")}
               </div>
-              <span>${theme.displayName || theme.name}</span>
+              <span>${this.highlightMatch(theme.displayName || theme.name, this.currentQuery)}</span>
               <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
             </div>
             <div class="widget-cell">${this.renderWidget(widgets[0])}</div>

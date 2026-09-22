@@ -186,6 +186,21 @@ export class ThemeSelector {
 		);
 	}
 
+	firstVisibleTheme() {
+		const first = this.select.querySelector("option:not([hidden])");
+		return first?.value ?? null;
+	}
+
+	selectFirstMatch() {
+		const name = this.firstVisibleTheme();
+		if (!name) return null;
+		this.select.value = name;
+		if (this.onChangeCallback) {
+			this.onChangeCallback(name);
+		}
+		return name;
+	}
+
 	filterThemes(query) {
 		const lowerQuery = query.toLowerCase().trim();
 
