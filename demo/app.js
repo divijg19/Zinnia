@@ -1,5 +1,6 @@
 import { Catalog } from "./Catalog.js";
 import { Dashboard } from "./Dashboard.js";
+import { initPageTheme } from "./utils/page-theme.js";
 import { ThemeSelector } from "./utils/theme-selector.js";
 import { WidgetFactory } from "./widgets/factory.js";
 
@@ -54,6 +55,8 @@ class ThemeDemoApp {
 	}
 
 	initComponents() {
+		initPageTheme(document.getElementById("page-theme-toggle"));
+
 		this.themeSelector = new ThemeSelector(
 			document.getElementById("theme-select"),
 			this.assets.themes,

@@ -18,7 +18,7 @@ describe("streak normalized alias resolution", () => {
 	});
 
 	it("resolves the catppuccin collision to the earlier-registered theme", () => {
-		const winner = THEMES["catppuccin_mocha"];
+		const winner = THEMES.catppuccin_mocha;
 		expect(winner, "trophy catppuccin_mocha exposed").toBeDefined();
 		expect(winner.currStreakNum).toBe("#94e2d5");
 		expect(THEMES["catppuccin-mocha"]).toBeUndefined();
@@ -30,7 +30,7 @@ describe("streak normalized alias resolution", () => {
 	});
 
 	it("resolves either spelling to the same entry", () => {
-		const expected = THEMES["catppuccin_mocha"];
+		const expected = THEMES.catppuccin_mocha;
 		for (const spelling of ["catppuccin_mocha", "catppuccin-mocha"]) {
 			const actual = getRequestedTheme({ theme: spelling });
 			expect(actual.background).toBe(expected.background);
