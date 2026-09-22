@@ -90,20 +90,10 @@ function seedPatFromRequestHeaders(req: VercelRequest): void {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+	// Snapshot request-external PAT state: per-request seeding below must
+	// never leak into subsequent requests sharing a warm runtime.
+	const prevPat1 = process.env.PAT_1;
 	try {
-		try {
-			if (process.env.VERCEL_ENV !== "production") {
-				const hasAuth = Boolean(
-					(req.headers.authorization as string | undefined)?.trim() ||
-						(req.headers.Authorization as string | undefined)?.trim(),
-				);
-				const hasX = Boolean(
-					(req.headers["x-github-token"] as string | undefined)?.trim(),
-				);
-				res.setHeader("X-Has-Auth", hasAuth ? "1" : "0");
-				res.setHeader("X-Has-X-Github-Token", hasX ? "1" : "0");
-			}
-		} catch {}
 		const url = safeUrl(req, "/api/stats");
 		const username = getUsername(url, ["username", "user"]);
 		if (!username) {
@@ -229,5 +219,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setShortCacheHeaders(res, 60);
 		res.setHeader("X-Cache-Status", "transient");
 		return sendErrorSvg(req, res, "stats: internal error", "STATS_INTERNAL");
+	} finally {
+		try {
+			if (prevPat1 === undefined) delete process.env.PAT_1;
+			else process.env.PAT_1 = prevPat1;
+		} catch {}
 	}
 }
