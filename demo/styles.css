@@ -1,5 +1,6 @@
 /* Zinnia Theme Demo - Styles */
-/* CSS Variables for theming */
+/* CSS Variables for page chrome (widget SVGs carry their own themes and
+   are never affected by the page theme). */
 :root {
 	/* Base colors (will be overridden by theme) */
 	--demo-bg: #fafafa;
@@ -15,12 +16,29 @@
 	--demo-radius: 8px;
 	--demo-radius-sm: 4px;
 	--demo-transition: 0.2s ease;
+	color-scheme: light;
 
 	/* Layout */
 	--header-height: 60px;
 	--widget-gap: 16px;
 	--container-padding: 24px;
 	--container-max: 1400px;
+}
+
+/* Dark page chrome. Widget SVGs are isolated <img> documents and keep
+   their own theme colors regardless of this setting. */
+:root[data-page-theme="dark"] {
+	--demo-bg: #131316;
+	--demo-fg: #e9e9ee;
+	--demo-muted: #a1a1ab;
+	--demo-border: #2b2b32;
+	--demo-accent: #66a3ff;
+	--demo-accent-hover: #8ab8ff;
+	--demo-card-bg: #1c1c21;
+	--demo-card-border: #2b2b32;
+	--demo-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+	--demo-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.55);
+	color-scheme: dark;
 }
 
 /* Reset & Base */
@@ -393,8 +411,40 @@ body {
 	width: 16px;
 	height: 16px;
 	border-radius: 3px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--demo-border);
 	flex-shrink: 0;
+}
+
+.page-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	color: var(--demo-muted);
+	background: transparent;
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius-sm);
+	cursor: pointer;
+	flex-shrink: 0;
+	transition:
+		color var(--demo-transition),
+		border-color var(--demo-transition);
+}
+
+.page-theme-toggle:hover {
+	color: var(--demo-accent);
+	border-color: var(--demo-accent);
+}
+
+.page-theme-toggle .icon-moon,
+:root[data-page-theme="dark"] .page-theme-toggle .icon-sun {
+	display: none;
+}
+
+:root[data-page-theme="dark"] .page-theme-toggle .icon-moon {
+	display: block;
 }
 
 .catalog-row .widget-cell {
