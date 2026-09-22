@@ -13,7 +13,6 @@
 			"!**/node_modules",
 			"!**/*.min.js",
 			"!**/dist",
-			"!assets/cards",
 			"!**/stats/coverage",
 			"!streak/tests/expected",
 			"!tests/api/tmp",
