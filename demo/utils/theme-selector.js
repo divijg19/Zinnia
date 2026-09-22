@@ -91,92 +91,67 @@ export class ThemeSelector {
 		}
 	}
 
+	static luminance(hex) {
+		const h = String(hex || "").replace(/^#/, "");
+		const full =
+			h.length === 3
+				? h
+						.split("")
+						.map((c) => c + c)
+						.join("")
+				: h;
+		if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+		const [r, g, b] = [0, 2, 4].map((i) => {
+			const c = parseInt(full.slice(i, i + 2), 16) / 255;
+			return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+		});
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
+
 	groupThemes(themes) {
+		// Data-driven groups derived from registry content: new themes land
+		// in a sensible group automatically instead of an "Other" bucket.
 		const groups = {
 			Core: [],
 			Catppuccin: [],
-			Popular: [],
-			"Trophy Exclusive": [],
-			LeetCode: [],
-			Other: [],
+			Light: [],
+			Dark: [],
+			"Gradients & Effects": [],
 		};
+		const core = new Set([
+			"default",
+			"dark",
+			"light",
+			"transparent",
+			"highcontrast",
+		]);
 
 		for (const theme of themes) {
 			const name = theme.name.toLowerCase();
-			if (
-				["default", "dark", "light", "transparent", "highcontrast"].includes(
-					name,
-				)
-			) {
+			if (core.has(name)) {
 				groups.Core.push(theme);
-			} else if (
-				name.startsWith("catppuccin") ||
-				name.startsWith("catppuccin_")
-			) {
+				continue;
+			}
+			if (name.startsWith("catppuccin") || name.startsWith("catppuccin_")) {
 				groups.Catppuccin.push(theme);
-			} else if (
-				[
-					"watchdog",
-					"radical",
-					"tokyonight",
-					"onedark",
-					"dracula",
-					"nord",
-					"monokai",
-					"gruvbox",
-				].includes(name)
+				continue;
+			}
+			const colors = theme.colors || {};
+			const bg = colors.background?.hex ?? "";
+			const css = colors.css ?? "";
+			if (
+				bg.includes(",") ||
+				bg.includes("url(") ||
+				css.includes("animation")
 			) {
-				groups.Popular.push(theme);
-			} else if (
-				[
-					"flat",
-					"discord",
-					"chalk",
-					"alduin",
-					"darkhub",
-					"juicyfresh",
-					"oldie",
-					"buddhism",
-					"onestar",
-					"gitdimmed",
-					"matrix",
-					"dark_dimmed",
-					"dark_lover",
-					"kimbie_dark",
-					"catppuccin_latte",
-					"catppuccin_mocha",
-					"github_dark",
-					"github_dark_dimmed",
-					"discord_old_blurple",
-					"aura_dark",
-					"panda",
-					"noctis_minimus",
-					"cobalt2",
-					"swift",
-					"aura",
-					"apprentice",
-					"moltack",
-					"codestackr",
-					"rose_pine",
-					"date_night",
-					"one_dark_pro",
-					"rose",
-					"holi",
-					"neon",
-					"blue_navy",
-					"calm_pink",
-					"ambient_gradient",
-				].includes(name)
-			) {
-				groups["Trophy Exclusive"].push(theme);
-			} else if (
-				["catppuccin-mocha", "chartreuse", "forest", "unicorn", "wtf"].includes(
-					name,
-				)
-			) {
-				groups.LeetCode.push(theme);
+				groups["Gradients & Effects"].push(theme);
+				continue;
+			}
+			const lum = ThemeSelector.luminance(bg);
+			if (lum !== null && lum >= 0.5) {
+				groups.Light.push(theme);
 			} else {
-				groups.Other.push(theme);
+				groups.Dark.push(theme);
 			}
 		}
 
