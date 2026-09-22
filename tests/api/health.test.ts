@@ -38,6 +38,19 @@ describe("/api/health", () => {
 		expect(res.send).toHaveBeenCalledWith(expect.stringContaining(">HELLO<"));
 	});
 
+	it("escapes markup in ?text= instead of injecting it", async () => {
+		const req = makeReq('/api/health?text=<script>alert("x")</script>');
+		const res = makeRes();
+		await health(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
+		const [[body]] = res.send.mock.calls;
+		expect(body).not.toContain("<script>");
+		expect(body).toContain("&lt;script&gt;");
+		expect(res.status).toHaveBeenCalledWith(200);
+	});
+
 	it("always returns 200 with full SVG and ETag set when If-None-Match matches", async () => {
 		const text = "OK";
 		const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="320" height="40" role="img" aria-label="${text}"><title>${text}</title><rect width="100%" height="100%" fill="#111827"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#F9FAFB" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${text}</text></svg>`;
