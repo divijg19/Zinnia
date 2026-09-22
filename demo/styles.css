@@ -563,3 +563,56 @@ body {
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--demo-muted);
 }
+
+/* Viewport-locked dashboard (desktop only): the grid fills exactly the
+   space between the sticky header and the footer so the overview never
+   scrolls, while the catalog tab keeps natural page scroll. Cards clip
+   internally with contain-fit images instead of overflowing the page. */
+@media (min-width: 1025px) {
+	body:has(#panel-dashboard.active) {
+		height: 100dvh;
+		overflow: hidden;
+	}
+
+	body:has(#panel-dashboard.active) #main-content {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	body:has(#panel-dashboard.active) #panel-dashboard.active {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+	}
+
+	body:has(#panel-dashboard.active) .widget-grid {
+		flex: 1;
+		min-height: 0;
+		grid-template-rows: repeat(2, 1fr);
+	}
+
+	body:has(#panel-dashboard.active) .widget-card {
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	body:has(#panel-dashboard.active) .widget-card:hover {
+		transform: none;
+	}
+
+	body:has(#panel-dashboard.active) .widget-card-title {
+		flex-shrink: 0;
+	}
+
+	body:has(#panel-dashboard.active) .widget-card svg,
+	body:has(#panel-dashboard.active) .widget-card img {
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+}
