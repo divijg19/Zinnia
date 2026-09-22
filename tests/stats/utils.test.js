@@ -170,6 +170,13 @@ describe("Test utils.js", () => {
 		expect(formatBytes(1234 * 1024)).toBe("1.2 MB");
 		expect(formatBytes(123.4 * 1024)).toBe("123.4 KB");
 	});
+
+	it("formatBytes: should clamp invalid sizes instead of throwing", () => {
+		expect(formatBytes(-100)).toBe("0 B");
+		expect(formatBytes(Number.NaN)).toBe("0 B");
+		expect(formatBytes(Number.POSITIVE_INFINITY)).toBe("0 B");
+		expect(formatBytes(1024 ** 8)).toContain("EB");
+	});
 });
 
 describe("wrapTextMultiline", () => {

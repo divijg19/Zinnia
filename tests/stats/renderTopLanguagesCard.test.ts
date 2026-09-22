@@ -238,3 +238,77 @@ describe("Test renderTopLanguages (rendering)", () => {
 		}
 	});
 });
+
+describe("Test renderTopLanguages (malformed input hardening)", () => {
+	it("renders the no-data state instead of throwing on null input", () => {
+		let svg: string | undefined;
+		expect(() => {
+			svg = renderTopLanguages(undefined as any);
+		}).not.toThrow();
+		expect(svg).toContain("No languages data");
+		expect(svg).not.toContain("NaN");
+	});
+
+	it("renders the no-data state for all-zero sizes without NaN", () => {
+		const zeroLangs = {
+			a: { name: "a", color: "#fff", size: 0 },
+			b: { name: "b", color: "#000", size: 0 },
+		};
+		const svg = renderTopLanguages(zeroLangs);
+		expect(svg).not.toContain("NaN");
+	});
+
+	it("falls back to the default color for missing lang colors", () => {
+		const noColor = {
+			a: { name: "a", color: undefined as any, size: 100 },
+		};
+		for (const layout of ["pie", "donut-vertical"] as const) {
+			const svg = renderTopLanguages(noColor, { layout });
+			expect(svg).not.toContain("undefined");
+			expect(svg).toContain("#858585");
+		}
+	});
+
+	it("escapes language names instead of injecting markup", () => {
+		const evil = {
+			x: { name: "<img src=x>", color: "#fff", size: 100 },
+		};
+		const svg = renderTopLanguages(evil);
+		expect(svg).not.toContain("<img src=x>");
+		expect(svg).toContain("&#60;img");
+	});
+
+	it("normalizes non-numeric card widths to the default", () => {
+		document.body.innerHTML = renderTopLanguages(langs, {
+			card_width: "abc" as any,
+		});
+		const svgEl = document.querySelector("svg");
+		expect(svgEl?.getAttribute("width")).toBe("300");
+		expect(document.body.innerHTML).not.toContain("NaN");
+	});
+
+	it("falls back to the default border radius for invalid values", () => {
+		for (const border_radius of ["abc", -5] as any[]) {
+			document.body.innerHTML = renderTopLanguages(langs, {
+				border_radius,
+			});
+			expect(document.body.innerHTML).not.toContain("NaN");
+		}
+	});
+
+	it("draws per-segment arcs in donut-vertical layout", () => {
+		document.body.innerHTML = renderTopLanguages(langs, {
+			layout: "donut-vertical",
+		});
+		const circles = Array.from(
+			document.querySelectorAll('[data-testid="lang-donut"]'),
+		);
+		expect(circles.length).toBeGreaterThan(0);
+		for (const circle of circles) {
+			const dasharray = circle.getAttribute("stroke-dasharray") ?? "";
+			// Each slice must be a partial arc (dash + gap), not a full circle.
+			expect(dasharray).toMatch(/^\d+(\.\d+)? \d+(\.\d+)?$/);
+			expect(circle.getAttribute("stroke-dashoffset")).toMatch(/^-?\d/);
+		}
+	});
+});

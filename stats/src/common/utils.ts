@@ -387,12 +387,12 @@ export const dateDiff = (d1: Date | string, d2: Date | string) => {
 };
 
 export const formatBytes = (bytes: number) => {
-	if (bytes < 0) throw new Error("Bytes must be a non-negative number");
-	if (bytes === 0) return "0 B";
+	if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
 	const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 	const base = 1024;
-	const i = Math.floor(Math.log(bytes) / Math.log(base));
-	if (i >= sizes.length)
-		throw new Error("Bytes is too large to convert to a human-readable string");
+	const i = Math.min(
+		sizes.length - 1,
+		Math.floor(Math.log(bytes) / Math.log(base)),
+	);
 	return `${(bytes / base ** i).toFixed(1)} ${sizes[i]}`;
 };

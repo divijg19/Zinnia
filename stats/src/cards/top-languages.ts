@@ -7,6 +7,7 @@ import { I18n } from "../common/I18n.js";
 import {
 	chunkArray,
 	clampValue,
+	encodeHTML,
 	flexLayout,
 	formatBytes,
 	getCardColors,
@@ -100,7 +101,7 @@ export const trimTopLanguages = (
 	// Support both an object map and a direct array (tests pass arrays sometimes).
 	let langs: Lang[] = Array.isArray(topLangs)
 		? topLangs
-		: Object.values(topLangs);
+		: Object.values(topLangs ?? {});
 	const langsToHide: Record<string, boolean> = Object.create(null);
 	const langsCount = clampValue(langs_count, 1, MAXIMUM_LANGS_COUNT);
 
@@ -116,6 +117,7 @@ export const trimTopLanguages = (
 		.slice(0, langsCount);
 
 	const totalLanguageSize = langs.reduce((acc, curr) => acc + curr.size, 0);
+	if (!(totalLanguageSize > 0)) return { langs: [], totalLanguageSize: 0 };
 	return { langs, totalLanguageSize };
 };
 
@@ -149,7 +151,7 @@ const createProgressTextNode = ({
 
 	return `
 		<g class="stagger" style="animation-delay: ${staggerDelay}ms">
-			<text data-testid="lang-name" x="2" y="15" class="lang-name">${name}</text>
+			<text data-testid="lang-name" x="2" y="15" class="lang-name">${encodeHTML(name)}</text>
 			<text x="${progressTextX}" y="34" class="lang-name">${displayValue}</text>
 			${createProgressNode({
 				x: 0,
@@ -187,7 +189,7 @@ const createCompactLangNode = ({
 		<g class="stagger" style="animation-delay: ${staggerDelay}ms">
 			<circle cx="5" cy="6" r="5" fill="${color}" />
 			<text data-testid="lang-name" x="15" y="10" class='lang-name'>
-				${lang.name} ${hideProgress ? "" : displayValue}
+				${encodeHTML(lang.name)} ${hideProgress ? "" : displayValue}
 			</text>
 		</g>
 	`;
@@ -351,10 +353,10 @@ const renderDonutVerticalLayout = (
 		const partLength = (percentage / 100) * totalCircleLength;
 		circles.push(`
       <g class="stagger" style="animation-delay: ${delay}ms">
-        <circle 
+        <circle
           cx="150" cy="100" r="${radius}" fill="transparent"
-          stroke="${lang.color}" stroke-width="25" stroke-dasharray="${totalCircleLength}"
-          stroke-dashoffset="${offset}" size="${percentage}" data-testid="lang-donut" />
+          stroke="${lang.color || DEFAULT_LANG_COLOR}" stroke-width="25" stroke-dasharray="${partLength} ${totalCircleLength}"
+          stroke-dashoffset="${-offset}" size="${percentage}" data-testid="lang-donut" />
       </g>`);
 		offset += partLength;
 		startDelayCoefficient += 1;
@@ -387,7 +389,7 @@ const renderPieLayout = (
 	for (const lang of langs) {
 		if (langs.length === 1) {
 			paths.push(
-				`<circle cx="${centerX}" cy="${centerY}" r="${radius}" stroke="none" fill="${lang.color}" data-testid="lang-pie" size="100"/>`,
+				`<circle cx="${centerX}" cy="${centerY}" r="${radius}" stroke="none" fill="${lang.color || DEFAULT_LANG_COLOR}" data-testid="lang-pie" size="100"/>`,
 			);
 			break;
 		}
@@ -400,7 +402,7 @@ const renderPieLayout = (
 		const largeArcFlag = angle > 180 ? 1 : 0;
 		const delay = startDelayCoefficient * 100;
 		paths.push(`<g class="stagger" style="animation-delay: ${delay}ms">
-			<path data-testid="lang-pie" size="${percentage}" d="M ${centerX} ${centerY} L ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y} Z" fill="${lang.color}" />
+			<path data-testid="lang-pie" size="${percentage}" d="M ${centerX} ${centerY} L ${startPoint.x} ${startPoint.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endPoint.x} ${endPoint.y} Z" fill="${lang.color || DEFAULT_LANG_COLOR}" />
 		</g>`);
 		startAngle = endAngle;
 		startDelayCoefficient += 1;
@@ -546,13 +548,11 @@ export function renderTopLanguages(
 		hide,
 	);
 
-	let width = card_width
-		? Number.isNaN(card_width)
+	const requestedWidth = Number(card_width);
+	let width =
+		!card_width || !Number.isFinite(requestedWidth)
 			? DEFAULT_CARD_WIDTH
-			: card_width < MIN_CARD_WIDTH
-				? MIN_CARD_WIDTH
-				: card_width
-		: DEFAULT_CARD_WIDTH;
+			: Math.max(requestedWidth, MIN_CARD_WIDTH);
 	let height = calculateNormalLayoutHeight(langs.length);
 
 	const colors = getCardColors({
@@ -608,12 +608,18 @@ export function renderTopLanguages(
 		);
 	}
 
+	const requestedRadius = Number(border_radius);
 	const card = new Card({
 		customTitle: custom_title,
 		defaultTitle: i18n.t("langcard.title"),
 		width,
 		height,
-		border_radius,
+		border_radius:
+			border_radius === undefined ||
+			!Number.isFinite(requestedRadius) ||
+			requestedRadius < 0
+				? undefined
+				: requestedRadius,
 		colors,
 	});
 
