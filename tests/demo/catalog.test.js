@@ -91,6 +91,38 @@ describe("demo Catalog", () => {
 		expect(container.querySelector(".catalog-empty")).not.toBeNull();
 	});
 
+	it("highlights the matched query in theme names", () => {
+		const { container, catalog } = makeCatalog();
+		catalog.filter("ark");
+		const nameCell = container.querySelector(
+			'[data-theme="dark"] .theme-name-cell > span',
+		);
+		expect(nameCell.innerHTML).toContain("<mark>ark</mark>");
+	});
+
+	it("selects the first filtered theme on selectFirstMatch", () => {
+		const { container, catalog } = makeCatalog();
+		const onThemeChange = vi.fn();
+		catalog.onThemeChange(onThemeChange);
+		catalog.filter("ark");
+		expect(catalog.selectFirstMatch()).toBe("dark");
+		expect(onThemeChange).toHaveBeenCalledWith("dark");
+		expect(
+			container
+				.querySelector('[data-theme="dark"]')
+				?.getAttribute("aria-current"),
+		).toBe("true");
+	});
+
+	it("returns null on selectFirstMatch with no matches", () => {
+		const { catalog } = makeCatalog();
+		const onThemeChange = vi.fn();
+		catalog.onThemeChange(onThemeChange);
+		catalog.filter("no-such-theme-xyz");
+		expect(catalog.selectFirstMatch()).toBeNull();
+		expect(onThemeChange).not.toHaveBeenCalled();
+	});
+
 	it("navigates themes with arrow keys", () => {
 		const { container, catalog } = makeCatalog();
 		const onThemeChange = vi.fn();

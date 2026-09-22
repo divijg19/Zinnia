@@ -95,6 +95,17 @@ class ThemeDemoApp {
 					}
 				}, 100);
 			});
+			searchInput.addEventListener("keydown", (e) => {
+				if (e.key !== "Enter") return;
+				const query = e.target.value;
+				if (this.currentTab === "catalog") {
+					this.catalog.filter(query);
+					this.catalog.selectFirstMatch();
+				} else {
+					this.themeSelector.filterThemes(query);
+					this.themeSelector.selectFirstMatch();
+				}
+			});
 		}
 	}
 
