@@ -12,7 +12,7 @@
 		"demo:build": "bun scripts/generate-demo-assets.js && mkdir -p public/demo && cp -r demo/* public/demo/",
 		"demo:dev": "bun scripts/generate-demo-assets.js && bunx serve demo",
 		"vercel:deploy": "vercel --prod --token $VERCEL_TOKEN --yes",
-		"lint": "biome check . && tsc --noEmit",
+		"lint": "biome check --error-on-warnings . && tsc --noEmit",
 		"format": "biome format . --write",
 		"type-check": "tsc --noEmit",
 		"test:stats": "vitest --run --config ./vitest.config.ts tests/stats",
