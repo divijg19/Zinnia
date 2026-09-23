@@ -4,7 +4,6 @@ import {
 	resolveCacheSeconds as _resolveCacheSeconds,
 	setCacheHeaders as _setCacheHeaders,
 	setEtagAndAlwaysSend200 as _setEtagAndAlwaysSend200,
-	setEtagAndMaybeSend304 as _setEtagAndMaybeSend304,
 	setSvgHeaders as _setSvgHeaders,
 } from "./canonical/http_cache.js";
 
@@ -12,14 +11,6 @@ export const resolveCacheSeconds = _resolveCacheSeconds;
 export const setCacheHeaders = _setCacheHeaders;
 export const setSvgHeaders = _setSvgHeaders;
 export const computeEtag = _computeEtag;
-
-export function setEtagAndMaybeSend304(
-	reqHeaders: Record<string, unknown>,
-	res: VercelResponse,
-	body: string,
-): boolean {
-	return _setEtagAndMaybeSend304(reqHeaders, res, body);
-}
 
 /**
  * Forward a web-standard `Response` body to a `VercelResponse` under the
