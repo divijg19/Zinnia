@@ -1,5 +1,5 @@
-import type { ThemeColors, ThemeDefinition } from "../registry";
-import { themes } from "../registry";
+import type { ThemeColors, ThemeDefinition } from "../registry.js";
+import { themes } from "../registry.js";
 
 export interface StreakThemeProperties {
 	background: string;

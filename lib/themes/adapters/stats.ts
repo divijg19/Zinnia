@@ -1,5 +1,5 @@
-import type { ThemeColors, ThemeDefinition } from "../registry";
-import { themes } from "../registry";
+import type { ThemeColors, ThemeDefinition } from "../registry.js";
+import { themes } from "../registry.js";
 
 /**
  * Fully-resolved color properties consumed by the stats card renderer.

@@ -2,8 +2,8 @@ import type {
 	LeetCodeThemeProperties,
 	ThemeColors,
 	ThemeDefinition,
-} from "../registry";
-import { themes } from "../registry";
+} from "../registry.js";
+import { themes } from "../registry.js";
 
 const DEFAULT_BG: [string, string] = ["#fff", "#e5e5e5"];
 const DEFAULT_TEXT: [string, string] = ["#000", "#808080"];

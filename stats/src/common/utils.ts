@@ -1,6 +1,9 @@
+// NOTE: relative imports use explicit file specifiers — Vercel runs
+// compiled output as plain Node ESM, which rejects bare directory
+// imports (ERR_UNSUPPORTED_DIR_IMPORT).
 import { createRequire } from "node:module";
-import { themes } from "../../../lib/themes";
-import { toStatsTheme } from "../../../lib/themes/adapters/stats";
+import { toStatsTheme } from "../../../lib/themes/adapters/stats.js";
+import { themes } from "../../../lib/themes/registry.js";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
 
 const require = createRequire(import.meta.url);
