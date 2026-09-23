@@ -222,6 +222,9 @@ body {
 	padding: 4px;
 	border-radius: var(--demo-radius);
 	border: 1px solid var(--demo-border);
+	/* Center the tab group in the free header space so it reads as a
+	   distinct control cluster instead of hugging the search fields. */
+	margin-inline: auto;
 }
 
 .tab-nav button {
@@ -445,6 +448,9 @@ body {
 	width: 36px;
 	height: 36px;
 	padding: 0;
+	/* Dock the toggle to the header's right edge with the bar's own
+	   container padding as its margin, independent of tab-group width. */
+	margin-left: auto;
 	color: var(--demo-muted);
 	background: transparent;
 	border: 1px solid var(--demo-border);
@@ -543,6 +549,7 @@ body {
 
 	.tab-nav {
 		width: 100%;
+		margin-inline: 0;
 	}
 
 	.tab-nav button {
