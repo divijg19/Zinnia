@@ -326,25 +326,23 @@ body {
 }
 
 /* Catalog Tab */
-.catalog-header {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 16px;
-	margin-bottom: 16px;
-	padding: 12px 16px;
-	background: var(--demo-card-bg);
-	border: 1px solid var(--demo-border);
-	border-radius: var(--demo-radius);
-	position: sticky;
-	top: calc(var(--header-height) + 4px);
-	z-index: 50;
-}
-
 .catalog-count {
 	font-size: 0.875rem;
 	color: var(--demo-muted);
 	white-space: nowrap;
+	flex-shrink: 0;
+	/* Navbar item: absorbs free space so it sits between the tab group
+	   and the page toggle, docked toward the right edge. */
+	margin-left: auto;
+}
+
+/* The count belongs to the catalog tab only. */
+body:has(#panel-dashboard.active) .catalog-count {
+	display: none;
+}
+
+body:has(#panel-dashboard.active) .page-theme-toggle {
+	margin-left: auto;
 }
 
 .catalog-list {
@@ -362,7 +360,10 @@ body {
 	background: var(--demo-card-bg);
 	border: 1px solid var(--demo-border);
 	border-radius: var(--demo-radius);
-	overflow: hidden;
+	/* Each row scrolls its 5 widget cells horizontally on its own,
+	   so every theme is fully inspectable on narrow screens. */
+	overflow-x: auto;
+	overflow-y: hidden;
 	transition: box-shadow var(--demo-transition);
 }
 
@@ -449,8 +450,10 @@ body {
 	height: 36px;
 	padding: 0;
 	/* Dock the toggle to the header's right edge with the bar's own
-	   container padding as its margin, independent of tab-group width. */
-	margin-left: auto;
+	   container padding as its margin, independent of tab-group width.
+	   (On the dashboard tab the count is hidden, so the toggle takes
+	   margin-left: auto back — see the rule next to .catalog-count.) */
+	margin-left: 0;
 	color: var(--demo-muted);
 	background: transparent;
 	border: 1px solid var(--demo-border);
