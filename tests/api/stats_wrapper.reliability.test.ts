@@ -209,4 +209,43 @@ describe("/api/stats wrapper reliability", () => {
 		expect(res._body()).toContain("ZINNIA_ERR:STATS_INTERNAL");
 		expect(res._headers.get("etag")).toMatch(/^".+"$/);
 	});
+
+	it("returns JSON diagnostics with ?debug=1 on success", async () => {
+		process.env.PAT_1 = "ghp_test_token";
+		const { default: statsHandler } = await import("../../api/stats.js");
+		const req = makeReq("/api/stats?username=alice&theme=watchdog&debug=1");
+		const res = makeRes();
+		await statsHandler(req, res);
+
+		expect(res._status()).toBe(200);
+		expect(res._headers.get("content-type")).toContain("application/json");
+		expect(res._headers.get("cache-control")).toContain("no-store");
+		const payload = JSON.parse(res._body());
+		expect(payload.service).toBe("stats");
+		expect(payload.ok).toBe(true);
+		expect(payload.stage).toBe("done");
+		expect(payload.params.username).toBe("alice");
+		expect(payload.validation).toEqual({
+			username: true,
+			patConfigured: true,
+		});
+		expect(typeof payload.timing.fetchMs).toBe("number");
+		expect(typeof payload.timing.renderMs).toBe("number");
+		expect(payload.render.bytes).toBeGreaterThan(0);
+		expect(JSON.stringify(payload)).not.toContain("ghp_test_token");
+	});
+
+	it("returns JSON diagnostics with ?debug=1 on validation failure", async () => {
+		const { default: statsHandler } = await import("../../api/stats.js");
+		const req = makeReq("/api/stats?debug=1");
+		const res = makeRes();
+		await statsHandler(req, res);
+
+		expect(res._status()).toBe(200);
+		expect(res._headers.get("content-type")).toContain("application/json");
+		const payload = JSON.parse(res._body());
+		expect(payload.ok).toBe(false);
+		expect(payload.stage).toBe("validation");
+		expect(payload.code).toBe("UNKNOWN");
+	});
 });

@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.js";
+import {
+	redactSecretTokens,
+	sendDebugJson,
+	sendErrorSvg,
+} from "../lib/errors.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
 import { renderStatsCard } from "../stats/src/cards/stats.js";
@@ -93,10 +97,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	// Snapshot request-external PAT state: per-request seeding below must
 	// never leak into subsequent requests sharing a warm runtime.
 	const prevPat1 = process.env.PAT_1;
+	let debug = false;
+	let diag: Record<string, unknown> = {
+		service: "stats",
+		ok: false,
+		stage: "init",
+		timing: {},
+	};
 	try {
 		const url = safeUrl(req, "/api/stats");
+		const debugParam = (url.searchParams.get("debug") || "").toLowerCase();
+		debug = debugParam === "1" || debugParam === "true";
+		const t0 = Date.now();
+		diag = {
+			service: "stats",
+			ok: false,
+			stage: "init",
+			timing: {},
+		};
 		const username = getUsername(url, ["username", "user"]);
 		if (!username) {
+			if (debug) {
+				return sendDebugJson(res, {
+					...diag,
+					stage: "validation",
+					error: "Missing or invalid ?username=",
+					code: "UNKNOWN",
+				});
+			}
 			return sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
 		}
 		filterThemeParam(url);
@@ -112,7 +140,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		} catch {}
 		seedPatFromRequestHeaders(req);
 
-		if (!hasAnyPatEnv()) {
+		// PAT presence only — never values. Safe to expose in ?debug=1.
+		const patConfigured = hasAnyPatEnv();
+		diag.params = {
+			username,
+			theme: url.searchParams.get("theme") ?? "default",
+		};
+		diag.validation = { username: true, patConfigured };
+
+		if (!patConfigured) {
+			if (debug) {
+				return sendDebugJson(res, {
+					...diag,
+					stage: "validation",
+					error: "Set PAT_1 (or GITHUB_TOKEN) in Vercel for stats",
+					code: "STATS_RATE_LIMIT",
+				});
+			}
 			return sendErrorSvg(
 				req,
 				res,
@@ -140,6 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			url.searchParams.get("commits_year") ?? undefined,
 		);
 
+		const tFetch0 = Date.now();
 		const stats = await fetchStats(
 			username,
 			Boolean(include_all_commits),
@@ -149,7 +194,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			Boolean(include_discussions_answers),
 			typeof commits_year === "number" ? Math.trunc(commits_year) : undefined,
 		);
+		(diag.timing as Record<string, unknown>).fetchMs = Date.now() - tFetch0;
 
+		const tRender0 = Date.now();
 		const svg = renderStatsCard(stats, {
 			hide: parseArray(url.searchParams.get("hide") ?? undefined),
 			show: parseArray(url.searchParams.get("show") ?? undefined),
@@ -196,12 +243,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Never send an empty body: route to the error path instead so
 		// embedders always receive a renderable SVG.
 		if (!svg) throw new Error("stats renderer returned empty body");
+		(diag.timing as Record<string, unknown>).renderMs = Date.now() - tRender0;
+		(diag.timing as Record<string, unknown>).totalMs = Date.now() - t0;
+		if (debug) {
+			return sendDebugJson(res, {
+				...diag,
+				ok: true,
+				stage: "done",
+				render: { bytes: svg.length, cacheSeconds },
+			});
+		}
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		setEtagAndAlwaysSend200(res, svg);
 		res.status(200);
 		res.send(svg);
 		return null;
 	} catch (_err) {
+		const errName = _err instanceof Error ? _err.name : "Error";
+		const errMsg = redactSecretTokens(
+			_err instanceof Error ? _err.message : String(_err),
+		).slice(0, 180);
+		if (debug) {
+			return sendDebugJson(res, {
+				...diag,
+				stage: "error",
+				error: `${errName}: ${errMsg}`,
+				code: "STATS_INTERNAL",
+			});
+		}
 		try {
 			if (process.env.VERCEL_ENV !== "production") {
 				const name = _err instanceof Error ? _err.name : "Error";

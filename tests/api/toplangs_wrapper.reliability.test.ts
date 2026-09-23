@@ -218,4 +218,45 @@ describe("/api/top-langs wrapper reliability", () => {
 		expect(res._body()).toContain("ZINNIA_ERR:TOP_LANGS_INTERNAL");
 		expect(res._headers.get("etag")).toMatch(/^".+"$/);
 	});
+
+	it("returns JSON diagnostics with ?debug=1 when no PAT is configured", async () => {
+		const saved = snapshotPatEnv();
+		try {
+			const { default: handler } = await import("../../api/top-langs.js");
+			const req = makeReq("/api/top-langs?username=alice&debug=1");
+			const res = makeRes();
+			await handler(req, res);
+
+			expect(res._status()).toBe(200);
+			expect(res._headers.get("content-type")).toContain("application/json");
+			const payload = JSON.parse(res._body());
+			expect(payload.service).toBe("top-langs");
+			expect(payload.ok).toBe(false);
+			expect(payload.stage).toBe("validation");
+			expect(payload.code).toBe("TOP_LANGS_RATE_LIMIT");
+			expect(payload.validation.patConfigured).toBe(false);
+		} finally {
+			restorePatEnv(saved);
+		}
+	});
+
+	it("returns JSON diagnostics with ?debug=1 on renderer error", async () => {
+		process.env.PAT_1 = "ghp_test_token";
+		const topLangsCard = await import("../../stats/src/cards/top-languages.js");
+		vi.mocked(topLangsCard.renderTopLanguages).mockImplementationOnce(() => {
+			throw new Error("boom");
+		});
+		const { default: handler } = await import("../../api/top-langs.js");
+		const req = makeReq("/api/top-langs?username=alice&debug=true");
+		const res = makeRes();
+		await handler(req, res);
+
+		expect(res._status()).toBe(200);
+		expect(res._headers.get("content-type")).toContain("application/json");
+		const payload = JSON.parse(res._body());
+		expect(payload.ok).toBe(false);
+		expect(payload.stage).toBe("error");
+		expect(payload.code).toBe("TOP_LANGS_INTERNAL");
+		expect(payload.error).toContain("boom");
+	});
 });
