@@ -61,17 +61,27 @@ async function sleepBeforeRetry(attempt: number): Promise<void> {
 	await new Promise((resolve) => setTimeout(resolve, backoffMs(attempt)));
 }
 
+// A transient rate limit may clear within a minute; dead credentials stay
+// sidelined longer. Split TTLs keep a flaky 429 from benching a healthy
+// token for the full auth-failure window.
+export const RATE_LIMIT_TTL_SECONDS = 60;
+export const AUTH_FAILURE_TTL_SECONDS = 300;
+
 /**
  * Record a failed token as exhausted (process-local + best-effort KV)
  * and wait out the backoff before the next rotation.
  * `lib/tokens.js` is imported lazily so merely loading this module has
  * no side effects (notably no dotenv load in tests).
  */
-async function rotate(entry: PatEntry, attempt: number): Promise<void> {
+async function rotate(
+	entry: PatEntry,
+	attempt: number,
+	ttlSeconds: number,
+): Promise<void> {
 	logger.log(`${entry.key} Failed`);
 	try {
 		const { markPatExhaustedAsync } = await import("../../../lib/tokens.js");
-		await markPatExhaustedAsync(entry.key);
+		await markPatExhaustedAsync(entry.key, ttlSeconds);
 	} catch {
 		// marking is best-effort; rotation proceeds regardless
 	}
@@ -181,7 +191,13 @@ export const retryer = async <V>(
 
 			// if rate limit is hit rotate to the next PAT after backoff
 			if (isRateLimited || isBadCredential || isAccountSuspended) {
-				await rotate(entry, n);
+				await rotate(
+					entry,
+					n,
+					isRateLimited && !isBadCredential && !isAccountSuspended
+						? RATE_LIMIT_TTL_SECONDS
+						: AUTH_FAILURE_TTL_SECONDS,
+				);
 				return attempt(n + 1);
 			}
 
@@ -214,7 +230,7 @@ export const retryer = async <V>(
 				err.response.data.message === "Sorry. Your account was suspended.";
 
 			if (isBadCredential || isAccountSuspended) {
-				await rotate(entry, n);
+				await rotate(entry, n, AUTH_FAILURE_TTL_SECONDS);
 				return attempt(n + 1);
 			}
 

@@ -59,7 +59,7 @@ export const fetchTopLanguages = async (
 
 	const res = await retryer(fetcher, { login: username });
 
-	if (res.data.errors) {
+	if (res?.data?.errors) {
 		logger.error(res.data.errors);
 		const firstError = res.data.errors[0];
 		if (firstError?.type === "NOT_FOUND") {
@@ -73,7 +73,7 @@ export const fetchTopLanguages = async (
 			throw new CustomError(
 				wrapTextMultiline(errorMessage || "Unknown error", 90, 1)[0] ||
 					"Unknown error",
-				res.statusText,
+				res?.statusText ?? "",
 			);
 		}
 		throw new CustomError(
@@ -82,9 +82,18 @@ export const fetchTopLanguages = async (
 		);
 	}
 
+	const user = res?.data?.data?.user;
+	if (!user) {
+		throw new CustomError(
+			"Could not fetch user data.",
+			CustomError.USER_NOT_FOUND,
+		);
+	}
+
 	let repoNodes =
-		(res.data.data.user.repositories.nodes as RepoNodeShape[] | undefined) ??
-		[];
+		(res?.data?.data?.user?.repositories?.nodes as
+			| RepoNodeShape[]
+			| undefined) ?? [];
 	const repoToHide: Record<string, boolean> = {};
 	const allExcludedRepos = [...exclude_repo, ...excludeRepositories];
 

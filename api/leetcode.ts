@@ -3,7 +3,12 @@ import path from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
 import { importByPath } from "../lib/loader/index.js";
-import { filterThemeParam, isValidUsername } from "../lib/params.js";
+import {
+	filterThemeParam,
+	isValidUsername,
+	resolveCacheSeconds,
+	safeUrl,
+} from "../lib/params.js";
 import {
 	setCacheHeaders,
 	setEtagAndAlwaysSend200,
@@ -12,12 +17,7 @@ import {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers.host || "localhost").toString();
-		const url = new URL(
-			(req.url as string) || "/api/leetcode",
-			`${proto}://${host}`,
-		);
+		const url = safeUrl(req, "/api/leetcode");
 		// path param support: /api/leetcode/<username>
 		const parts = url.pathname.replace(/^\//, "").split("/");
 		if (parts[0] === "api" && parts[1] === "leetcode" && parts[2]) {
@@ -136,27 +136,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Parse theme= param (supports "name" or "light,dark"); filter unsupported single names
 		if (config.theme?.trim()) {
 			filterThemeParam(url);
-			const themeValue = config.theme.trim();
-			const themes = themeValue.split(",");
-			sanitized.theme =
-				themes.length === 1 || themes[1] === ""
-					? themes[0]?.trim() || "light"
-					: {
-							light: themes[0]?.trim() || "light",
-							dark: themes[1]?.trim() || "dark",
-						};
+			// Re-read after filtering: unsupported singles are deleted above.
+			const themeValue = (url.searchParams.get("theme") || "").trim();
+			const themes = themeValue ? themeValue.split(",") : [];
+			if (themes.length > 0) {
+				sanitized.theme =
+					themes.length === 1 || themes[1] === ""
+						? themes[0]?.trim() || "light"
+						: {
+								light: themes[0]?.trim() || "light",
+								dark: themes[1]?.trim() || "dark",
+							};
+			}
 		}
 
-		const envDefault =
-			parseInt(
-				process.env.LEETCODE_CACHE_SECONDS ||
-					process.env.CACHE_SECONDS ||
-					"86400",
-				10,
-			) || 86400;
-		const cacheSeconds = config.cache
-			? parseInt(config.cache, 10) || envDefault
-			: envDefault;
+		const cacheSeconds = resolveCacheSeconds(
+			url,
+			["LEETCODE_CACHE_SECONDS", "CACHE_SECONDS"],
+			86400,
+		);
 
 		try {
 			const { Generator } = coreMod as { Generator: any };
@@ -166,6 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 			generator.verbose = false;
 			const svgOut = await generator.generate(sanitized);
+			if (!svgOut) throw new Error("leetcode renderer returned empty body");
 			setSvgHeaders(res);
 			setCacheHeaders(res, cacheSeconds);
 			// Always 200 + full body with ETag set. Some embedders treat a 304

@@ -4,7 +4,7 @@ import {
 	sendDebugJson,
 	sendErrorSvg,
 } from "../lib/errors.js";
-import { filterThemeParam, getUsername } from "../lib/params.js";
+import { filterThemeParam, getUsername, safeUrl } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
 import { renderTopLanguages } from "../stats/src/cards/top-languages.js";
 import { fetchTopLanguages } from "../stats/src/fetchers/top-languages.js";
@@ -37,18 +37,6 @@ function parseNumber(value: string | undefined): number | undefined {
 	const n = Number(value);
 	if (Number.isFinite(n)) return n;
 	return undefined;
-}
-
-function safeUrl(req: VercelRequest, fallbackPath: string): URL {
-	const host = (req.headers.host || "localhost").toString();
-	const proto = (req.headers["x-forwarded-proto"] || "http").toString();
-	const raw = (req.url as string | undefined) || fallbackPath;
-	try {
-		if (/^https?:\/\//i.test(raw)) return new URL(raw);
-		return new URL(raw, `${proto}://${host}`);
-	} catch {
-		return new URL(fallbackPath, `${proto}://${host}`);
-	}
 }
 
 function hasAnyPatEnv(): boolean {

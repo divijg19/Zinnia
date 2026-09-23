@@ -1,4 +1,6 @@
 // @ts-nocheck
+
+import { fetchWithTimeout } from "../../../../../lib/fetch-timeout.js";
 import type { Generator } from "../card.js";
 import Baloo_2 from "../shims/fonts/Baloo_2.js";
 import Milonga from "../shims/fonts/Milonga.js";
@@ -38,7 +40,8 @@ export async function FontExtension(generator: Generator): Promise<Extension> {
 					supported[name.toLowerCase()] = await cached.json();
 					generator.log(`Loaded cached font ${name}`);
 				} else {
-					const res = await fetch(url);
+					// Decorative font JSON: fail fast (5s); errors stay ignored.
+					const res = await fetchWithTimeout(url, undefined, 5000);
 					if (res.ok) {
 						const data = (await res.clone().json()) as {
 							name: string;

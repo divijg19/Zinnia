@@ -65,6 +65,32 @@ export function isValidUsername(username: string | null | undefined): boolean {
 	return /^[A-Za-z0-9-]{1,39}$/.test(username);
 }
 
+/** Request shape needed for URL parsing (subset of VercelRequest). */
+export interface RequestLike {
+	headers: Record<string, string | string[] | undefined>;
+	url?: unknown;
+}
+
+/**
+ * Build an absolute URL from a request, never throwing: malformed or
+ * missing `req.url` falls back to `fallbackPath` on the request host.
+ */
+export function safeUrl(req: RequestLike, fallbackPath: string): URL {
+	const host = String(req.headers.host ?? req.headers.Host ?? "localhost");
+	const proto = String(
+		req.headers["x-forwarded-proto"] ??
+			req.headers["X-Forwarded-Proto"] ??
+			"http",
+	);
+	const raw = (req.url as string | undefined) || fallbackPath;
+	try {
+		if (/^https?:\/\//i.test(raw)) return new URL(raw);
+		return new URL(raw, `${proto}://${host}`);
+	} catch {
+		return new URL(fallbackPath, `${proto}://${host}`);
+	}
+}
+
 export function getUsername(
 	url: URL,
 	keys: string[] = ["username", "user"],
@@ -194,6 +220,7 @@ export default {
 	getUsername,
 	ALLOWED_THEMES,
 	filterThemeParam,
+	safeUrl,
 	computeEtag,
 	writeTrophyCache,
 	readTrophyCache,

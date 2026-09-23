@@ -54,6 +54,8 @@ const EX_PREFIX = `${NAMESPACE}:ex:`;
 const UPSTASH_PREFIX = (process.env.UPSTASH_PREFIX || "UPSTASH").toUpperCase();
 
 // Helper: Upstash REST wrapper using fetch
+import { fetchWithTimeout } from "./fetch-timeout.js";
+
 async function upstashCall(
 	url: string,
 	token: string,
@@ -61,14 +63,20 @@ async function upstashCall(
 	...args: string[]
 ) {
 	const body = JSON.stringify([cmd, ...args]);
-	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${token}`,
-			"Content-Type": "application/json",
+	// Token selection must never hang on KV: fail fast (5s); callers fall
+	// back to the in-memory path.
+	const res = await fetchWithTimeout(
+		url,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+			body,
 		},
-		body,
-	});
+		5000,
+	);
 	if (!res.ok) throw new Error(`upstash request failed: ${res.status}`);
 	const j = await res.json();
 	return j?.result ?? null;

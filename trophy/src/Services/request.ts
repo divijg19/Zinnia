@@ -1,4 +1,8 @@
 import {
+	fetchWithTimeout,
+	resolveTimeoutMs,
+} from "../../../lib/fetch-timeout.js";
+import {
 	EServiceKindError,
 	type GithubErrorResponse,
 	type GithubExceedError,
@@ -20,13 +24,17 @@ export async function requestGithubData<T = unknown>(
 
 	let response: Response;
 	try {
-		response = await fetch("https://api.github.com/graphql", {
-			method: "POST",
-			headers,
-			body: JSON.stringify({ query, variables }),
-		});
+		response = await fetchWithTimeout(
+			"https://api.github.com/graphql",
+			{
+				method: "POST",
+				headers,
+				body: JSON.stringify({ query, variables }),
+			},
+			resolveTimeoutMs(process.env.TROPHY_GRAPHQL_TIMEOUT_MS, 8000),
+		);
 	} catch (err: any) {
-		// Network / DNS / Abort
+		// Network / DNS / Abort (including fetch-timeout)
 		throw new ServiceError(
 			`Network error fetching GitHub GraphQL: ${String(err?.message ?? err)}`,
 			EServiceKindError.NETWORK,

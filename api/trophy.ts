@@ -9,7 +9,7 @@ import {
 	pickHandlerFromModule,
 	resolveCompiledHandler,
 } from "../lib/loader/index.js";
-import { filterThemeParam, getUsername } from "../lib/params.js";
+import { filterThemeParam, getUsername, safeUrl } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
 import {
 	computeEtag,
@@ -79,14 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				]);
 				if (picked && typeof picked.fn === "function") {
 					// Build web Request and invoke
-					const proto = (
-						req.headers["x-forwarded-proto"] || "https"
-					).toString();
-					const host = (req.headers.host || "localhost").toString();
-					const url = new URL(
-						(req.url as string) || "/api/trophy",
-						`${proto}://${host}`,
-					);
+					const url = safeUrl(req, "/api/trophy");
 					const headers = new Headers();
 					for (const [k, v] of Object.entries(
 						req.headers as Record<string, string>,
@@ -133,10 +126,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 	} catch {}
 	try {
-		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers.host || "localhost").toString();
-		const url = new URL(req.url as string, `${proto}://${host}`);
-		const username = getUsername(url, ["username"]);
+		const url = safeUrl(req, "/api/trophy");
+		const username = getUsername(url, ["username", "user"]);
 		if (!username) {
 			return sendErrorSvg(
 				req,
@@ -281,6 +272,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
+		// Never send or persist an empty body: route to the error path so
+		// embedders always receive a renderable SVG.
+		if (!svgOut) throw new Error("trophy renderer returned empty body");
 		setSvgHeaders(res);
 		setCacheHeaders(res, cacheSeconds);
 
@@ -308,6 +302,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		setEtagAndAlwaysSend200(res, svgOut);
+		res.status(200);
 		return res.send(svgOut);
 	} catch (_err) {
 		return sendErrorSvg(req, res, "trophy: internal error", "TROPHY_INTERNAL");

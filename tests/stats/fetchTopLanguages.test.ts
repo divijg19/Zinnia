@@ -256,4 +256,16 @@ describe("FetchTopLanguages (vitest)", () => {
 			"Something went wrong while trying to retrieve the language data using the GraphQL API.",
 		);
 	});
+
+	it("should throw a CustomError (not TypeError) on empty transport data", async () => {
+		vi.doMock("../../stats/src/common/retryer", () => ({
+			retryer: async () => ({ data: undefined, statusText: "" }),
+		}));
+		const mod = await import("../../stats/src/fetchers/top-languages");
+		const { fetchTopLanguages } = mod;
+
+		await expect(fetchTopLanguages("anuraghazra")).rejects.toThrow(
+			"Could not fetch user data.",
+		);
+	});
 });

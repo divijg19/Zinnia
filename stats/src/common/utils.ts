@@ -2,6 +2,10 @@
 // compiled output as plain Node ESM, which rejects bare directory
 // imports (ERR_UNSUPPORTED_DIR_IMPORT).
 import { createRequire } from "node:module";
+import {
+	fetchWithTimeout,
+	resolveTimeoutMs,
+} from "../../../lib/fetch-timeout.js";
 import { toStatsTheme } from "../../../lib/themes/adapters/stats.js";
 import { themes } from "../../../lib/themes/registry.js";
 import { SECONDARY_ERROR_MESSAGES, TRY_AGAIN_LATER } from "./error.js";
@@ -125,12 +129,25 @@ export const fallbackColor = (
 	);
 };
 
-export const request = (data: unknown, headers: Record<string, string>) => {
-	return fetch("https://api.github.com/graphql", {
-		method: "post",
-		headers,
-		body: JSON.stringify(data),
-	}).then((res) =>
+export const request = (
+	data: unknown,
+	headers: Record<string, string>,
+	timeoutMs: number = resolveTimeoutMs(
+		process.env.STATS_GRAPHQL_TIMEOUT_MS,
+		8000,
+	),
+) => {
+	// Bounded so a hung socket fails fast into the retryer/error path
+	// instead of stalling the serverless function until platform kill.
+	return fetchWithTimeout(
+		"https://api.github.com/graphql",
+		{
+			method: "post",
+			headers,
+			body: JSON.stringify(data),
+		},
+		timeoutMs,
+	).then((res) =>
 		res.json().then((responseData) => ({
 			data: responseData,
 			statusText: res.statusText,
