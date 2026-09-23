@@ -29,6 +29,8 @@
 		"noPropertyAccessFromIndexSignature": false
 	},
 	"include": [
+		"lib/**/*.ts",
+		"api/**/*.ts",
 		"stats/src/**/*.ts",
 		// Note: stats/api contains both .js (Vercel) and .ts (Cloudflare Worker) versions
 		// We exclude the .ts versions via explicit exclude list below

@@ -332,8 +332,12 @@ body {
 	white-space: nowrap;
 	flex-shrink: 0;
 	/* Navbar item: absorbs free space so it sits between the tab group
-	   and the page toggle, docked toward the right edge. */
+	   and the page toggle, docked toward the right edge. Fixed minimum
+	   width keeps the navbar layout identical on both tabs and while
+	   the count text changes. */
 	margin-left: auto;
+	min-width: 14ch;
+	text-align: right;
 }
 
 .catalog-list {
@@ -442,8 +446,8 @@ body {
 	padding: 0;
 	/* Dock the toggle to the header's right edge with the bar's own
 	   container padding as its margin, independent of tab-group width.
-	   (On the dashboard tab the count is hidden, so the toggle takes
-	   margin-left: auto back — see the rule next to .catalog-count.) */
+	   It always follows the count slot (16px flex gap), so its position
+	   is identical on both tabs. */
 	margin-left: 0;
 	color: var(--demo-muted);
 	background: transparent;
@@ -470,15 +474,11 @@ body {
 	display: block;
 }
 
-/* The count belongs to the catalog tab only: hide it on the dashboard
-   and hand the right dock back to the toggle. Placed after the base
-   toggle rule so specificity ascends in source order. */
+/* The count belongs to the catalog tab only: keep its slot on the
+   dashboard with visibility so toggling tabs never reflows the navbar.
+   Placed after the base toggle rule so specificity ascends. */
 body:has(#panel-dashboard.active) .catalog-count {
-	display: none;
-}
-
-body:has(#panel-dashboard.active) .page-theme-toggle {
-	margin-left: auto;
+	visibility: hidden;
 }
 
 .catalog-row .widget-cell {
