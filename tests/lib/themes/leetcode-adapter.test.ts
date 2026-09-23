@@ -88,4 +88,54 @@ describe("lib/themes/adapters/leetcode", () => {
 		]);
 		expect(adapted.palette.color).toEqual([]);
 	});
+
+	it("derives palette entries from theme tokens when no palette exists", () => {
+		const adapted = toLeetCodeTheme(themes.dracula);
+		expect(adapted.palette.bg).toEqual([
+			"#282a36",
+			"#e5e5e5",
+			"#e5e5e5",
+			"#e5e5e5",
+		]);
+		expect(adapted.palette.text).toEqual([
+			"#f8f8f2",
+			"#808080",
+			"#808080",
+			"#808080",
+		]);
+		expect(adapted.palette.color).toEqual(["#79dafa"]);
+		expect(adapted.css).toBe("");
+	});
+
+	it("falls back per entry for gradient tokens", () => {
+		const adapted = toLeetCodeTheme(themes.ambient_gradient);
+		// Gradient background cannot fill flat vars; historical defaults win.
+		expect(adapted.palette.bg).toEqual([
+			"#fff",
+			"#e5e5e5",
+			"#e5e5e5",
+			"#e5e5e5",
+		]);
+		// Plain-hex tokens from the same theme still apply.
+		expect(adapted.palette.text[0]).toBe("#ffffff");
+	});
+
+	it("covers every listed theme with padded, renderable palettes", () => {
+		const entries = Object.entries(themes);
+		expect(entries.length).toBeGreaterThan(0);
+		for (const [name, theme] of entries) {
+			const adapted = toLeetCodeTheme(theme);
+			expect(adapted.palette.bg, `${name}.bg length`).toHaveLength(4);
+			expect(adapted.palette.text, `${name}.text length`).toHaveLength(4);
+			for (const value of [
+				...adapted.palette.bg,
+				...adapted.palette.text,
+				...adapted.palette.color,
+			]) {
+				expect(value, `${name} palette entry ${JSON.stringify(value)}`).toMatch(
+					/^(#[0-9a-fA-F]{3,8}|url\(#.+\)|rgba?\(.+\)|)$/,
+				);
+			}
+		}
+	});
 });
