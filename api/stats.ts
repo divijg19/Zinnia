@@ -193,6 +193,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			86400,
 		);
 		setCacheHeaders(res, cacheSeconds);
+		// Never send an empty body: route to the error path instead so
+		// embedders always receive a renderable SVG.
+		if (!svg) throw new Error("stats renderer returned empty body");
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		setEtagAndAlwaysSend200(res, svg);
 		res.status(200);
