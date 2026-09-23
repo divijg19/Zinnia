@@ -1,7 +1,7 @@
 import {
 	getGithubPATWithKeyForServiceAsync,
 	markPatExhaustedAsync,
-} from "../../lib/tokens";
+} from "../../lib/tokens.js";
 import { sanitizeToToday } from "./current_streak.ts";
 import type { ContributionDay } from "./types.ts";
 

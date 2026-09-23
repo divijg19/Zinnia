@@ -118,7 +118,7 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const injected2 = (globalThis as any).__STREAK_TEST_RENDERER;
 			if (injected2) {
-				const svgBuilder = await import("./svg_builder");
+				const svgBuilder = await import("./svg_builder.js");
 				if (svgBuilder && typeof svgBuilder.buildStreakSvg === "function") {
 					try {
 						(globalThis as any).__STREAK_RENDERER_SPEC =
@@ -305,7 +305,7 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 			// eslint-disable-next-line no-console
 			console.warn("streak loader: import failures:", failures);
 		}
-		const svgBuilder = await import("./svg_builder");
+		const svgBuilder = await import("./svg_builder.js");
 		if (svgBuilder && typeof svgBuilder.buildStreakSvg === "function") {
 			try {
 				(globalThis as any).__STREAK_RENDERER_SPEC = "svg_builder_fallback";
@@ -345,7 +345,7 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 }
 
 export async function renderFallbackSvg(user: string) {
-	const svgBuilder = await import("./svg_builder");
+	const svgBuilder = await import("./svg_builder.js");
 	const theme = {
 		background: "#0f172a",
 		border: "#111827",

@@ -1,4 +1,4 @@
-import { bodyToString } from "./compare_helpers";
+import { bodyToString } from "./compare_helpers.js";
 
 export type CompareCase = { name: string; params?: Record<string, unknown> };
 export type CompareOptions = {

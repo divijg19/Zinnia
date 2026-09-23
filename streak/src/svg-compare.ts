@@ -1,4 +1,4 @@
-import { normalizeSvg } from "./compare_helpers";
+import { normalizeSvg } from "./compare_helpers.js";
 
 export type SvgCompareResult = {
 	equal: boolean;
