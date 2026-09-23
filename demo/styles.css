@@ -336,15 +336,6 @@ body {
 	margin-left: auto;
 }
 
-/* The count belongs to the catalog tab only. */
-body:has(#panel-dashboard.active) .catalog-count {
-	display: none;
-}
-
-body:has(#panel-dashboard.active) .page-theme-toggle {
-	margin-left: auto;
-}
-
 .catalog-list {
 	display: flex;
 	flex-direction: column;
@@ -477,6 +468,17 @@ body:has(#panel-dashboard.active) .page-theme-toggle {
 
 :root[data-page-theme="dark"] .page-theme-toggle .icon-moon {
 	display: block;
+}
+
+/* The count belongs to the catalog tab only: hide it on the dashboard
+   and hand the right dock back to the toggle. Placed after the base
+   toggle rule so specificity ascends in source order. */
+body:has(#panel-dashboard.active) .catalog-count {
+	display: none;
+}
+
+body:has(#panel-dashboard.active) .page-theme-toggle {
+	margin-left: auto;
 }
 
 .catalog-row .widget-cell {

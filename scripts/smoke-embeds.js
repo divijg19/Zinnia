@@ -92,7 +92,7 @@ for (const ep of ENDPOINTS) {
 		if (status !== 200) problems.push(`status ${status} (want 200)`);
 		if (!ct.includes("image/svg"))
 			problems.push(`content-type ${JSON.stringify(ct)}`);
-		if (!body || !body.includes("<svg")) problems.push("empty/non-SVG body");
+		if (!body?.includes("<svg")) problems.push("empty/non-SVG body");
 		if (!etag) problems.push("missing ETag");
 	} catch (err) {
 		problems.push(`fetch failed: ${String(err)}`);

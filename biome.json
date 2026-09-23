@@ -28,12 +28,15 @@
 			"!trophy/dist",
 			"!streak/dist",
 			"!stats/api",
-			"!./tmp",
-			"!tmp",
 			"!.git/",
 			"!node_modules/",
 			"!dist/",
-			"!*.map"
+			"!*.map",
+			"!demo/assets",
+			"!demo/theme-registry.json",
+			"!demo/mock-data.json",
+			"!public/demo",
+			"!tmp"
 		],
 		"maxSize": 1048576
 	},
