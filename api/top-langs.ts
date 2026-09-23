@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.js";
+import {
+	redactSecretTokens,
+	sendDebugJson,
+	sendErrorSvg,
+} from "../lib/errors.js";
 import { filterThemeParam, getUsername } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
 import { renderTopLanguages } from "../stats/src/cards/top-languages.js";
@@ -93,10 +97,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	// Snapshot request-external PAT state: per-request seeding below must
 	// never leak into subsequent requests sharing a warm runtime.
 	const prevPat1 = process.env.PAT_1;
+	let debug = false;
+	let diag: Record<string, unknown> = {
+		service: "top-langs",
+		ok: false,
+		stage: "init",
+		timing: {},
+	};
 	try {
 		const url = safeUrl(req, "/api/top-langs");
+		const debugParam = (url.searchParams.get("debug") || "").toLowerCase();
+		debug = debugParam === "1" || debugParam === "true";
+		const t0 = Date.now();
+		diag = {
+			service: "top-langs",
+			ok: false,
+			stage: "init",
+			timing: {},
+		};
 		const username = getUsername(url, ["username", "user"]);
 		if (!username) {
+			if (debug) {
+				return sendDebugJson(res, {
+					...diag,
+					stage: "validation",
+					error: "Missing or invalid ?username=",
+					code: "UNKNOWN",
+				});
+			}
 			return sendErrorSvg(req, res, "Missing or invalid ?username=", "UNKNOWN");
 		}
 		filterThemeParam(url);
@@ -112,7 +140,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		} catch {}
 		seedPatFromRequestHeaders(req);
 
-		if (!hasAnyPatEnv()) {
+		// PAT presence only — never values. Safe to expose in ?debug=1.
+		const patConfigured = hasAnyPatEnv();
+		diag.params = {
+			username,
+			theme: url.searchParams.get("theme") ?? "default",
+		};
+		diag.validation = { username: true, patConfigured };
+
+		if (!patConfigured) {
+			if (debug) {
+				return sendDebugJson(res, {
+					...diag,
+					stage: "validation",
+					error: "Set PAT_1 (or GITHUB_TOKEN) in Vercel for top-langs",
+					code: "TOP_LANGS_RATE_LIMIT",
+				});
+			}
 			return sendErrorSvg(
 				req,
 				res,
@@ -131,12 +175,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			url.searchParams.get("count_weight") ?? undefined,
 		);
 
+		const tFetch0 = Date.now();
 		const topLangs = await fetchTopLanguages(
 			username,
 			exclude_repo,
 			typeof size_weight === "number" ? size_weight : 1,
 			typeof count_weight === "number" ? count_weight : 0,
 		);
+		(diag.timing as Record<string, unknown>).fetchMs = Date.now() - tFetch0;
 
 		const layoutRaw = url.searchParams.get("layout") ?? undefined;
 		const layout =
@@ -147,12 +193,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			layoutRaw === "pie"
 				? layoutRaw
 				: undefined;
+		(diag.params as Record<string, unknown>).layout = layout ?? "normal";
 		const statsFormatRaw = url.searchParams.get("stats_format") ?? undefined;
 		const stats_format =
 			statsFormatRaw === "percentages" || statsFormatRaw === "bytes"
 				? statsFormatRaw
 				: undefined;
 
+		const tRender0 = Date.now();
 		const svg = renderTopLanguages(topLangs, {
 			hide: parseArray(url.searchParams.get("hide") ?? undefined),
 			hide_progress: parseBoolean(
@@ -194,12 +242,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Never send an empty body: route to the error path instead so
 		// embedders always receive a renderable SVG.
 		if (!svg) throw new Error("top-langs renderer returned empty body");
+		(diag.timing as Record<string, unknown>).renderMs = Date.now() - tRender0;
+		(diag.timing as Record<string, unknown>).totalMs = Date.now() - t0;
+		if (debug) {
+			return sendDebugJson(res, {
+				...diag,
+				ok: true,
+				stage: "done",
+				render: { bytes: svg.length, cacheSeconds },
+			});
+		}
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		setEtagAndAlwaysSend200(res, svg);
 		res.status(200);
 		res.send(svg);
 		return null;
 	} catch (err) {
+		if (debug) {
+			const errName = err instanceof Error ? err.name : "Error";
+			const errMsg = redactSecretTokens(
+				err instanceof Error ? err.message : String(err),
+			).slice(0, 180);
+			return sendDebugJson(res, {
+				...diag,
+				stage: "error",
+				error: `${errName}: ${errMsg}`,
+				code: "TOP_LANGS_INTERNAL",
+			});
+		}
 		try {
 			if (process.env.VERCEL_ENV !== "production") {
 				const name = err instanceof Error ? err.name : "Error";

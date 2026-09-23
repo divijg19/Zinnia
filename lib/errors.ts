@@ -23,6 +23,28 @@ export type ErrorCode =
 	| "LEETCODE_BUILD_MISSING"
 	| "UNKNOWN";
 
+/** Redact GitHub-style secret tokens from a diagnostic string. */
+export function redactSecretTokens(value: string): string {
+	return String(value).replace(/gh[pousr]_[A-Za-z0-9_]{10,}/g, "[REDACTED]");
+}
+
+/** Send a machine-readable diagnostics payload (for `?debug=1`). Never cached. */
+export function sendDebugJson(
+	res: VercelResponse,
+	payload: Record<string, unknown>,
+) {
+	try {
+		res.setHeader("Content-Type", "application/json; charset=utf-8");
+	} catch {}
+	try {
+		res.setHeader("Cache-Control", "no-store");
+	} catch {}
+	try {
+		res.status(200);
+	} catch {}
+	return res.send(JSON.stringify(payload, null, 2));
+}
+
 /** Minimal standard error SVG with hidden error code comment. */
 export function svgError(
 	message: string,
