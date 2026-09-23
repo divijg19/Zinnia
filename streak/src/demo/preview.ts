@@ -1,4 +1,4 @@
-import { generateCard } from "../card";
+import { generateCard } from "../card.js";
 import type { Params, Stats } from "../types_public";
 
 /**

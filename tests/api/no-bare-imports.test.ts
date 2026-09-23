@@ -11,7 +11,14 @@ import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..", "..");
-const SCAN_DIRS = ["api", join("stats", "src"), "lib"];
+const SCAN_DIRS = [
+	"api",
+	join("stats", "src"),
+	"lib",
+	join("streak", "src"),
+	join("trophy", "api"),
+	join("trophy", "src"),
+];
 
 const SPEC_RE =
 	/(?:import|export)(?!\s+type)[^'"`]*?\bfrom\s+['"`](\.[^'"`]+)['"`]/g;
@@ -48,10 +55,15 @@ describe("no bare relative imports in function-shipped code", () => {
 		const violations: string[] = [];
 		for (const dir of SCAN_DIRS) {
 			for (const file of tsFiles(join(root, dir))) {
-				// Type declarations vanish at compile and never resolve.
+				// Type declarations and comments vanish at compile / never
+				// resolve; strip them so only runtime specifiers are checked.
 				const src = readFileSync(file, "utf8")
+					.replace(/\/\*[\s\S]*?\*\//g, "")
 					.split("\n")
-					.filter((line) => !/^\s*type\s/.test(line))
+					.filter(
+						(line) =>
+							!/^\s*type\s/.test(line) && !line.trimStart().startsWith("//"),
+					)
 					.join("\n");
 				const specs = new Set<string>();
 				for (const re of [SPEC_RE, DYNAMIC_RE]) {

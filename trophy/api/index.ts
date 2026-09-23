@@ -3,8 +3,8 @@ import {
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "../../lib/canonical/http_cache.js";
-import { loadTrophyModule } from "../../lib/canonical/trophy_loader";
-import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens";
+import { loadTrophyModule } from "../../lib/canonical/trophy_loader.js";
+import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens.js";
 
 // Default cache: 48 hours (in seconds) unless overridden via env
 const DEFAULT_TROPHY_CACHE =
@@ -163,7 +163,7 @@ export async function handleWeb(req: Request): Promise<Response> {
 			// Try to recover by importing the local source renderer directly
 			// (useful in dev/test where compiled bundles may be missing).
 			try {
-				const src: any = await import("../../trophy/src/renderer");
+				const src: any = await import("../../trophy/src/renderer.js");
 				const srcRender =
 					src.renderTrophySVG ?? src.default?.renderTrophySVG ?? src.default;
 				const theme = url.searchParams.get("theme") || undefined;
