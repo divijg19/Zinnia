@@ -13,5 +13,3 @@ export default function handler(_req: RequestLike, res: ResponseLike) {
 	} catch {}
 	return res.send(JSON.stringify({ ok: true }));
 }
-
-export { handler as default };
