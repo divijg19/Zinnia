@@ -54,7 +54,7 @@ function safeUrl(req: VercelRequest, fallbackPath: string): URL {
 function hasAnyPatEnv(): boolean {
 	try {
 		return Object.keys(process.env).some((k) => {
-			if (!/^PAT_\d*$/.test(k)) return false;
+			if (!/^PAT_\d+$/.test(k)) return false;
 			const v = process.env[k];
 			return typeof v === "string" && v.trim().length > 0;
 		});
@@ -69,7 +69,7 @@ function seedPatFromRequestHeaders(req: VercelRequest): void {
 		// Some upstream libs assume PAT_1 exists even if PAT_2..PAT_N are set.
 		// If we have any PAT_* already, mirror the first one into PAT_1.
 		for (const [k, v] of Object.entries(process.env)) {
-			if (!/^PAT_\d*$/.test(k)) continue;
+			if (!/^PAT_\d+$/.test(k)) continue;
 			if (typeof v !== "string") continue;
 			if (v.trim().length === 0) continue;
 			process.env.PAT_1 = v;

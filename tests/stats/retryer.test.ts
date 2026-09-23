@@ -1,10 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+	backoffMs,
 	type FetcherFunction,
 	RETRIES,
 	retryer,
 } from "../../stats/src/common/retryer";
 import { logger } from "../../stats/src/common/utils";
+
+// Never load ambient credentials: rotation budgets must be deterministic
+// (phantom slots) regardless of the developer's .env.
+vi.mock("dotenv", () => ({ config: () => ({}) }));
+
+vi.mock("../../lib/tokens", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../lib/tokens")>();
+	return { ...actual, markPatExhaustedAsync: vi.fn() };
+});
 
 const fetcher = vi.fn((variables: any, token: any) => {
 	logger.log(variables, token);
@@ -84,5 +94,26 @@ describe("Retryer (vitest)", () => {
 			expect(fetcherFail).toHaveBeenCalledTimes(RETRIES);
 			expect(err.message).toBe("Downtime due to GitHub API rate limiting");
 		}
+	});
+
+	it("marks the failed token exhausted on rotation", async () => {
+		const tokens = await import("../../lib/tokens");
+		const mark = vi.mocked(tokens.markPatExhaustedAsync);
+		mark.mockClear();
+		await retryer(
+			fetcherFailOnSecondTry as unknown as FetcherFunction<any>,
+			{} as unknown as Record<string, unknown>,
+		);
+		expect(mark).toHaveBeenCalledTimes(1);
+		expect(mark).toHaveBeenCalledWith("PAT_1");
+	});
+
+	it("keeps backoff bounded with jitter", async () => {
+		for (let attempt = 0; attempt < 5; attempt++) {
+			const ms = backoffMs(attempt);
+			expect(ms).toBeGreaterThanOrEqual(Math.min(200 * 2 ** attempt, 2000));
+			expect(ms).toBeLessThanOrEqual(Math.min(200 * 2 ** attempt, 2000) + 100);
+		}
+		expect(backoffMs(100)).toBeLessThanOrEqual(2100);
 	});
 });

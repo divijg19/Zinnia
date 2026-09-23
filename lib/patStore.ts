@@ -128,27 +128,20 @@ async function createUpstashStore(): Promise<PatStore | null> {
 			return rLegacy !== null && rLegacy !== undefined;
 		},
 		setExhausted: async (patKey: string, ttlSeconds = 300) => {
-			// Write both namespaced and legacy keys to ease migrations
-			await upstashCall(url, token, "SET", `${EX_PREFIX}${patKey}`, "1");
-			await upstashCall(url, token, "SET", `ex:${patKey}`, "1");
-			try {
-				await upstashCall(
-					url,
-					token,
-					"EXPIRE",
-					`${EX_PREFIX}${patKey}`,
-					String(Math.max(1, Math.floor(ttlSeconds))),
-				);
-				await upstashCall(
-					url,
-					token,
-					"EXPIRE",
-					`ex:${patKey}`,
-					String(Math.max(1, Math.floor(ttlSeconds))),
-				);
-			} catch (_e) {
-				// ignore expiry failure; key will be treated as persistent until cleared
-			}
+			// Atomic SET with EX so a failed call can never leave a
+			// persistent key behind. Both namespaced and legacy keys ease
+			// migrations.
+			const ttl = String(Math.max(1, Math.floor(ttlSeconds)));
+			await upstashCall(
+				url,
+				token,
+				"SET",
+				`${EX_PREFIX}${patKey}`,
+				"1",
+				"EX",
+				ttl,
+			);
+			await upstashCall(url, token, "SET", `ex:${patKey}`, "1", "EX", ttl);
 		},
 		clearExhausted: async (patKey: string) => {
 			try {

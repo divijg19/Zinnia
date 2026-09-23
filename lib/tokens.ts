@@ -33,7 +33,10 @@ import { getPatStore } from "./patStore.js";
 export function discoverPatKeys(): string[] {
 	const envKeys = Object.keys(process.env).filter((k) => /^PAT_\d+$/.test(k));
 	const keys = Array.from(new Set([...STATIC_PAT_KEYS, ...envKeys])).filter(
-		(k) => Boolean(process.env[k]),
+		(k) => {
+			const v = process.env[k];
+			return typeof v === "string" && v.trim().length > 0;
+		},
 	);
 	keys.sort((a, b) => {
 		const na = Number(a.split("_")[1] || 0);
