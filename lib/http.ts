@@ -3,6 +3,7 @@ import {
 	computeEtag as _computeEtag,
 	resolveCacheSeconds as _resolveCacheSeconds,
 	setCacheHeaders as _setCacheHeaders,
+	setEtagAndAlwaysSend200 as _setEtagAndAlwaysSend200,
 	setEtagAndMaybeSend304 as _setEtagAndMaybeSend304,
 	setSvgHeaders as _setSvgHeaders,
 } from "./canonical/http_cache.js";
@@ -21,39 +22,34 @@ export function setEtagAndMaybeSend304(
 }
 
 /**
- * Forward a web-standard `Response` object to a `VercelResponse`.
- * Copies common headers (`content-type`, `cache-control`, `etag`) and
- * sends the response body as a Buffer.
+ * Forward a web-standard `Response` body to a `VercelResponse` under the
+ * repo's embed contract.
+ *
+ * Upstream `status` / `cache-control` / `etag` are deliberately IGNORED: a
+ * compiled handler may answer 304-empty, carry stale cache headers, or use
+ * an error status, and some embedders treat a bare 304 as an error. We
+ * always send 200 + the full body with a freshly computed ETag (never a
+ * bare 304). Callers set SVG / cache headers themselves before forwarding.
+ *
+ * Returns `null` (without touching `res`) when the upstream body is empty
+ * so the caller can fall through to its local renderer.
  */
 export async function forwardWebResponseToVercel(
 	res: VercelResponse,
 	webRes: Response,
 	defaultContentType = "image/svg+xml; charset=utf-8",
 ) {
-	const ct = webRes.headers.get("content-type") || defaultContentType;
-	const cache = webRes.headers.get("cache-control");
-	const etag = webRes.headers.get("etag");
+	const body = Buffer.from(await webRes.arrayBuffer()).toString("utf-8");
+	if (!body) return null;
 
+	const ct = webRes.headers.get("content-type") || defaultContentType;
 	if (ct) {
 		try {
 			res.setHeader("Content-Type", ct);
 		} catch {}
 	}
-	if (cache) {
-		try {
-			res.setHeader("Cache-Control", cache);
-		} catch {}
-	}
-	if (etag) {
-		try {
-			res.setHeader("ETag", etag);
-		} catch {}
-	}
 
-	const status =
-		typeof (webRes as any).status === "number" ? (webRes as any).status : 200;
-	res.status(status);
-
-	const buf = Buffer.from(await webRes.arrayBuffer());
-	return res.send(buf);
+	_setEtagAndAlwaysSend200(res, body);
+	res.status(200);
+	return res.send(body);
 }

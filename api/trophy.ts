@@ -102,10 +102,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						res,
 					);
 					if (result && typeof (result as any).text === "function") {
-						return await forwardWebResponseToVercel(res, result as Response);
+						setSvgHeaders(res);
+						setCacheHeaders(
+							res,
+							resolveCacheSeconds(
+								url,
+								["TROPHY_CACHE_SECONDS", "CACHE_SECONDS"],
+								86400,
+							),
+						);
+						const forwarded = await forwardWebResponseToVercel(
+							res,
+							result as Response,
+						);
+						if (forwarded) return forwarded;
+						// empty upstream body → fall through to the local renderer below
+					} else {
+						// otherwise assume handler wrote directly to res
+						return null;
 					}
-					// otherwise assume handler wrote directly to res
-					return null;
 				}
 			} catch (e) {
 				try {
