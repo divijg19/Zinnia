@@ -307,12 +307,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				// If upstream returned a non-OK but SVG we still forward with transient cache
 				if (resp && resp.status >= 400 && ct?.includes("svg")) {
 					const body = await resp.text();
+					// Same embed contract as the 2xx branch: always 200 + full
+					// body with ETag set (never 304-empty). The upstream status
+					// is exposed via X-Upstream-Status for diagnostics.
+					setEtagAndAlwaysSend200(res, String(body));
 					setSvgHeaders(res);
 					setShortCacheHeaders(res, 60);
 					try {
 						res.setHeader("X-Streak-Renderer", "cache");
 					} catch {}
 					res.setHeader("X-Upstream-Status", String(resp.status));
+					res.status(200);
 					return res.send(body);
 				}
 				// otherwise, fall through to local renderer below

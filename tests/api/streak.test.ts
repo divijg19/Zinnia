@@ -224,25 +224,21 @@ describe("/api/streak handler", () => {
 
 		// The handler returns 200 for embeddability but exposes the
 		// original upstream status via a header and marks the response transient.
-		// Accept the exact upstream 404 body or a local fallback SVG
+		// Always-200 contract: never a bare 304; full SVG body sent with ETag set.
 		const sent2 = res.send.mock.calls[0][0] as string;
-		if (sent2 === "<svg>NOTFOUND</svg>") {
-			expect(sent2).toBe("<svg>NOTFOUND</svg>");
-		} else {
-			expect(sent2).toContain("<svg");
-		}
+		expect(sent2).toBe("<svg>NOTFOUND</svg>");
+		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.setHeader).toHaveBeenCalledWith(
+			"ETag",
+			expect.stringMatching(/^".+"$/),
+		);
 		const upstreamStatus = headerValue(res, "X-Upstream-Status");
-		if (upstreamStatus) {
-			expect(upstreamStatus).toBe("404");
-			const cc = headerValue(res, "Cache-Control") || "";
-			// cache max-age should be small (<= 60)
-			const m = cc.match(/max-age=(\d+)/);
-			expect(m).toBeTruthy();
-			if (m) expect(Number(m[1])).toBeLessThanOrEqual(60);
-			expect(headerValue(res, "X-Cache-Status")).toBe("transient");
-		} else {
-			// Local fallback path may not expose upstream headers; accept it.
-			expect(sent2).toContain("<svg");
-		}
+		expect(upstreamStatus).toBe("404");
+		const cc = headerValue(res, "Cache-Control") || "";
+		// cache max-age should be small (<= 60)
+		const m = cc.match(/max-age=(\d+)/);
+		expect(m).toBeTruthy();
+		if (m) expect(Number(m[1])).toBeLessThanOrEqual(60);
+		expect(headerValue(res, "X-Cache-Status")).toBe("transient");
 	});
 });
