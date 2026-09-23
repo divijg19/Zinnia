@@ -117,7 +117,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				req,
 				res,
 				"Set PAT_1 (or GITHUB_TOKEN) in Vercel for top-langs",
-				"STATS_RATE_LIMIT",
+				"TOP_LANGS_RATE_LIMIT",
 			);
 		}
 
@@ -191,6 +191,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			86400,
 		);
 		setCacheHeaders(res, cacheSeconds);
+		// Never send an empty body: route to the error path instead so
+		// embedders always receive a renderable SVG.
+		if (!svg) throw new Error("top-langs renderer returned empty body");
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		setEtagAndAlwaysSend200(res, svg);
 		res.status(200);

@@ -193,4 +193,20 @@ describe("/api/stats wrapper reliability", () => {
 		expect(res._headers.has("x-has-auth")).toBe(false);
 		expect(res._headers.has("x-has-x-github-token")).toBe(false);
 	});
+
+	it("sends an error SVG instead of an empty body", async () => {
+		process.env.PAT_1 = "ghp_test_token";
+		const statsCard = await import("../../stats/src/cards/stats.js");
+		vi.mocked(statsCard.renderStatsCard).mockImplementationOnce(() => "");
+		const { default: statsHandler } = await import("../../api/stats.js");
+		const req = makeReq("/api/stats?username=alice&theme=watchdog");
+		const res = makeRes();
+		await statsHandler(req, res);
+
+		expect(res._status()).toBe(200);
+		expect(res._body()).toContain("<svg");
+		expect(res._body()).not.toBe("");
+		expect(res._body()).toContain("ZINNIA_ERR:STATS_INTERNAL");
+		expect(res._headers.get("etag")).toMatch(/^".+"$/);
+	});
 });

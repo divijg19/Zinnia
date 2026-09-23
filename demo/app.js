@@ -87,7 +87,7 @@ class ThemeDemoApp {
 		const searchInput = document.querySelector(".theme-search-input");
 		if (searchInput) {
 			let debounceTimer = null;
-			searchInput.addEventListener("input", (e) => {
+			searchInput.addEventListener("input", () => {
 				clearTimeout(debounceTimer);
 				debounceTimer = setTimeout(() => {
 					this.applyActiveFilter();
