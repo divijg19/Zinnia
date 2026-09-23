@@ -118,31 +118,6 @@ export function mockApiUtilsFactory({
 					// ignore
 				}
 			},
-			setEtagAndMaybeSend304: (
-				reqHeaders: Record<string, unknown>,
-				res: any,
-				body: string,
-			) => {
-				const etag = computeEtag(body);
-				try {
-					res.setHeader("ETag", `"${etag}"`);
-				} catch (_e) {
-					// ignore
-				}
-				const inm = (reqHeaders["if-none-match"] ??
-					reqHeaders["If-None-Match"]) as string | string[] | undefined;
-				const inmValue = Array.isArray(inm) ? inm[0] : inm;
-				if (inmValue) {
-					const norm = String(inmValue)
-						.replace(/^W\//i, "")
-						.replace(/^"|"$/g, "");
-					if (norm === etag) {
-						res.status(304);
-						return true;
-					}
-				}
-				return false;
-			},
 			setEtagAndAlwaysSend200: (res: any, body: string) => {
 				const etag = computeEtag(body);
 				try {

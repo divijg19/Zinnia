@@ -170,33 +170,6 @@ export function getCacheAdapter(service: string): CacheAdapter {
 	return getCacheAdapterForService(service);
 }
 
-export function setEtagAndMaybeSend304(
-	reqHeaders: Record<string, unknown>,
-	res: ResponseLike,
-	body: string,
-): boolean {
-	const etag = computeEtag(body);
-	const quoted = `"${etag}"`;
-	res.setHeader("ETag", quoted);
-	const inm = (reqHeaders["if-none-match"] ?? reqHeaders["If-None-Match"]) as
-		| string
-		| string[]
-		| undefined;
-	const inmValue = Array.isArray(inm) ? inm[0] : inm;
-	if (inmValue) {
-		const norm = String(inmValue).replace(/^W\//i, "").replace(/^"|"$/g, "");
-		if (norm === etag) {
-			try {
-				if (typeof res.status === "function") res.status(304);
-			} catch {
-				// ignore
-			}
-			return true;
-		}
-	}
-	return false;
-}
-
 /**
  * Formalized ETag contract for SVG card endpoints: always send `200` with the
  * full body, and always set the `ETag` header from that body.
@@ -230,6 +203,5 @@ export default {
 	// keep old name available on the default export for compatibility
 	getCacheAdapter: getCacheAdapterForService,
 	getCacheAdapterForService,
-	setEtagAndMaybeSend304,
 	setEtagAndAlwaysSend200,
 };
