@@ -191,6 +191,29 @@ body {
 	box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
 }
 
+.modifier-filter {
+	flex: 0 1 150px;
+	min-width: 0;
+	width: auto;
+	padding: 8px 12px;
+	font-size: 0.875rem;
+	font-family: inherit;
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius-sm);
+	background: var(--demo-card-bg);
+	color: var(--demo-fg);
+	cursor: pointer;
+	transition:
+		border-color var(--demo-transition),
+		box-shadow var(--demo-transition);
+}
+
+.modifier-filter:focus {
+	outline: none;
+	border-color: var(--demo-accent);
+	box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
+}
+
 /* Tab Navigation */
 .tab-nav {
 	display: flex;
