@@ -1,6 +1,8 @@
 // Catalog Component
 // Tab 2: Scrollable list showing all themes with all 4 widgets
 
+import { getModifierTags } from "./utils/theme-modifiers.js";
+
 export class Catalog {
 	constructor(container, widgetFactory, themeRegistry) {
 		this.container = container;
@@ -9,6 +11,7 @@ export class Catalog {
 		this.currentTheme = "default";
 		this.filteredThemes = [...this.themeRegistry];
 		this.currentQuery = "";
+		this.currentModifier = "";
 		this.onThemeChangeCallback = null;
 
 		this.initKeyboardNav();
@@ -119,17 +122,23 @@ export class Catalog {
 		return escaped.replace(new RegExp(`(${safe})`, "gi"), "<mark>$1</mark>");
 	}
 
-	filter(query) {
+	filter(query, modifier = this.currentModifier) {
 		this.currentQuery = query || "";
-		if (!query) {
+		this.currentModifier = modifier || "";
+		if (!this.currentQuery && !this.currentModifier) {
 			this.filteredThemes = [...this.themeRegistry];
 		} else {
-			const lowerQuery = query.toLowerCase().trim();
-			this.filteredThemes = this.themeRegistry.filter(
-				(theme) =>
+			const lowerQuery = this.currentQuery.toLowerCase().trim();
+			this.filteredThemes = this.themeRegistry.filter((theme) => {
+				const matchesQuery =
+					!lowerQuery ||
 					theme.name.toLowerCase().includes(lowerQuery) ||
-					theme.displayName?.toLowerCase().includes(lowerQuery),
-			);
+					theme.displayName?.toLowerCase().includes(lowerQuery);
+				const matchesModifier =
+					!this.currentModifier ||
+					getModifierTags(theme).has(this.currentModifier);
+				return matchesQuery && matchesModifier;
+			});
 		}
 		this.render();
 

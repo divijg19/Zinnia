@@ -87,3 +87,55 @@ describe("demo ThemeSelector groups", () => {
 		]);
 	});
 });
+
+describe("demo ThemeSelector modifier filter", () => {
+	function makeModifierSelector() {
+		const container = document.createElement("div");
+		document.body.appendChild(container);
+		const select = document.createElement("select");
+		container.appendChild(select);
+		return new ThemeSelector(select, [
+			{ name: "default", displayName: "Default" },
+			{ name: "shadow_red", displayName: "shadow_red" },
+			{ name: "ocean_dark", displayName: "ocean_dark" },
+		]);
+	}
+
+	function visibleValues(selector) {
+		return Array.from(
+			selector.select.querySelectorAll("option:not([hidden])"),
+		).map((o) => o.value);
+	}
+
+	it("injects a modifier dropdown with only present variants", () => {
+		const selector = makeModifierSelector();
+		const options = Array.from(
+			selector.modifierSelect.querySelectorAll("option"),
+		).map((o) => o.value);
+		expect(options[0]).toBe("");
+		expect(options).toContain("shadow");
+		expect(options).toContain("dark-variant");
+		expect(options).not.toContain("dimmed");
+	});
+
+	it("combines text query with modifier selection", () => {
+		const selector = makeModifierSelector();
+		selector.filterThemes("", "shadow");
+		expect(visibleValues(selector)).toEqual(["shadow_red"]);
+		selector.filterThemes("ocean", "dark-variant");
+		expect(visibleValues(selector)).toEqual(["ocean_dark"]);
+		selector.filterThemes("", "");
+		expect(visibleValues(selector)).toHaveLength(3);
+	});
+
+	it("applies the dropdown change through stored filter state", () => {
+		const selector = makeModifierSelector();
+		selector.modifierSelect.value = "dark-variant";
+		selector.modifierSelect.dispatchEvent(new window.Event("change"));
+		expect(visibleValues(selector)).toEqual(["ocean_dark"]);
+		expect(selector.getFilters()).toEqual({
+			query: "",
+			modifier: "dark-variant",
+		});
+	});
+});

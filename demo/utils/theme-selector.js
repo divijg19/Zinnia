@@ -1,12 +1,18 @@
 // Theme Selector Component
 // Handles theme selection with search and color swatches
 
+import { buildModifierOptions, getModifierTags } from "./theme-modifiers.js";
+
 export class ThemeSelector {
 	constructor(selectElement, themes) {
 		this.select = selectElement;
 		this.themes = themes;
 		this.onChangeCallback = null;
 		this.filteredThemes = [...themes];
+		this.currentQuery = "";
+		this.currentModifier = "";
+		this.searchInput = null;
+		this.modifierSelect = null;
 
 		this.init();
 	}
@@ -45,13 +51,31 @@ export class ThemeSelector {
 		wrapper.insertBefore(searchWrapper, this.select);
 		searchWrapper.appendChild(searchIcon);
 		searchWrapper.appendChild(searchInput);
+		this.searchInput = searchInput;
+
+		const modifierSelect = document.createElement("select");
+		modifierSelect.className = "modifier-filter";
+		modifierSelect.setAttribute("aria-label", "Filter by theme variant");
+		for (const opt of buildModifierOptions(this.themes)) {
+			const option = document.createElement("option");
+			option.value = opt.value;
+			option.textContent = opt.label;
+			modifierSelect.appendChild(option);
+		}
+		wrapper.insertBefore(modifierSelect, this.select);
+		this.modifierSelect = modifierSelect;
 
 		let debounceTimer = null;
 		searchInput.addEventListener("input", (e) => {
 			clearTimeout(debounceTimer);
 			debounceTimer = setTimeout(() => {
-				this.filterThemes(e.target.value);
+				this.currentQuery = e.target.value;
+				this.applyFilters();
 			}, 100);
+		});
+		modifierSelect.addEventListener("change", (e) => {
+			this.currentModifier = e.target.value;
+			this.applyFilters();
 		});
 
 		// Keyboard navigation for dropdown
@@ -176,8 +200,10 @@ export class ThemeSelector {
 		return name;
 	}
 
-	filterThemes(query) {
-		const lowerQuery = query.toLowerCase().trim();
+	filterThemes(query, modifier = this.currentModifier) {
+		const lowerQuery = String(query || "")
+			.toLowerCase()
+			.trim();
 
 		// Get all options
 		const options = this.select.querySelectorAll("option");
@@ -185,11 +211,13 @@ export class ThemeSelector {
 		for (const option of options) {
 			const themeName = option.value.toLowerCase();
 			const displayName = option.textContent.toLowerCase();
-			const matches =
-				!query ||
+			const matchesQuery =
+				!lowerQuery ||
 				themeName.includes(lowerQuery) ||
 				displayName.includes(lowerQuery);
-			option.hidden = !matches;
+			const theme = this.themes.find((t) => t.name === option.value);
+			const matchesModifier = !modifier || getModifierTags(theme).has(modifier);
+			option.hidden = !(matchesQuery && matchesModifier);
 		}
 
 		// Show/hide optgroups based on visible options
@@ -198,6 +226,14 @@ export class ThemeSelector {
 			const visibleOptions = optgroup.querySelectorAll("option:not([hidden])");
 			optgroup.hidden = visibleOptions.length === 0;
 		}
+	}
+
+	getFilters() {
+		return { query: this.currentQuery, modifier: this.currentModifier };
+	}
+
+	applyFilters() {
+		this.filterThemes(this.currentQuery, this.currentModifier);
 	}
 
 	onChange(callback) {

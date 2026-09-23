@@ -90,25 +90,40 @@ class ThemeDemoApp {
 			searchInput.addEventListener("input", (e) => {
 				clearTimeout(debounceTimer);
 				debounceTimer = setTimeout(() => {
-					const query = e.target.value;
-					if (this.currentTab === "catalog") {
-						this.catalog.filter(query);
-					} else {
-						this.themeSelector.filterThemes(query);
-					}
+					this.applyActiveFilter();
 				}, 100);
 			});
 			searchInput.addEventListener("keydown", (e) => {
 				if (e.key !== "Enter") return;
-				const query = e.target.value;
+				this.applyActiveFilter();
 				if (this.currentTab === "catalog") {
-					this.catalog.filter(query);
 					this.catalog.selectFirstMatch();
 				} else {
-					this.themeSelector.filterThemes(query);
 					this.themeSelector.selectFirstMatch();
 				}
 			});
+		}
+
+		const modifierSelect = document.querySelector(".modifier-filter");
+		if (modifierSelect) {
+			modifierSelect.addEventListener("change", () => {
+				this.applyActiveFilter();
+			});
+		}
+	}
+
+	activeFilterValues() {
+		const query = document.querySelector(".theme-search-input")?.value || "";
+		const modifier = document.querySelector(".modifier-filter")?.value || "";
+		return { query, modifier };
+	}
+
+	applyActiveFilter() {
+		const { query, modifier } = this.activeFilterValues();
+		if (this.currentTab === "catalog") {
+			this.catalog.filter(query, modifier);
+		} else {
+			this.themeSelector.filterThemes(query, modifier);
 		}
 	}
 
@@ -192,16 +207,15 @@ class ThemeDemoApp {
 			}
 		});
 
-		const searchInput = document.querySelector(".theme-search-input");
-		if (searchInput?.value) {
-			const query = searchInput.value;
+		const { query, modifier } = this.activeFilterValues();
+		if (query || modifier) {
 			if (tabName === "catalog") {
-				this.catalog.filter(query);
+				this.catalog.filter(query, modifier);
 			} else {
-				this.themeSelector.filterThemes(query);
+				this.themeSelector.filterThemes(query, modifier);
 			}
 		} else if (tabName === "catalog" && this.catalog) {
-			this.catalog.filter("");
+			this.catalog.filter("", "");
 		}
 	}
 

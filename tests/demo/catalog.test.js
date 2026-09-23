@@ -134,3 +134,49 @@ describe("demo Catalog", () => {
 		expect(onThemeChange).toHaveBeenCalledWith("dark");
 	});
 });
+
+describe("demo Catalog modifier filter", () => {
+	function makeModifierCatalog() {
+		const container = document.createElement("ul");
+		document.body.appendChild(container);
+		const themes = [
+			...makeThemes(),
+			{
+				name: "shadow_red",
+				displayName: "shadow_red",
+				previewColors: ["#ff0000"],
+				colors: { title: { hex: "ff0000" } },
+				widgets: {},
+			},
+			{
+				name: "ocean_dark",
+				displayName: "ocean_dark",
+				previewColors: ["#000080"],
+				colors: { title: { hex: "000080" } },
+				widgets: {},
+			},
+		];
+		const catalog = new Catalog(container, stubFactory, themes);
+		catalog.render();
+		return { container, catalog };
+	}
+
+	it("filters by modifier alone", () => {
+		const { catalog } = makeModifierCatalog();
+		catalog.filter("", "shadow");
+		expect(catalog.filteredThemes.map((t) => t.name)).toEqual(["shadow_red"]);
+	});
+
+	it("combines text query with modifier", () => {
+		const { catalog } = makeModifierCatalog();
+		catalog.filter("dark", "dark-variant");
+		expect(catalog.filteredThemes.map((t) => t.name)).toEqual(["ocean_dark"]);
+	});
+
+	it("resets to all themes when both are cleared", () => {
+		const { catalog } = makeModifierCatalog();
+		catalog.filter("dark", "dark-variant");
+		catalog.filter("", "");
+		expect(catalog.filteredThemes).toHaveLength(4);
+	});
+});
