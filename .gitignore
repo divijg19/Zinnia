@@ -147,6 +147,7 @@ _vendor_backup/**
 
 scripts/*
 !scripts/generate-demo-assets.js
+!scripts/smoke-embeds.js
 .vercel
 cache/
 
