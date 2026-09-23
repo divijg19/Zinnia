@@ -112,4 +112,25 @@ describe("api/streak local-render error caching guard", () => {
 		const cc = String(headerValue(res, "Cache-Control") ?? "");
 		expect(cc).toContain("max-age=86400");
 	});
+
+	it("does not persist empty renderer bodies", async () => {
+		loaderMocks.importByPath.mockResolvedValue({
+			renderForUser: vi.fn(async () => ({
+				contentType: "image/svg+xml",
+				body: "",
+			})),
+		});
+
+		const handler = await importHandler();
+		const user = uniqueUser();
+		const res = makeRes(`/api/streak?user=${user}`);
+		await handler(makeReq(`/api/streak?user=${user}`), res);
+
+		const { getCacheAdapterForService } = await import(
+			"../../lib/canonical/http_cache.js"
+		);
+		const cache = getCacheAdapterForService("streak");
+		const localKey = `streak:local:${user}:${JSON.stringify({ user })}`;
+		expect(await cache.get(localKey)).toBeFalsy();
+	});
 });

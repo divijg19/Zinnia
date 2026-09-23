@@ -25,7 +25,9 @@ const IN_MEMORY: Cache = (() => {
 	};
 })();
 
-// Minimal Upstash REST wrapper (no deps)
+// Minimal Upstash REST wrapper (no external deps)
+import { fetchWithTimeout } from "../../lib/fetch-timeout.js";
+
 async function upstashCall(
 	url: string,
 	token: string,
@@ -33,14 +35,19 @@ async function upstashCall(
 	...args: string[]
 ) {
 	const body = JSON.stringify([cmd, ...args]);
-	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			Authorization: `Bearer ${token}`,
-			"Content-Type": "application/json",
+	// Cache must never gate rendering: fail fast (5s) like everything else.
+	const res = await fetchWithTimeout(
+		url,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json",
+			},
+			body,
 		},
-		body,
-	});
+		5000,
+	);
 	if (!res.ok) {
 		// Try to capture response text for diagnostics but limit size
 		let text = "";

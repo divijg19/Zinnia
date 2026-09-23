@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from "../../../../../lib/fetch-timeout.js";
 import type { Generator } from "../card.js";
 import type { Extension } from "../types.js";
 
@@ -15,7 +16,9 @@ export async function RemoteStyleExtension(
 					return cahced.text();
 				}
 
-				const data = await fetch(url)
+				// Decorative stylesheet: fail fast (5s) so a hung CDN
+				// never gates card rendering; errors stay comments.
+				const data = await fetchWithTimeout(url, undefined, 5000)
 					.then(async (res) =>
 						res.ok
 							? `/* ${url} */ ${await res.text()}`

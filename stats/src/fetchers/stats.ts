@@ -1,4 +1,8 @@
 import * as dotenv from "dotenv";
+import {
+	fetchWithTimeout,
+	resolveTimeoutMs,
+} from "../../../lib/fetch-timeout.js";
 import { calculateRank } from "../calculateRank.js";
 import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
@@ -217,12 +221,13 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 			Accept: "application/vnd.github.cloak-preview",
 		};
 		if (token) headers.Authorization = `token ${token}`;
-		return fetch(
+		return fetchWithTimeout(
 			`https://api.github.com/search/commits?q=author:${variables.login}`,
 			{
 				method: "get",
 				headers,
 			},
+			resolveTimeoutMs(process.env.STATS_REST_TIMEOUT_MS, 8000),
 		).then((res) =>
 			res.json().then((responseData) => ({
 				data: responseData,

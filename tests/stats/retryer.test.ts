@@ -105,7 +105,25 @@ describe("Retryer (vitest)", () => {
 			{} as unknown as Record<string, unknown>,
 		);
 		expect(mark).toHaveBeenCalledTimes(1);
-		expect(mark).toHaveBeenCalledWith("PAT_1");
+		expect(mark).toHaveBeenCalledWith("PAT_1", 60);
+	});
+
+	it("marks bad credentials longer than transient rate limits", async () => {
+		const tokens = await import("../../lib/tokens");
+		const mark = vi.mocked(tokens.markPatExhaustedAsync);
+		mark.mockClear();
+		const fetcherBadCred = vi.fn((_vars: any, _token: any, retries = 0) => {
+			if (retries < 1) {
+				return Promise.resolve({ data: { message: "Bad credentials" } });
+			}
+			return Promise.resolve({ data: "ok" });
+		});
+		await retryer(
+			fetcherBadCred as unknown as FetcherFunction<any>,
+			{} as unknown as Record<string, unknown>,
+		);
+		expect(mark).toHaveBeenCalledTimes(1);
+		expect(mark).toHaveBeenCalledWith("PAT_1", 300);
 	});
 
 	it("keeps backoff bounded with jitter", async () => {

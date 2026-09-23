@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	resolveCacheSeconds,
+	safeUrl,
 	setEtagAndAlwaysSend200,
 	setShortCacheHeaders,
 	setSvgHeaders,
@@ -20,12 +21,7 @@ function svg(body: string) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers.host || "localhost").toString();
-		const url = new URL(
-			(req.url as string) || "/api/health",
-			`${proto}://${host}`,
-		);
+		const url = safeUrl(req, "/api/health");
 
 		const text = escapeXml(url.searchParams.get("text")?.trim() || "OK");
 		const cacheSeconds = resolveCacheSeconds(

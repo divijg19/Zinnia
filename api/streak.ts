@@ -2,13 +2,14 @@
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { sendErrorSvg } from "../lib/errors.js";
+import { fetchWithTimeout } from "../lib/fetch-timeout.js";
 import {
 	importByPath,
 	invokePossibleRequestHandler,
 	pickHandlerFromModule,
 	resolveCompiledHandler,
 } from "../lib/loader/index.js";
-import { getUsername } from "../lib/params.js";
+import { getUsername, safeUrl } from "../lib/params.js";
 
 // renderer will be loaded from an API-local build folder at runtime; fall back to
 // package src/dist during development. We dynamically import to avoid static
@@ -230,10 +231,8 @@ import {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		const proto = (req.headers["x-forwarded-proto"] || "https").toString();
-		const host = (req.headers.host || "localhost").toString();
-		const url = new URL(req.url as string, `${proto}://${host}`);
-		const user = getUsername(url, ["user", "username"]);
+		const url = safeUrl(req, "/api/streak");
+		const user = getUsername(url, ["username", "user"]);
 		if (!user) {
 			return sendErrorSvg(
 				req,
@@ -257,7 +256,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const upstream = new URL("https://zinnia-rho.vercel.app/");
 				for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
 				upstream.searchParams.set("user", user as string);
-				const resp = await fetch(upstream.toString());
+				// Bounded like the sibling proxy in streak/api (10s there; 8s
+				// here keeps Hobby headroom). Abort lands in catch below and
+				// falls through to the local renderer.
+				const resp = await fetchWithTimeout(
+					upstream.toString(),
+					undefined,
+					8000,
+				);
 				const ct = resp?.headers?.get
 					? resp.headers.get("content-type")
 					: undefined;
@@ -579,7 +585,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			const internalTTL = Math.max(baseCacheSeconds, 259200);
 			try {
-				if (!outIsError && typeof out.body === "string") {
+				if (!outIsError && typeof out.body === "string" && out.body) {
 					await cacheLocal.set(localKey, out.body, internalTTL);
 				}
 			} catch {}

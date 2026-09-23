@@ -4,6 +4,7 @@ import {
 	getUsername as _getUsername,
 	isValidUsername as _isValidUsername,
 	resolveCacheSeconds as _resolveCacheSeconds,
+	safeUrl as _safeUrl,
 } from "./canonical/http_cache.js";
 
 export const isValidUsername = _isValidUsername;
@@ -11,3 +12,4 @@ export const getUsername = _getUsername;
 export const ALLOWED_THEMES = _ALLOWED_THEMES;
 export const filterThemeParam = _filterThemeParam;
 export const resolveCacheSeconds = _resolveCacheSeconds;
+export const safeUrl = _safeUrl;

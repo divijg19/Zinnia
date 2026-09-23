@@ -1,3 +1,8 @@
+import {
+	fetchWithTimeout,
+	resolveTimeoutMs,
+} from "../../../../../lib/fetch-timeout.js";
+
 export class LeetCode {
 	async graphql({
 		query,
@@ -8,14 +13,18 @@ export class LeetCode {
 		variables?: unknown;
 		headers?: Record<string, string>;
 	} & Record<string, unknown>) {
-		const res = await fetch("https://leetcode.com/graphql", {
-			method: "POST",
-			headers: {
-				"content-type": "application/json",
-				...headers,
+		const res = await fetchWithTimeout(
+			"https://leetcode.com/graphql",
+			{
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+					...headers,
+				},
+				body: JSON.stringify({ query, variables }),
 			},
-			body: JSON.stringify({ query, variables }),
-		});
+			resolveTimeoutMs(process.env.LEETCODE_GRAPHQL_TIMEOUT_MS, 8000),
+		);
 		if (!res.ok) {
 			throw new Error(`LeetCode GraphQL failed: ${res.status}`);
 		}
