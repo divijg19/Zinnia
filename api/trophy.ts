@@ -12,12 +12,10 @@ import {
 import { filterThemeParam, getUsername, safeUrl } from "../lib/params.js";
 import { getGithubPATForService } from "../lib/tokens.js";
 import {
-	computeEtag,
 	resolveCacheSeconds,
 	sendSuccessSvg,
 	setCacheHeaders,
 	setSvgHeaders,
-	writeTrophyCacheWithMeta,
 } from "./_utils.js";
 
 // Ensure static renderer exists before importing to provide a clear error
@@ -275,28 +273,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Never send or persist an empty body: route to the error path so
 		// embedders always receive a renderable SVG.
 		if (!svgOut) throw new Error("trophy renderer returned empty body");
-
-		// Persist cache for future fallbacks (best-effort).
-		try {
-			let etag: string | undefined;
-			try {
-				etag =
-					typeof computeEtag === "function" ? computeEtag(svgOut) : undefined;
-			} catch {
-				etag = undefined;
-			}
-			const internalTTL = Math.max(cacheSeconds, 259200);
-			try {
-				await writeTrophyCacheWithMeta(
-					url.toString(),
-					svgOut,
-					etag ?? "",
-					internalTTL,
-				);
-			} catch {
-				// ignore
-			}
-		} catch {}
 
 		// Always 200 + full SVG with ETag set (never 304-empty).
 		return sendSuccessSvg(res, svgOut, cacheSeconds);
