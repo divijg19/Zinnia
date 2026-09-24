@@ -45,6 +45,67 @@ export function sendDebugJson(
 	return res.send(JSON.stringify(payload, null, 2));
 }
 
+/** Shared validation message for missing/invalid identity params. */
+export const ERR_MISSING_USERNAME = "Missing or invalid ?username=";
+
+/** Validation-failure SVG shared by card routes. */
+export function missingUsername(
+	req: VercelRequest,
+	res: VercelResponse,
+	code: ErrorCode = "UNKNOWN",
+) {
+	return sendErrorSvg(req, res, ERR_MISSING_USERNAME, code);
+}
+
+/** Throw for empty renderer output so callers route to the error path. */
+export function emptyRenderer(service: string): never {
+	throw new Error(`${service} renderer returned empty body`);
+}
+
+/**
+ * Unified route catch-tail: redacted diagnostics (plus debug JSON when
+ * requested), dev-only error headers, server log, transient error SVG.
+ */
+export function handleRouteError(
+	req: VercelRequest,
+	res: VercelResponse,
+	err: unknown,
+	opts: {
+		service: string;
+		code: ErrorCode;
+		debug: boolean;
+		diag: Record<string, unknown>;
+	},
+) {
+	const errName = err instanceof Error ? err.name : "Error";
+	const errMsg = redactSecretTokens(
+		err instanceof Error ? err.message : String(err),
+	).slice(0, 180);
+	if (opts.debug) {
+		return sendDebugJson(res, {
+			...opts.diag,
+			stage: "error",
+			error: `${errName}: ${errMsg}`,
+			code: opts.code,
+		});
+	}
+	try {
+		if (process.env.VERCEL_ENV !== "production") {
+			res.setHeader("X-Dev-Error-Name", errName);
+			res.setHeader("X-Dev-Error-Message", errMsg);
+		}
+	} catch {}
+	try {
+		console.error(
+			`${opts.service}: internal error`,
+			err instanceof Error ? err.stack || err.message : String(err),
+		);
+	} catch {}
+	setShortCacheHeaders(res, 60);
+	res.setHeader("X-Cache-Status", "transient");
+	return sendErrorSvg(req, res, `${opts.service}: internal error`, opts.code);
+}
+
 /** Minimal standard error SVG with hidden error code comment. */
 export function svgError(
 	message: string,

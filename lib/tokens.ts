@@ -1,5 +1,6 @@
 // Ensure dotenv is loaded early in dev so PAT_* env vars are available
 import "./env.js";
+import type { VercelRequest } from "@vercel/node";
 
 const STATIC_PAT_KEYS = ["PAT_1", "PAT_2", "PAT_3", "PAT_4", "PAT_5"] as const;
 
@@ -221,6 +222,71 @@ export async function markPatExhaustedAsync(key: string, ttlSeconds = 300) {
 
 export function unmarkPatExhausted(key: string) {
 	exhaustedUntil.delete(key);
+}
+
+/** True when any usable `PAT_n` value is configured. */
+export function hasAnyPatEnv(): boolean {
+	try {
+		return Object.keys(process.env).some((k) => {
+			if (!/^PAT_\d+$/.test(k)) return false;
+			const v = process.env[k];
+			return typeof v === "string" && v.trim().length > 0;
+		});
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Seed `PAT_1` for upstream libs that assume it exists: mirror the first
+ * configured `PAT_*`, else accept a caller-provided token from
+ * `Authorization` / `x-github-token` headers (stripping the scheme).
+ */
+export function seedPatFromRequestHeaders(req: VercelRequest): void {
+	try {
+		if (process.env.PAT_1 && process.env.PAT_1.trim().length > 0) return;
+		// Some upstream libs assume PAT_1 exists even if PAT_2..PAT_N are set.
+		// If we have any PAT_* already, mirror the first one into PAT_1.
+		for (const [k, v] of Object.entries(process.env)) {
+			if (!/^PAT_\d+$/.test(k)) continue;
+			if (typeof v !== "string") continue;
+			if (v.trim().length === 0) continue;
+			process.env.PAT_1 = v;
+			break;
+		}
+		if (process.env.PAT_1 && process.env.PAT_1.trim().length > 0) return;
+		const authRaw =
+			(req.headers.authorization as string | undefined) ||
+			(req.headers.Authorization as string | undefined);
+		const xTokenRaw = req.headers["x-github-token"] as string | undefined;
+		const candidate = String(xTokenRaw || authRaw || "").trim();
+		if (!candidate) return;
+		const token = candidate
+			.replace(/^token\s+/i, "")
+			.replace(/^bearer\s+/i, "")
+			.trim();
+		if (!token) return;
+		process.env.PAT_1 = token;
+	} catch {
+		// ignore
+	}
+}
+
+/**
+ * Run `fn` with per-request PAT seeding that never leaks into subsequent
+ * requests sharing a warm runtime. Seeding itself stays explicit inside
+ * `fn`; this only snapshots and restores `PAT_1`.
+ */
+export async function withPatEnv<T>(fn: () => Promise<T>): Promise<T> {
+	const prevPat1 = process.env.PAT_1;
+	try {
+		return await fn();
+	} finally {
+		try {
+			if (prevPat1 === undefined) delete process.env.PAT_1;
+			else process.env.PAT_1 = prevPat1;
+		} catch {}
+	}
 }
 
 export async function unmarkPatExhaustedAsync(key: string) {
