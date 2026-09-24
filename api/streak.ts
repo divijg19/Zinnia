@@ -222,9 +222,11 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 import {
 	getCacheAdapterForService,
 	resolveCacheSeconds,
+	sendFallbackSvg,
+	sendShortSvg,
+	sendSuccessSvg,
 	setCacheHeaders,
 	setEtagAndAlwaysSend200,
-	setFallbackCacheHeaders,
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./_utils.js";
@@ -276,28 +278,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					const body = await resp.text();
 					// Always 200 + full body with ETag set (never 304-empty, which
 					// breaks embedders). Revalidation is handled client-side.
-					setEtagAndAlwaysSend200(res, String(body));
-					setSvgHeaders(res);
 					try {
-						res.setHeader(
-							"X-Streak-Renderer",
-							(globalThis as any).__STREAK_RENDERER_SPEC || "unknown",
-						);
+						res.setHeader("X-Streak-Renderer", "upstream");
 					} catch {}
-					setCacheHeaders(
+					res.setHeader("X-Upstream-Status", String(resp.status));
+					return sendSuccessSvg(
 						res,
+						String(body),
 						resolveCacheSeconds(
 							url,
 							["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
 							86400,
 						),
 					);
-					try {
-						res.setHeader("X-Streak-Renderer", "upstream");
-					} catch {}
-					res.setHeader("X-Upstream-Status", String(resp.status));
-					res.status(200);
-					return res.send(body);
 				}
 				// If upstream returned a successful but non-SVG payload, treat as an error
 				// and fall back to the local renderer/cached fallback.
@@ -316,15 +309,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					// Same embed contract as the 2xx branch: always 200 + full
 					// body with ETag set (never 304-empty). The upstream status
 					// is exposed via X-Upstream-Status for diagnostics.
-					setEtagAndAlwaysSend200(res, String(body));
-					setSvgHeaders(res);
-					setShortCacheHeaders(res, 60);
 					try {
 						res.setHeader("X-Streak-Renderer", "cache");
 					} catch {}
 					res.setHeader("X-Upstream-Status", String(resp.status));
-					res.status(200);
-					return res.send(body);
+					return sendShortSvg(res, String(body), 60);
 				}
 				// otherwise, fall through to local renderer below
 			} catch {
@@ -342,13 +331,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			try {
 				const cached = await cacheLocal.get(localKey);
 				if (cached) {
-					try {
-						// Always 200 + full cached body with ETag set.
-						setEtagAndAlwaysSend200(res, String(cached));
-					} catch {}
-					setSvgHeaders(res);
-					setFallbackCacheHeaders(
+					// Always 200 + full cached body with ETag set.
+					return sendFallbackSvg(
 						res,
+						String(cached),
 						Math.max(
 							resolveCacheSeconds(
 								url,
@@ -358,8 +344,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 							86400,
 						),
 					);
-					res.status(200);
-					return res.send(cached);
 				}
 			} catch {
 				// ignore cache read errors
@@ -525,12 +509,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						const lb = await import("../lib/canonical/loader.js");
 						if (lb && typeof lb.renderFallbackSvg === "function") {
 							const svg = await lb.renderFallbackSvg(user as string);
-							setSvgHeaders(res);
-							setShortCacheHeaders(res, 60);
 							try {
 								res.setHeader("X-Streak-Renderer", "fallback");
 							} catch {}
-							return res.send(svg);
+							return sendShortSvg(res, svg, 60);
 						}
 					} catch (e) {
 						try {
@@ -557,12 +539,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						}
 					});
 					const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="Streak for ${escaped}"><title>Streak for ${escaped}</title><rect width="100%" height="100%" fill="#0f172a"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">Streak for ${escaped}</text></svg>`;
-					setSvgHeaders(res);
-					setShortCacheHeaders(res, 60);
 					try {
 						res.setHeader("X-Streak-Renderer", "minimal-inline-fallback");
 					} catch {}
-					return res.send(svg);
+					return sendShortSvg(res, svg, 60);
 				}
 			} catch {
 				// ignore detection errors and continue to normal flow

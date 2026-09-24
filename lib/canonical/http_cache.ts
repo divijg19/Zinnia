@@ -210,6 +210,61 @@ export function setEtagAndAlwaysSend200(res: ResponseLike, body: string): void {
 	res.setHeader("ETag", `"${computeEtag(body)}"`);
 }
 
+/** Response capable of carrying a full send (status + send). */
+export type SendableResponse = ResponseLike & {
+	status: (code: number) => unknown;
+	send: (body: unknown) => unknown;
+};
+
+/**
+ * Send a successful SVG response in one step: SVG headers, standard cache
+ * headers, fresh ETag, explicit 200, full body. Always 200 + full body
+ * with ETag set (never 304-empty, which some embedders treat as an error).
+ */
+export function sendSuccessSvg(
+	res: SendableResponse,
+	body: string,
+	cacheSeconds: number,
+): unknown {
+	setSvgHeaders(res);
+	setCacheHeaders(res, cacheSeconds);
+	setEtagAndAlwaysSend200(res, body);
+	res.status(200);
+	return res.send(body);
+}
+
+/**
+ * Send an SVG response with short transient caching (fallbacks, health
+ * checks, bridged upstream payloads). Same always-200 + ETag contract.
+ */
+export function sendShortSvg(
+	res: SendableResponse,
+	body: string,
+	seconds = 60,
+): unknown {
+	setSvgHeaders(res);
+	setShortCacheHeaders(res, seconds);
+	setEtagAndAlwaysSend200(res, body);
+	res.status(200);
+	return res.send(body);
+}
+
+/**
+ * Send an SVG response with fallback caching (served-from-cache hits).
+ * Same always-200 + ETag contract.
+ */
+export function sendFallbackSvg(
+	res: SendableResponse,
+	body: string,
+	seconds: number,
+): unknown {
+	setSvgHeaders(res);
+	setFallbackCacheHeaders(res, seconds);
+	setEtagAndAlwaysSend200(res, body);
+	res.status(200);
+	return res.send(body);
+}
+
 export default {
 	resolveCacheSeconds,
 	setCacheHeaders,
@@ -231,4 +286,7 @@ export default {
 	getCacheAdapter: getCacheAdapterForService,
 	getCacheAdapterForService,
 	setEtagAndAlwaysSend200,
+	sendSuccessSvg,
+	sendShortSvg,
+	sendFallbackSvg,
 };

@@ -10,10 +10,8 @@ import { renderStatsCard } from "../stats/src/cards/stats.js";
 import { fetchStats } from "../stats/src/fetchers/stats.js";
 import {
 	resolveCacheSeconds,
-	setCacheHeaders,
-	setEtagAndAlwaysSend200,
+	sendSuccessSvg,
 	setShortCacheHeaders,
-	setSvgHeaders,
 } from "./_utils.js";
 
 function parseBoolean(value: string | undefined): boolean | undefined {
@@ -221,13 +219,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			),
 		});
 
-		setSvgHeaders(res);
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["STATS_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
-		setCacheHeaders(res, cacheSeconds);
 		// Never send an empty body: route to the error path instead so
 		// embedders always receive a renderable SVG.
 		if (!svg) throw new Error("stats renderer returned empty body");
@@ -242,10 +238,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		}
 		// Always 200 + full SVG with ETag set (never 304-empty).
-		setEtagAndAlwaysSend200(res, svg);
-		res.status(200);
-		res.send(svg);
-		return null;
+		return sendSuccessSvg(res, svg, cacheSeconds);
 	} catch (_err) {
 		const errName = _err instanceof Error ? _err.name : "Error";
 		const errMsg = redactSecretTokens(

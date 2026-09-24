@@ -9,11 +9,7 @@ import {
 	resolveCacheSeconds,
 	safeUrl,
 } from "../lib/params.js";
-import {
-	setCacheHeaders,
-	setEtagAndAlwaysSend200,
-	setSvgHeaders,
-} from "./_utils.js";
+import { sendSuccessSvg } from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -165,13 +161,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			generator.verbose = false;
 			const svgOut = await generator.generate(sanitized);
 			if (!svgOut) throw new Error("leetcode renderer returned empty body");
-			setSvgHeaders(res);
-			setCacheHeaders(res, cacheSeconds);
 			// Always 200 + full body with ETag set. Some embedders treat a 304
 			// without a body as an error, so never send a bare 304.
-			setEtagAndAlwaysSend200(res, svgOut);
-			res.status(200);
-			return res.send(svgOut);
+			return sendSuccessSvg(res, svgOut, cacheSeconds);
 		} catch (e) {
 			const error = e as Error;
 			console.error("LeetCode generation error:", error.message);

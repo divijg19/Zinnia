@@ -1,11 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import {
-	resolveCacheSeconds,
-	safeUrl,
-	setEtagAndAlwaysSend200,
-	setShortCacheHeaders,
-	setSvgHeaders,
-} from "./_utils.js";
+import { resolveCacheSeconds, safeUrl, sendShortSvg } from "./_utils.js";
 
 function escapeXml(value: string): string {
 	return value
@@ -30,21 +24,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			60,
 		);
 
-		setSvgHeaders(res);
 		// Health checks are transient; keep short TTL so status updates quickly.
-		setShortCacheHeaders(res, cacheSeconds);
 		const body = svg(text);
 		// Always 200 + full body with ETag set (never 304-empty).
-		setEtagAndAlwaysSend200(res, body);
-		res.status(200);
-		return res.send(body);
+		return sendShortSvg(res, body, cacheSeconds);
 	} catch (_e) {
-		setSvgHeaders(res);
 		// On error return a short-lived health response
-		setShortCacheHeaders(res, 60);
 		const body = svg("OK");
-		setEtagAndAlwaysSend200(res, body);
-		res.status(200);
-		return res.send(body);
+		return sendShortSvg(res, body, 60);
 	}
 }
