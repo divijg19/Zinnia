@@ -6,7 +6,7 @@ import {
 	makeFetchResolved,
 	setGlobalFetchMock,
 } from "../_globalFetchMock";
-import { makeReq, makeRes } from "../_resShim";
+import { makeReq, makeRes } from "../_testShim";
 
 // Helper to load handler fresh per scenario
 async function loadHandlerWithMocks(

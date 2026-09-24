@@ -1,22 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
-
-function makeReq(urlPath: string) {
-	return {
-		headers: { host: "localhost", "x-forwarded-proto": "http" },
-		method: "GET",
-		url: urlPath,
-	} as unknown as Record<string, unknown>;
-}
-
-function makeRes() {
-	return {
-		setHeader: vi.fn(),
-		send: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-	} as unknown as Record<string, unknown>;
-}
+import { makeReq, makeRes } from "../_testShim";
 
 /** Local renderer behind the loader mock (skips the compiled path). */
 function mockLocalRenderer(renderTrophySVG: () => Promise<string> | string) {

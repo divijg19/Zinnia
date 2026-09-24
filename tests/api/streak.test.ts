@@ -7,12 +7,14 @@ import {
 	setGlobalFetchMock,
 } from "../_globalFetchMock";
 import {
+	assertSvgHeadersOnRes as assert2,
+	assertSvgHeadersOnRes,
 	headerValue,
 	makeReq,
 	makeRes,
 	type TestRequest,
 	type TestResponse,
-} from "../_resShim";
+} from "../_testShim";
 
 describe("/api/streak handler", () => {
 	beforeEach(() => {
@@ -45,7 +47,6 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
 		assertSvgHeadersOnRes(res);
 		// Accept either the exact upstream body or the local fallback SVG
 		const sent0 = res.send.mock.calls[0][0] as string;
@@ -113,9 +114,6 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		const { assertSvgHeadersOnRes: assert2 } = await import(
-			"../_assertHeaders"
-		);
 		assert2(res);
 		// When upstream permanently fails we prefer to serve a cached
 		// last-known-good SVG if available; otherwise return a standardized

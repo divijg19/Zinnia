@@ -8,7 +8,7 @@ import {
 	makeRes,
 	type TestRequest,
 	type TestResponse,
-} from "../_resShim";
+} from "../_testShim";
 
 const loaderMocks = vi.hoisted(() => ({
 	resolveCompiledHandler: vi.fn(),
@@ -67,7 +67,7 @@ describe("api/streak local-render error caching guard", () => {
 
 		const handler = await importHandler();
 		const user = uniqueUser();
-		const res = makeRes(`/api/streak?user=${user}`);
+		const res = makeRes();
 		await handler(makeReq(`/api/streak?user=${user}`), res);
 
 		expect(res.status).toHaveBeenCalledWith(500);
@@ -97,7 +97,7 @@ describe("api/streak local-render error caching guard", () => {
 
 		const handler = await importHandler();
 		const user = uniqueUser();
-		const res = makeRes(`/api/streak?user=${user}`);
+		const res = makeRes();
 		await handler(makeReq(`/api/streak?user=${user}`), res);
 
 		expect(res.send).toHaveBeenCalledWith(okSvg);
@@ -123,7 +123,7 @@ describe("api/streak local-render error caching guard", () => {
 
 		const handler = await importHandler();
 		const user = uniqueUser();
-		const res = makeRes(`/api/streak?user=${user}`);
+		const res = makeRes();
 		await handler(makeReq(`/api/streak?user=${user}`), res);
 
 		const { getCacheAdapterForService } = await import(

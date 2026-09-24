@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { describe, expect, it } from "vitest";
 import { computeEtag } from "../../api/_utils";
 import health from "../../api/health";
-import { makeReq, makeRes } from "../_resShim";
+import { makeReq, makeRes } from "../_testShim";
 
 describe("/api/health", () => {
 	it("returns OK svg and sets cache headers", async () => {

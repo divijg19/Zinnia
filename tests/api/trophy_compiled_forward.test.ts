@@ -3,22 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { computeEtag } from "../../lib/canonical/http_cache.js";
 import { forwardWebResponseToVercel } from "../../lib/http.js";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
-
-function makeReq(urlPath: string) {
-	return {
-		headers: { host: "localhost", "x-forwarded-proto": "http" },
-		method: "GET",
-		url: urlPath,
-	} as unknown as Record<string, unknown>;
-}
-
-function makeRes() {
-	return {
-		setHeader: vi.fn(),
-		send: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-	} as unknown as Record<string, unknown>;
-}
+import { makeReq, makeRes } from "../_testShim";
 
 /** Mock the loader so the trophy compiled-handler path is deterministic. */
 function mockCompiledTrophy(compiledHandler: (webReq: Request) => unknown) {

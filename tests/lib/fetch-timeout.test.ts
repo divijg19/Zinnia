@@ -4,11 +4,12 @@ import {
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../lib/fetch-timeout";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
 
 describe("lib/fetch-timeout", () => {
 	afterEach(() => {
 		vi.useRealTimers();
-		vi.unstubAllGlobals();
+		clearGlobalFetchMock();
 	});
 
 	it("parses env timeout values with fallback", () => {
@@ -22,7 +23,7 @@ describe("lib/fetch-timeout", () => {
 
 	it("resolves healthy fetches untouched", async () => {
 		const fetchMock = vi.fn(async () => new Response("ok"));
-		vi.stubGlobal("fetch", fetchMock);
+		setGlobalFetchMock(fetchMock);
 		const res = await fetchWithTimeout("https://example.com", undefined, 8000);
 		expect(await res.text()).toBe("ok");
 		expect(fetchMock.mock.calls[0][1]).toHaveProperty("signal");
@@ -38,7 +39,7 @@ describe("lib/fetch-timeout", () => {
 					});
 				}),
 		);
-		vi.stubGlobal("fetch", fetchMock);
+		setGlobalFetchMock(fetchMock);
 		const pending = fetchWithTimeout("https://example.com", undefined, 50);
 		const assertion = expect(pending).rejects.toThrow("fetch-timeout");
 		await vi.advanceTimersByTimeAsync(100);
@@ -48,8 +49,7 @@ describe("lib/fetch-timeout", () => {
 
 	it("rethrows non-abort failures unchanged", async () => {
 		const boom = new Error("boom");
-		vi.stubGlobal(
-			"fetch",
+		setGlobalFetchMock(
 			vi.fn(async () => {
 				throw boom;
 			}),

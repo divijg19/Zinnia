@@ -2,21 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
-
-function makeReq(urlPath: string, headers: Record<string, string> = {}) {
-	return {
-		headers: { host: "localhost", "x-forwarded-proto": "http", ...headers },
-		url: urlPath,
-	} as unknown as Record<string, unknown>;
-}
-
-function makeRes() {
-	return {
-		setHeader: vi.fn(),
-		send: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-	} as unknown as Record<string, unknown>;
-}
+import { makeReq, makeRes } from "../_testShim";
 
 describe("Trophy handler always-200 + ETag on If-None-Match", () => {
 	afterEach(() => {

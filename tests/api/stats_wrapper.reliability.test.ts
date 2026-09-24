@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { TestResponse } from "../_testShim";
+import {
+	makeReq as makeShimReq,
+	makeRes as makeShimRes,
+	restorePatEnv,
+	snapshotPatEnv,
+} from "../_testShim";
 
 // Prevent dotenv.config() from repopulating PAT_* vars when modules are
 // re-evaluated after vi.resetModules(); env reads still work, and each
@@ -33,68 +40,15 @@ vi.mock("../../stats/src/cards/stats", () => {
 	};
 });
 
+type ShimRes = VercelResponse &
+	Pick<TestResponse, "_headers" | "_body" | "_status">;
+
 function makeReq(urlPath: string): VercelRequest {
-	return {
-		method: "GET",
-		url: urlPath,
-		headers: {
-			host: "localhost",
-			"x-forwarded-proto": "http",
-		},
-	} as unknown as VercelRequest;
+	return makeShimReq(urlPath) as unknown as VercelRequest;
 }
 
-function makeRes() {
-	const headers = new Map<string, string>();
-	let statusCode = 200;
-	let body: string | undefined;
-	const res: Partial<VercelResponse> & {
-		_headers: Map<string, string>;
-		_body: () => string;
-		_status: () => number;
-	} = {
-		setHeader: (k: string, v: unknown) => {
-			headers.set(k.toLowerCase(), String(v));
-			return res as unknown as VercelResponse;
-		},
-		getHeader: (k: string) => headers.get(k.toLowerCase()),
-		status: ((code: number) => {
-			statusCode = code;
-			return res as unknown as VercelResponse;
-		}) as unknown as VercelResponse["status"],
-		send: ((b: unknown) => {
-			body = typeof b === "string" ? b : b == null ? "" : String(b);
-			return res as unknown as VercelResponse;
-		}) as unknown as VercelResponse["send"],
-		_headers: headers,
-		_body: () => body ?? "",
-		_status: () => statusCode,
-	};
-	return res as unknown as VercelResponse & {
-		_headers: Map<string, string>;
-		_body: () => string;
-		_status: () => number;
-	};
-}
-
-function snapshotPatEnv(): Record<string, string | undefined> {
-	const saved: Record<string, string | undefined> = {};
-	for (const k of Object.keys(process.env)) {
-		if (/^PAT_\d*$/.test(k)) {
-			saved[k] = process.env[k];
-			delete process.env[k];
-		}
-	}
-	return saved;
-}
-
-function restorePatEnv(saved: Record<string, string | undefined>): void {
-	for (const k of Object.keys(process.env)) {
-		if (/^PAT_\d*$/.test(k)) delete process.env[k];
-	}
-	for (const [k, v] of Object.entries(saved)) {
-		if (v !== undefined) process.env[k] = v;
-	}
+function makeRes(): ShimRes {
+	return makeShimRes() as unknown as ShimRes;
 }
 
 describe("/api/stats wrapper reliability", () => {
