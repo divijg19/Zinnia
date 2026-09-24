@@ -1,4 +1,9 @@
 import {
+	DEFAULT_FETCH_TIMEOUT_MS,
+	resolveTimeoutMs,
+	fetchWithTimeout as sharedFetchWithTimeout,
+} from "../../lib/fetch-timeout.js";
+import {
 	getGithubPATWithKeyForServiceAsync,
 	markPatExhaustedAsync,
 } from "../../lib/tokens.js";
@@ -13,26 +18,21 @@ const yearQuery = (year: number) =>
 const byDateAsc = (a: ContributionDay, b: ContributionDay) =>
 	a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
 
-// Fetch helper that mirrors doGraphQL's timeout convention so the scrape path
-// (which issues several sequential HTTP requests) cannot hang the renderer.
+// Fetch helper shared by the scrape path (several sequential HTTP requests)
+// and the GraphQL path, so neither can hang the renderer. The timeout is
+// env-configurable; invalid/<=0 values fall back to the shared default rather
+// than disabling the abort.
+const streakTimeoutMs = () =>
+	resolveTimeoutMs(
+		process.env.STREAK_FETCH_TIMEOUT_MS,
+		DEFAULT_FETCH_TIMEOUT_MS,
+	);
+
 async function fetchWithTimeout(
 	url: string,
 	init?: RequestInit,
 ): Promise<Response> {
-	const timeoutMs = Number(process.env.STREAK_FETCH_TIMEOUT_MS || 8000);
-	const controller = new AbortController();
-	const to =
-		timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
-	try {
-		return await fetch(url, { ...init, signal: controller.signal });
-	} catch (err: unknown) {
-		if ((err as unknown as { name?: string })?.name === "AbortError") {
-			throw new Error("fetch-timeout");
-		}
-		throw err;
-	} finally {
-		if (to) clearTimeout(to);
-	}
+	return sharedFetchWithTimeout(url, init, streakTimeoutMs());
 }
 
 // Parse day-level contribution cells from a GitHub public contributions page.
@@ -161,10 +161,6 @@ async function doGraphQL(
 	variables: GraphQLVariables,
 	pat: string,
 ) {
-	const timeoutMs = Number(process.env.STREAK_FETCH_TIMEOUT_MS || 8000);
-	const controller = new AbortController();
-	const to =
-		timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
 	let res: Response | undefined;
 
 	function sanitizeVariables(
@@ -186,7 +182,7 @@ async function doGraphQL(
 		const safeVars = sanitizeVariables(variables);
 		if (safeVars) payload.variables = safeVars;
 		const bodyStr = JSON.stringify(payload);
-		return fetch("https://api.github.com/graphql", {
+		return fetchWithTimeout("https://api.github.com/graphql", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -194,16 +190,15 @@ async function doGraphQL(
 				"User-Agent": "zinnia/streak-ts",
 			},
 			body: bodyStr,
-			signal: controller.signal,
 		});
 	}
 
 	try {
 		res = await attemptFetch();
 	} catch (err: unknown) {
-		if (to) clearTimeout(to);
-		const maybeName = (err as unknown as { name?: string })?.name;
-		if (maybeName === "AbortError") throw new Error("fetch-timeout");
+		// A timeout is a budget decision, not a transient error: surface it
+		// instead of spending a second full timeout window on the retry.
+		if ((err as Error)?.message === "fetch-timeout") throw err;
 		// Safe retry once for transient network errors (not auth failures)
 		const jitterMs = 200 + Math.floor(Math.random() * 201); // 200-400ms
 		await new Promise((r) => setTimeout(r, jitterMs));
@@ -212,8 +207,6 @@ async function doGraphQL(
 		} catch (err2: unknown) {
 			throw err2 as Error;
 		}
-	} finally {
-		if (to) clearTimeout(to);
 	}
 	if (!res) throw new Error("no response from fetch");
 
@@ -251,16 +244,18 @@ async function doGraphQL(
 					inline = inline.replace(/\(\s*\$login\s*:\s*String!?\s*\)/g, "");
 					inline = inline.replace(/\$login\b/g, JSON.stringify(loginVal));
 					const fallbackPayload = JSON.stringify({ query: inline });
-					const fallbackRes = await fetch("https://api.github.com/graphql", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${pat}`,
-							"User-Agent": "zinnia/streak-ts",
+					const fallbackRes = await fetchWithTimeout(
+						"https://api.github.com/graphql",
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${pat}`,
+								"User-Agent": "zinnia/streak-ts",
+							},
+							body: fallbackPayload,
 						},
-						body: fallbackPayload,
-						signal: controller.signal,
-					});
+					);
 					if (fallbackRes?.ok) {
 						const fbJson = await fallbackRes.json().catch(() => null);
 						if (fbJson) return fbJson;

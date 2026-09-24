@@ -25,52 +25,8 @@ const IN_MEMORY: Cache = (() => {
 	};
 })();
 
-// Minimal Upstash REST wrapper (no external deps)
-import { fetchWithTimeout } from "../../lib/fetch-timeout.js";
-
-async function upstashCall(
-	url: string,
-	token: string,
-	cmd: string,
-	...args: string[]
-) {
-	const body = JSON.stringify([cmd, ...args]);
-	// Cache must never gate rendering: fail fast (5s) like everything else.
-	const res = await fetchWithTimeout(
-		url,
-		{
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json",
-			},
-			body,
-		},
-		5000,
-	);
-	if (!res.ok) {
-		// Try to capture response text for diagnostics but limit size
-		let text = "";
-		try {
-			text = (await res.text()).slice(0, 200);
-		} catch {}
-		const msg = `upstash request failed: ${res.status}${text ? `:${text}` : ""}`;
-		throw new Error(msg);
-	}
-	const j = await res.json();
-	return j?.result ?? null;
-}
-
-function findEnv(...names: string[]) {
-	for (const n of names) {
-		if (process.env[n]) return process.env[n] as string;
-		const up = n.toUpperCase();
-		if (process.env[up]) return process.env[up] as string;
-		const low = n.toLowerCase();
-		if (process.env[low]) return process.env[low] as string;
-	}
-	return undefined;
-}
+// Shared Upstash REST primitives (single implementation in lib/kv).
+import { findEnv, upstashCall } from "../../lib/kv/upstash.js";
 
 async function createUpstashCache(): Promise<Cache | null> {
 	const prefix = (process.env.UPSTASH_PREFIX || "UPSTASH").toUpperCase();
@@ -105,22 +61,17 @@ async function createUpstashCache(): Promise<Cache | null> {
 		},
 		set: async (key: string, value: string, ttlSeconds = 300) => {
 			try {
-				await upstashCall(url, token, "SET", key, value);
-				try {
-					await upstashCall(
-						url,
-						token,
-						"EXPIRE",
-						key,
-						String(Math.max(1, Math.floor(ttlSeconds))),
-					);
-				} catch (e) {
-					try {
-						if (process.env.UPSTASH_DEBUG === "1")
-							console.warn("streak: upstash EXPIRE failed", String(e));
-					} catch {}
-					// ignore expire failures
-				}
+				// Atomic SET ... EX: one round trip, and no window in which the
+				// key exists without a TTL (as a separate EXPIRE would have).
+				await upstashCall(
+					url,
+					token,
+					"SET",
+					key,
+					value,
+					"EX",
+					String(Math.max(1, Math.floor(ttlSeconds))),
+				);
 			} catch (e) {
 				try {
 					if (process.env.UPSTASH_DEBUG === "1")
