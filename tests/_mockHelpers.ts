@@ -126,6 +126,53 @@ export function mockApiUtilsFactory({
 					// ignore
 				}
 			},
+			sendSuccessSvg: (res: any, body: string, seconds: number) => {
+				try {
+					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
+					);
+					res.setHeader("ETag", `"${computeEtag(body)}"`);
+					res.status(200);
+				} catch (_e) {
+					// ignore
+				}
+				return res.send(body);
+			},
+			sendShortSvg: (res: any, body: string, seconds = 60) => {
+				try {
+					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+					const s = Math.max(0, Math.min(seconds, 3600));
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
+					);
+					res.setHeader("X-Cache-Status", "transient");
+					res.setHeader("ETag", `"${computeEtag(body)}"`);
+					res.status(200);
+				} catch (_e) {
+					// ignore
+				}
+				return res.send(body);
+			},
+			sendFallbackSvg: (res: any, body: string, seconds: number) => {
+				try {
+					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+					const s = Math.max(60, Math.min(seconds, 604800));
+					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
+					res.setHeader(
+						"Cache-Control",
+						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
+					);
+					res.setHeader("X-Cache-Status", "fallback");
+					res.setHeader("ETag", `"${computeEtag(body)}"`);
+					res.status(200);
+				} catch (_e) {
+					// ignore
+				}
+				return res.send(body);
+			},
 		};
 	};
 }

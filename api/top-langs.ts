@@ -10,10 +10,8 @@ import { renderTopLanguages } from "../stats/src/cards/top-languages.js";
 import { fetchTopLanguages } from "../stats/src/fetchers/top-languages.js";
 import {
 	resolveCacheSeconds,
-	setCacheHeaders,
-	setEtagAndAlwaysSend200,
+	sendSuccessSvg,
 	setShortCacheHeaders,
-	setSvgHeaders,
 } from "./_utils.js";
 
 function parseBoolean(value: string | undefined): boolean | undefined {
@@ -220,13 +218,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			),
 		});
 
-		setSvgHeaders(res);
 		const cacheSeconds = resolveCacheSeconds(
 			url,
 			["TOP_LANGS_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
-		setCacheHeaders(res, cacheSeconds);
 		// Never send an empty body: route to the error path instead so
 		// embedders always receive a renderable SVG.
 		if (!svg) throw new Error("top-langs renderer returned empty body");
@@ -241,10 +237,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			});
 		}
 		// Always 200 + full SVG with ETag set (never 304-empty).
-		setEtagAndAlwaysSend200(res, svg);
-		res.status(200);
-		res.send(svg);
-		return null;
+		return sendSuccessSvg(res, svg, cacheSeconds);
 	} catch (err) {
 		if (debug) {
 			const errName = err instanceof Error ? err.name : "Error";

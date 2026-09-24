@@ -14,8 +14,8 @@ import { getGithubPATForService } from "../lib/tokens.js";
 import {
 	computeEtag,
 	resolveCacheSeconds,
+	sendSuccessSvg,
 	setCacheHeaders,
-	setEtagAndAlwaysSend200,
 	setSvgHeaders,
 	writeTrophyCacheWithMeta,
 } from "./_utils.js";
@@ -275,8 +275,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Never send or persist an empty body: route to the error path so
 		// embedders always receive a renderable SVG.
 		if (!svgOut) throw new Error("trophy renderer returned empty body");
-		setSvgHeaders(res);
-		setCacheHeaders(res, cacheSeconds);
 
 		// Persist cache for future fallbacks (best-effort).
 		try {
@@ -301,9 +299,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		} catch {}
 
 		// Always 200 + full SVG with ETag set (never 304-empty).
-		setEtagAndAlwaysSend200(res, svgOut);
-		res.status(200);
-		return res.send(svgOut);
+		return sendSuccessSvg(res, svgOut, cacheSeconds);
 	} catch (_err) {
 		return sendErrorSvg(req, res, "trophy: internal error", "TROPHY_INTERNAL");
 	}
