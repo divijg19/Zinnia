@@ -1,5 +1,6 @@
 import type { ThemeColors, ThemeDefinition } from "../registry.js";
 import { themes } from "../registry.js";
+import { resolveWithFallback } from "../tokens.js";
 
 /**
  * Fully-resolved color properties consumed by the stats card renderer.
@@ -27,30 +28,6 @@ const fieldMap: Record<keyof StatsThemeProperties, keyof ThemeColors> = {
 	ring_color: "ring",
 };
 
-function tokenHex(
-	colors: ThemeColors | undefined,
-	token: keyof ThemeColors,
-): string | undefined {
-	const value = colors?.[token];
-	if (!value) {
-		return undefined;
-	}
-	// GradientToken form carries a structured gradient; ColorToken stores the raw
-	// token string directly. Stats themes store the raw token string on ColorToken.
-	if (typeof value === "string") {
-		return value;
-	}
-	if ("hex" in value) {
-		return value.hex;
-	}
-	// Structured gradient: serialize back to the historic "angle,hex,hex" token.
-	if ("stops" in value) {
-		const stops = value.stops.map((s) => s.hex).join(",");
-		return value.angle !== undefined ? `${value.angle},${stops}` : stops;
-	}
-	return undefined;
-}
-
 /**
  * Derive stats color properties from a canonical theme definition.
  *
@@ -71,7 +48,7 @@ export function toStatsTheme(
 	const s = theme.colors;
 	const d = resolved.colors;
 	const pick = (key: keyof StatsThemeProperties) =>
-		tokenHex(s, fieldMap[key]) ?? tokenHex(d, fieldMap[key]);
+		resolveWithFallback({}, s, {}, d, fieldMap[key], [fieldMap[key]], (v) => v);
 
 	return {
 		title_color: pick("title_color") ?? "",

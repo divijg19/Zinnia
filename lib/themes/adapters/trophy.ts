@@ -1,5 +1,6 @@
 import type { ThemeColors, ThemeDefinition } from "../registry.js";
 import { themes } from "../registry.js";
+import { normalizeColor, resolveWithFallback } from "../tokens.js";
 
 export interface TrophyThemeProperties {
 	BACKGROUND: string;
@@ -28,38 +29,8 @@ export interface TrophyThemeProperties {
 
 const DEFAULT_THEME_NAME = "default";
 
-function formatTrophyColor(color: string | undefined): string | undefined {
-	if (!color) return undefined;
-	const trimmed = color.trim();
-	if (!trimmed) return undefined;
-	if (
-		trimmed.startsWith("#") ||
-		trimmed.includes(",") ||
-		trimmed === "transparent" ||
-		/^[a-zA-Z]+$/.test(trimmed)
-	) {
-		return trimmed;
-	}
-	if (/^[0-9a-fA-F]{3,8}$/.test(trimmed)) {
-		return `#${trimmed}`;
-	}
-	return trimmed;
-}
-
-function tokenHex(
-	colors: ThemeColors | undefined,
-	token: keyof ThemeColors,
-): string | undefined {
-	const value = colors?.[token];
-	if (!value) return undefined;
-	if (typeof value === "string") return value;
-	if ("hex" in value) return value.hex;
-	if ("stops" in value) {
-		const stops = value.stops.map((s) => s.hex).join(",");
-		return value.angle !== undefined ? `${value.angle},${stops}` : stops;
-	}
-	return undefined;
-}
+const formatTrophyColor = (color: string | undefined): string | undefined =>
+	normalizeColor(color, { allowNamed: true });
 
 /**
  * Derive trophy color properties from a canonical theme definition.
@@ -85,23 +56,16 @@ export function toTrophyTheme(
 	const getVal = (
 		overrideKey: keyof TrophyThemeProperties,
 		colorTokens: (keyof ThemeColors)[],
-	): string | undefined => {
-		if (tOverride[overrideKey]) {
-			return formatTrophyColor(tOverride[overrideKey]);
-		}
-		for (const tok of colorTokens) {
-			const hex = tokenHex(sColors, tok);
-			if (hex) return formatTrophyColor(hex);
-		}
-		if (dOverride[overrideKey]) {
-			return formatTrophyColor(dOverride[overrideKey]);
-		}
-		for (const tok of colorTokens) {
-			const hex = tokenHex(dColors, tok);
-			if (hex) return formatTrophyColor(hex);
-		}
-		return undefined;
-	};
+	): string | undefined =>
+		resolveWithFallback(
+			tOverride,
+			sColors,
+			dOverride,
+			dColors,
+			overrideKey,
+			colorTokens,
+			formatTrophyColor,
+		);
 
 	const title = getVal("TITLE", ["title"]) ?? "#000";
 	const text = getVal("TEXT", ["text"]) ?? "#666";
