@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { retryerFactory } from "../_testShim";
 
 const gist_data = {
 	data: {
@@ -71,9 +72,7 @@ afterEach(() => {
 
 describe("Test fetchGist (vitest)", () => {
 	it("should fetch gist correctly", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: gist_data }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(gist_data));
 		const mod = await import("../../stats/src/fetchers/gist");
 		const { fetchGist } = mod;
 
@@ -91,9 +90,10 @@ describe("Test fetchGist (vitest)", () => {
 	});
 
 	it("should throw correct error if gist not found", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: gist_not_found_data }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(gist_not_found_data),
+		);
 		const mod = await import("../../stats/src/fetchers/gist");
 		const { fetchGist } = mod;
 
@@ -103,9 +103,10 @@ describe("Test fetchGist (vitest)", () => {
 	});
 
 	it("should throw error if response contains errors", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: gist_errors_data }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(gist_errors_data),
+		);
 		const mod = await import("../../stats/src/fetchers/gist");
 		const { fetchGist } = mod;
 

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { retryerFactory } from "../_testShim";
 
 const data_repo = {
 	repository: {
@@ -35,9 +36,7 @@ afterEach(() => {
 
 describe("Test fetchRepo (vitest)", () => {
 	it("should fetch correct user repo", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_user }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_user));
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 
@@ -50,9 +49,7 @@ describe("Test fetchRepo (vitest)", () => {
 	});
 
 	it("should fetch correct org repo", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_org }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_org));
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 
@@ -64,11 +61,12 @@ describe("Test fetchRepo (vitest)", () => {
 	});
 
 	it("should throw error if user is found but repo is null", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({
-				data: { data: { user: { repository: null }, organization: null } },
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory({
+				data: { user: { repository: null }, organization: null },
 			}),
-		}));
+		);
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 
@@ -78,11 +76,12 @@ describe("Test fetchRepo (vitest)", () => {
 	});
 
 	it("should throw error if org is found but repo is null", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({
-				data: { data: { user: null, organization: { repository: null } } },
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory({
+				data: { user: null, organization: { repository: null } },
 			}),
-		}));
+		);
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 
@@ -92,11 +91,12 @@ describe("Test fetchRepo (vitest)", () => {
 	});
 
 	it("should throw error if both user & org data not found", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({
-				data: { data: { user: null, organization: null } },
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory({
+				data: { user: null, organization: null },
 			}),
-		}));
+		);
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 
@@ -106,16 +106,15 @@ describe("Test fetchRepo (vitest)", () => {
 	});
 
 	it("should throw error if repository is private", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory({
 				data: {
-					data: {
-						user: { repository: { ...data_repo.repository, isPrivate: true } },
-						organization: null,
-					},
+					user: { repository: { ...data_repo.repository, isPrivate: true } },
+					organization: null,
 				},
 			}),
-		}));
+		);
 		const mod = await import("../../stats/src/fetchers/repo");
 		const { fetchRepo } = mod;
 

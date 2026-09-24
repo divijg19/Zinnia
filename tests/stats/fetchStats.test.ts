@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { retryerFactory } from "../_testShim";
 
 const data_stats = {
 	data: {
@@ -51,14 +52,15 @@ afterEach(() => {
 
 describe("fetchStats (vitest)", () => {
 	it("should compute stats with single page repos", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async (_fetcher: any, variables: any) => {
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async (_fetcher, variables) => {
 				if (String(variables?.startTime || "").startsWith("2003")) {
 					return { data: data_year2003 };
 				}
 				return { data: data_stats };
-			},
-		}));
+			}),
+		);
 
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
@@ -71,12 +73,13 @@ describe("fetchStats (vitest)", () => {
 	it("should paginate when FETCH_MULTI_PAGE_STARS is true", async () => {
 		process.env.FETCH_MULTI_PAGE_STARS = "true";
 
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async (_fetcher: any, variables: any) => {
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async (_fetcher, variables) => {
 				if (variables?.after) return { data: data_repo };
 				return { data: data_stats };
-			},
-		}));
+			}),
+		);
 
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
@@ -87,13 +90,14 @@ describe("fetchStats (vitest)", () => {
 	});
 
 	it("should support yearly stats when requested", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async (_fetcher: any, variables: any) => {
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async (_fetcher, variables) => {
 				if (String(variables?.startTime || "").startsWith("2003"))
 					return { data: data_year2003 };
 				return { data: data_stats };
-			},
-		}));
+			}),
+		);
 
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
@@ -111,15 +115,16 @@ describe("fetchStats (vitest)", () => {
 	});
 
 	it("treats a legitimate zero commit count as valid with include_all_commits", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async (_fetcher: any, variables: any) => {
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async (_fetcher, variables) => {
 				// REST search-commits call carries only { login }; the GraphQL
 				// stats call carries the full variable set.
 				if (variables && "includeMergedPullRequests" in variables)
 					return { data: data_stats };
 				return { data: { total_count: 0 } };
-			},
-		}));
+			}),
+		);
 
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
@@ -129,13 +134,14 @@ describe("fetchStats (vitest)", () => {
 	});
 
 	it("still throws when the search API omits total_count entirely", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async (_fetcher: any, variables: any) => {
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async (_fetcher, variables) => {
 				if (variables && "includeMergedPullRequests" in variables)
 					return { data: data_stats };
 				return { data: {} };
-			},
-		}));
+			}),
+		);
 
 		const mod = await import("../../stats/src/fetchers/stats");
 		const { fetchStats } = mod;
