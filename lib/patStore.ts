@@ -53,48 +53,10 @@ const EX_PREFIX = `${NAMESPACE}:ex:`;
 // in Vercel if you used a custom prefix when installing the integration.
 const UPSTASH_PREFIX = (process.env.UPSTASH_PREFIX || "UPSTASH").toUpperCase();
 
-// Helper: Upstash REST wrapper using fetch
-import { fetchWithTimeout } from "./fetch-timeout.js";
-
-async function upstashCall(
-	url: string,
-	token: string,
-	cmd: string,
-	...args: string[]
-) {
-	const body = JSON.stringify([cmd, ...args]);
-	// Token selection must never hang on KV: fail fast (5s); callers fall
-	// back to the in-memory path.
-	const res = await fetchWithTimeout(
-		url,
-		{
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${token}`,
-				"Content-Type": "application/json",
-			},
-			body,
-		},
-		5000,
-	);
-	if (!res.ok) throw new Error(`upstash request failed: ${res.status}`);
-	const j = await res.json();
-	return j?.result ?? null;
-}
+// Shared Upstash REST primitives (single implementation in lib/kv).
+import { findEnv, upstashCall } from "./kv/upstash.js";
 
 async function createUpstashStore(): Promise<PatStore | null> {
-	// Helper to find the first present env var from a candidate list.
-	function findEnv(...names: string[]) {
-		for (const n of names) {
-			if (process.env[n]) return process.env[n] as string;
-			const up = n.toUpperCase();
-			if (process.env[up]) return process.env[up] as string;
-			const low = n.toLowerCase();
-			if (process.env[low]) return process.env[low] as string;
-		}
-		return undefined;
-	}
-
 	// Common candidate keys injected by Vercel Marketplace for Upstash
 	const url =
 		findEnv(
