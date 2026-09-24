@@ -26,6 +26,7 @@ export function mockApiUtilsFactory({
 	);
 
 	return () => {
+		const allowedThemes = new Set(["watchdog", "light", "dark", "onedark"]);
 		// Mock `api/cache` as well so handlers that import it directly are
 		// covered by tests that only mock `api/_utils`.
 		const cacheMock = () => ({
@@ -61,15 +62,12 @@ export function mockApiUtilsFactory({
 				}
 				return null;
 			},
-			ALLOWED_THEMES: new Set(["watchdog", "light", "dark", "onedark"]),
+			ALLOWED_THEMES: allowedThemes,
 			filterThemeParam: (url: URL, key = "theme") => {
 				const raw = (url as unknown as URL).searchParams.get(key);
 				if (!raw) return;
 				const value = String(raw).trim().toLowerCase();
-				if (
-					![...new Set(["watchdog", "light", "dark"])].includes(value) &&
-					!value.includes(",")
-				) {
+				if (!allowedThemes.has(value) && !value.includes(",")) {
 					(url as unknown as URL).searchParams.delete(key);
 				}
 			},

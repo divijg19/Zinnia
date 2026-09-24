@@ -4,6 +4,7 @@ export type MockFn = ReturnType<typeof vi.fn>;
 
 export interface TestRequest {
 	headers: Record<string, string | undefined>;
+	method: string;
 	url: string;
 }
 
@@ -13,6 +14,8 @@ export interface TestResponse {
 	status: MockFn & ((code: number) => TestResponse);
 	send: MockFn;
 	_headers: Map<string, string>;
+	_body: () => string;
+	_status: () => number;
 }
 
 export function makeReq(
@@ -21,22 +24,38 @@ export function makeReq(
 ): TestRequest {
 	return {
 		headers: { host: "localhost", "x-forwarded-proto": "http", ...headers },
+		method: "GET",
 		url: urlPath,
 	};
 }
 
 export function makeRes(): TestResponse {
 	const headers = new Map<string, string>();
+	let statusCode = 200;
+	let body = "";
 	const res = {
-		setHeader: vi.fn((k: string, v: unknown) => headers.set(k, String(v))),
-		getHeader: (k: string) => headers.get(k),
-		status: vi.fn(() => res) as unknown as (code: number) => TestResponse,
-		send: vi.fn(),
+		// Header names are case-insensitive on the wire; normalize to
+		// lowercase so assertions need not match the handler's exact casing.
+		setHeader: vi.fn((k: string, v: unknown) => {
+			headers.set(String(k).toLowerCase(), String(v));
+			return res;
+		}),
+		getHeader: (k: string) => headers.get(String(k).toLowerCase()),
+		status: vi.fn((code: number) => {
+			statusCode = code;
+			return res;
+		}) as unknown as (code: number) => TestResponse,
+		send: vi.fn((b: unknown) => {
+			body = typeof b === "string" ? b : b == null ? "" : String(b);
+			return res;
+		}),
 		_headers: headers,
+		_body: () => body,
+		_status: () => statusCode,
 	} as unknown as TestResponse;
 	return res;
 }
 
 export function headerValue(res: TestResponse, key: string) {
-	return res._headers?.get(key);
+	return res._headers?.get(String(key).toLowerCase());
 }

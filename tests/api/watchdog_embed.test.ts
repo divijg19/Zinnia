@@ -4,7 +4,7 @@ import {
 	makeFetchResolved,
 	setGlobalFetchMock,
 } from "../_globalFetchMock";
-import { makeReq, makeRes } from "../_resShim";
+import { assertSvgHeadersOnRes, makeReq, makeRes } from "../_testShim";
 
 describe("/api/streak embed headers", () => {
 	beforeEach(() => {
@@ -32,7 +32,6 @@ describe("/api/streak embed headers", () => {
 
 		await handler(req as unknown as any, res as unknown as any);
 
-		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
 		assertSvgHeadersOnRes(res);
 	});
 });

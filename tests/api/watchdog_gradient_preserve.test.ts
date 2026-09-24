@@ -4,7 +4,7 @@ import {
 	makeFetchResolved,
 	setGlobalFetchMock,
 } from "../_globalFetchMock";
-import { makeReq, makeRes } from "../_resShim";
+import { makeReq, makeRes } from "../_testShim";
 
 describe("/api/streak preserves gradient for watchdog theme", () => {
 	beforeEach(() => {

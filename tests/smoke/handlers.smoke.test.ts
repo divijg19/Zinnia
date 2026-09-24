@@ -5,49 +5,18 @@ import statsHandler from "../../api/stats.js";
 import streakHandler from "../../api/streak.js";
 import topLangsHandler from "../../api/top-langs.js";
 import trophyHandler from "../../api/trophy.js";
+import type { TestResponse } from "../_testShim";
+import { makeReq as makeShimReq, makeRes as makeShimRes } from "../_testShim";
+
+type ShimRes = VercelResponse &
+	Pick<TestResponse, "_headers" | "_body" | "_status">;
 
 function makeReq(urlPath: string): VercelRequest {
-	return {
-		method: "GET",
-		url: urlPath,
-		headers: {
-			host: "localhost",
-			"x-forwarded-proto": "http",
-		},
-	} as unknown as VercelRequest;
+	return makeShimReq(urlPath) as unknown as VercelRequest;
 }
 
-function makeRes() {
-	const headers = new Map<string, string>();
-	let statusCode = 200;
-	let body: string | undefined;
-	const res: Partial<VercelResponse> & {
-		_headers: Map<string, string>;
-		_body: () => string;
-		_status: () => number;
-	} = {
-		setHeader: (k: string, v: unknown) => {
-			headers.set(k.toLowerCase(), String(v));
-			return res as unknown as VercelResponse;
-		},
-		getHeader: (k: string) => headers.get(k.toLowerCase()),
-		status: ((code: number) => {
-			statusCode = code;
-			return res as unknown as VercelResponse;
-		}) as unknown as VercelResponse["status"],
-		send: ((b: unknown) => {
-			body = typeof b === "string" ? b : b == null ? "" : String(b);
-			return res as unknown as VercelResponse;
-		}) as unknown as VercelResponse["send"],
-		_headers: headers,
-		_body: () => body ?? "",
-		_status: () => statusCode,
-	};
-	return res as unknown as VercelResponse & {
-		_headers: Map<string, string>;
-		_body: () => string;
-		_status: () => number;
-	};
+function makeRes(): ShimRes {
+	return makeShimRes() as unknown as ShimRes;
 }
 
 async function runHandler(name: string, handler: any, urlPath: string) {

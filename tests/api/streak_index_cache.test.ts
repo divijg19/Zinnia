@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	assertSvgHeadersOnRes,
 	headerValue,
 	makeReq,
 	makeRes,
 	type TestRequest,
 	type TestResponse,
-} from "../_resShim";
+} from "../_testShim";
 
 describe("streak/api/index handler (TS renderer + cache)", () => {
 	beforeEach(() => {
@@ -32,7 +33,6 @@ describe("streak/api/index handler (TS renderer + cache)", () => {
 
 		await handler(req, res);
 
-		const { assertSvgHeadersOnRes } = await import("../_assertHeaders");
 		assertSvgHeadersOnRes(res);
 		// Accept either an exact cached hit or a generated SVG fallback
 		expect(res.send).toHaveBeenCalled();

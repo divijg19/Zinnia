@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeReq, makeRes } from "../_resShim";
+import { makeReq, makeRes } from "../_testShim";
 
 describe("/api/streak/metadata exposes watchdog gradient token", () => {
 	beforeEach(() => {

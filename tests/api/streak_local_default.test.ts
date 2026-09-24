@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+	clearGlobalFetchMock,
 	makeReq,
 	makeRes,
+	setGlobalFetchMock,
 	type TestRequest,
 	type TestResponse,
-} from "../_resShim";
+} from "../_testShim";
 
 const loaderMocks = vi.hoisted(() => ({
 	resolveCompiledHandler: vi.fn(),
@@ -44,7 +46,7 @@ describe("api/streak defaults to the canonical local renderer", () => {
 		const upstreamFetch = vi.fn(async () => {
 			throw new Error("upstream must not be contacted by default");
 		});
-		(globalThis as unknown as Record<string, unknown>).fetch = upstreamFetch;
+		setGlobalFetchMock(upstreamFetch);
 
 		try {
 			const { default: handler } = await import("../../api/streak.js");
@@ -57,7 +59,7 @@ describe("api/streak defaults to the canonical local renderer", () => {
 			expect(upstreamFetch).not.toHaveBeenCalled();
 			expect(res.send).toHaveBeenCalledWith(LOCAL_SVG);
 		} finally {
-			delete (globalThis as unknown as Record<string, unknown>).fetch;
+			clearGlobalFetchMock();
 			delete process.env.VERCEL_ENV;
 		}
 	});

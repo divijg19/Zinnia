@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { restoreMocks } from "../_mockHelpers";
+import { makeReq, makeRes } from "../_testShim";
 
 let seenOptions: any = null;
 
@@ -29,26 +30,6 @@ function mockLeetcodeCore() {
 	});
 	vi.doMock("../../lib/loader/index.js", loaderMock);
 	vi.doMock("../../lib/loader/index", loaderMock);
-}
-
-function makeReq(urlPath: string) {
-	return {
-		headers: { host: "localhost", "x-forwarded-proto": "http" },
-		method: "GET",
-		url: urlPath,
-	} as unknown as Record<string, unknown>;
-}
-
-function makeRes() {
-	const headers = new Map<string, string>();
-	return {
-		setHeader: vi.fn((k: string, v: unknown) => {
-			headers.set(String(k).toLowerCase(), String(v));
-		}),
-		send: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-		_headers: headers,
-	} as unknown as Record<string, unknown>;
 }
 
 describe("leetcode theme/cache parity", () => {
@@ -92,9 +73,7 @@ describe("leetcode theme/cache parity", () => {
 		vi.resetModules();
 		mockLeetcodeCore();
 		const leetcode = (await import("../../api/leetcode.js")).default;
-		const res = makeRes() as unknown as Record<string, unknown> & {
-			_headers: Map<string, string>;
-		};
+		const res = makeRes();
 		await leetcode(
 			makeReq(
 				"/api/leetcode?username=lcuser&cache=99999999",
