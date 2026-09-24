@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { retryerFactory } from "../_testShim";
 
 const data_langs = {
 	data: {
@@ -57,9 +58,7 @@ afterEach(() => {
 
 describe("FetchTopLanguages (vitest)", () => {
 	it("should fetch correct language data while using the new calculation", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_langs }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_langs));
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -76,9 +75,7 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should fetch correct language data while excluding the 'test-repo-1' repository", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_langs }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_langs));
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -90,9 +87,7 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should fetch correct language data while using the old calculation", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_langs }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_langs));
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -104,9 +99,7 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should rank languages by the number of repositories they appear in", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_langs }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(data_langs));
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -163,9 +156,10 @@ describe("FetchTopLanguages (vitest)", () => {
 				},
 			},
 		};
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_interleaved }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(data_interleaved),
+		);
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -208,9 +202,10 @@ describe("FetchTopLanguages (vitest)", () => {
 				},
 			},
 		};
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: data_interleaved }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(data_interleaved),
+		);
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -220,9 +215,7 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should throw specific error when user not found", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: error }),
-		}));
+		vi.doMock("../../stats/src/common/retryer", retryerFactory(error));
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -232,11 +225,12 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should throw other errors with their message", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async () => ({
 				data: { errors: [{ message: "Some test GraphQL error" }] },
-			}),
-		}));
+			})),
+		);
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -246,9 +240,10 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should throw error with specific message when error does not contain message property", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: { errors: [{ type: "TEST" }] } }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory({ errors: [{ type: "TEST" }] }),
+		);
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 
@@ -258,9 +253,10 @@ describe("FetchTopLanguages (vitest)", () => {
 	});
 
 	it("should throw a CustomError (not TypeError) on empty transport data", async () => {
-		vi.doMock("../../stats/src/common/retryer", () => ({
-			retryer: async () => ({ data: undefined, statusText: "" }),
-		}));
+		vi.doMock(
+			"../../stats/src/common/retryer",
+			retryerFactory(async () => ({ data: undefined, statusText: "" })),
+		);
 		const mod = await import("../../stats/src/fetchers/top-languages");
 		const { fetchTopLanguages } = mod;
 

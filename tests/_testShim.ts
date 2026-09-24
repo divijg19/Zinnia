@@ -11,6 +11,7 @@ export {
 	makeFetchResolved,
 	setGlobalFetchMock,
 } from "./_globalFetchMock.js";
+export { retryerFactory } from "./_loaderMocks.js";
 export { restorePatEnv, snapshotPatEnv } from "./_patEnv.js";
 export type { MockFn, TestRequest, TestResponse } from "./_resShim.js";
 export { headerValue, makeReq, makeRes } from "./_resShim.js";
