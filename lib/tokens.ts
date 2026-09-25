@@ -273,6 +273,27 @@ export function seedPatFromRequestHeaders(req: VercelRequest): void {
 }
 
 /**
+ * Per-service PAT bootstrap shared by the card routes: prefer the service's
+ * pinned token as the `PAT_1` mirror for upstream libs that assume it
+ * exists, then accept caller-provided tokens from request headers.
+ * Never throws; presence checks stay with the caller.
+ */
+export function seedServicePat(service: string, req: VercelRequest): void {
+	try {
+		const token = getGithubPATForService(service);
+		if (
+			token &&
+			(!process.env.PAT_1 || process.env.PAT_1.trim().length === 0)
+		) {
+			process.env.PAT_1 = String(token);
+		}
+	} catch {
+		// ignore
+	}
+	seedPatFromRequestHeaders(req);
+}
+
+/**
  * Run `fn` with per-request PAT seeding that never leaks into subsequent
  * requests sharing a warm runtime. Seeding itself stays explicit inside
  * `fn`; this only snapshots and restores `PAT_1`.
