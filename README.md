@@ -1,341 +1,114 @@
 # `Zinnia`
 
-## Unified GitHub Visuals & Telemetry
+Unified, self-hosted GitHub profile cards: stats, top languages, contribution streak, trophies, and LeetCode — one TypeScript monorepo, one deploy surface.
 
-> **Runtime target:** Node.js **24 LTS**
-> Use the root `.nvmrc` (or your preferred version manager) to ensure Node 24.
+> **Runtime:** Node.js 24 LTS (`package.json` engines) + Bun 1.3.14 (`packageManager`). Live at `zinnia-rho.vercel.app`.
 
-`Zinnia` is a **unified, self-hosted GitHub profile visualization and telemetry engine**.
-It consolidates multiple independently authored visual widgets into a **single TypeScript monorepo**, exposing coherent SVG endpoints via one deploy surface.
+## Quickstart
 
-Rather than composing external services at render time, `Zinnia` hard-forks upstream projects, refactors them into a shared architecture, and owns the full rendering and deployment pipeline.
+```sh
+bun install --frozen-lockfile   # deps (CI-identical)
+bun run build                   # 5 parallel tsup shards (see Build)
+bun run demo:build              # prerender demo assets for all 96 themes
+bun run test                    # rebuilds first (pretest), then vitest
+bun run lint                    # biome --error-on-warnings + tsc --noEmit
+```
 
----
+Targeted suites: `bun run test:api`, `test:stats`, `test:demo`, `test:leetcode`. Type-check only: `bun run type-check`. Format: `bun run format`.
 
-## Packages
+## Routes
 
-Each package is independently documented and exposed through a shared build, test, and deploy system.
+All handlers live in `api/*.ts` (Vercel rewrites `/(.*)` → `/api/$1`):
 
-* `streak/` — GitHub contribution streak renderer
-  *(see `streak/README.md`)*
+| Route | Handler | Source |
+| ----- | ------- | ------ |
+| `/api/stats?username=…` | stats card | `stats/src/fetchers/stats.ts` + `stats/src/cards/stats.ts` |
+| `/api/top-langs?username=…` | top-languages card | `stats/src/fetchers/top-languages.ts` + `stats/src/cards/top-languages.ts` |
+| `/api/streak?username=…` (`user=` also works) | contribution streak | `streak/src/fetcher.ts` + `streak/src/card.ts` |
+| `/api/trophy?username=…` | profile trophies | `trophy/src/Services/` + `trophy/src/renderer.ts` |
+| `/api/leetcode?username=…` | LeetCode stats | `leetcode/packages/core/src/` |
+| `/api/health` | health SVG | built-in |
 
-* `stats/` — GitHub README stats and language breakdown tooling
-  *(see `stats/README.md`)*
-
-* `leetcode/` — LeetCode profile cards, including Cloudflare Worker variants
-  *(see `leetcode/README.md`)*
-
-* `trophy/` — Profile trophy renderer
-  *(see `trophy/README.md`)*
-
----
-
-## Development (Quickstart)
-
-All tooling is standardized at the repository root.
-
-* Install dependencies:
-
-  ```sh
-  bun install
-  ```
-
-* Typecheck:
-
-  ```sh
-  bunx tsc --noEmit
-  ```
-
-* Run tests:
-
-  ```sh
-  bunx vitest --run
-  ```
-
-* Lint & format:
-
-  ```sh
-  bunx biome check .
-  bunx biome format . --write
-  ```
-
-* Build (all packages):
-
-  ```sh
-  bun run build
-  ```
-
-Refer to individual package READMEs for package-specific scripts and examples.
-
----
-
-## Monorepo Architecture & Deployment
-
-`Zinnia` is structured as a **single monorepo** for profile visuals, trophies, stats (and top-langs), streaks, and LeetCode cards.
-It is designed for **deterministic builds**, **centralized configuration**, and **serverless deployment on Vercel**.
-
-### Centralized Configuration (Root)
-
-* `tsconfig.json`
-  Root TypeScript configuration; all package configs extend this.
-
-* `vitest.config.ts`
-  Shared Vitest configuration with deterministic fixtures and mocks.
-
-* `biome.json`
-  Unified formatting and linting rules.
-
-* `vercel.json`
-  Build and routing configuration. Each endpoint (`/stats`, `/streak`, `/trophy`, `/leetcode`, `/github`) maps to a serverless function implemented in the corresponding package.
-
----
-
-## Testing & CI
-
-### Local Testing
-
-* Run the full test suite:
-
-  ```sh
-  bun run test
-  ```
-
-  > **Warning:** do **not** use `bun test`. Bun's builtin runner lacks the
-  > Vitest APIs these suites rely on (`vi.resetModules`, `vi.doMock`,
-  > `vi.setSystemTime`, jsdom global wiring) and fails wholesale with false
-  > errors. Vitest is the only supported runner; CI uses it via
-  > `bun run test`.
-
-* Typecheck:
-
-  ```sh
-  bunx tsc --noEmit
-  ```
-
-* Lint & format:
-
-  ```sh
-  bunx biome check .
-  bunx biome format .
-  ```
-
-### Test Layout
-
-* Root `tests/` contains shared and cross-package tests.
-* Package-local tests remain where specialized setup is required (e.g. `leetcode/test`).
-* Package `test` scripts delegate to Vitest using the shared root configuration.
-* Baseline (2026-08): full suite = 53 files / 193 tests, all green via
-  `bunx vitest --run` (root config includes `leetcode/test/**`).
-
-### CI Behavior
-
-CI runs:
-
-* Lint
-* Typecheck
-* Tests (Vitest)
-* Build
-
-CI does **not** auto-deploy.
-
----
-
-## CI/CD Workflow
-
-* `.github/workflows/ci.yml`
-  Runs lint, typecheck, tests, and build on push/PR.
-  Concurrency cancellation is enabled.
-
-## Deployment (Vercel)
-
-* **Automatic deployment:**
-  Vercel is connected to GitHub and deploys automatically on pushes to `main`.
-
-* **Manual deployment (optional):**
-
-  ```sh
-  bun run vercel:deploy
-  ```
-
-* **Setup:**
-  Connect the repository in the Vercel dashboard and configure the required environment variables.
-
-* **Demo homepage:**
-  Production root `/` serves the theme demo (`/demo/index.html`). Demo
-  assets are generated at build time via `bun run demo:build` (96 themes ×
-  4 widgets, deterministic, byte-identical on rebuild) into `public/demo/`,
-  which is Vercel's served static directory, and are never committed. Run
-  `bun run demo:dev` for a local preview.
-
-### Optional: Upstash / Redis
-
-For persistent token rotation and cache counters:
-
-* `UPSTASH_REST_URL`
-* `UPSTASH_REST_TOKEN`
-
-Optional:
-
-* `PAT_STORE_NAMESPACE` to isolate environments
-
-If not configured, `Zinnia` falls back to in-memory storage.
-
----
+Stats and top-langs share the `createCardHandler` wrapper (`lib/card-handler.ts`). There is no `/api/github` route.
 
 ## Embeds
 
-Replace `zinnia-rho.vercel.app` with `YOUR DOMAIN` your deployed Vercel domain.
-Both direct and `/api` paths are available; `/api` is recommended.
-
-### GitHub Stats
-
-```html
-<img src="https://zinnia-rho.vercel.app/api/stats?username=divijg19&theme=watchdog&cache=86400" />
+```md
+![stats](https://zinnia-rho.vercel.app/api/stats?username=divijg19&theme=watchdog&cache=86400)
+![top-langs](https://zinnia-rho.vercel.app/api/top-langs?username=divijg19&layout=compact&cache=86400)
+![streak](https://zinnia-rho.vercel.app/api/streak?username=divijg19&theme=watchdog)
+![trophy](https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=watchdog)
+![leetcode](https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&theme=watchdog)
 ```
 
-### Top Languages
+## Response contract
 
-```html
-<img src="https://zinnia-rho.vercel.app/api/top-langs?username=divijg19&layout=compact&theme=watchdog&cache=86400" />
-```
+Every card route keeps the same promise, enforced by `lib/canonical/http_cache.ts` and covered by `tests/api/etag_contract.test.ts`:
 
-### Streak
+- **Always HTTP 200** with a renderable SVG body — never a bare 304 or an empty response. On upstream failure you get a fallback/error SVG, still 200.
+- **`ETag` always set** (`Content-Type: image/svg+xml`, `X-Content-Type-Options: nosniff`, `Vary: Accept-Encoding`).
+- **`?debug=1`** returns JSON diagnostics instead (`sendDebugJson`): validation stage, PAT presence (never values), fetch/render timings.
+- **Error SVGs carry machine-readable codes** as `<!-- ZINNIA_ERR:CODE -->` (e.g. `STATS_RATE_LIMIT`, `TROPHY_INTERNAL`, `UNKNOWN`). See `ErrorCode` in `lib/errors.ts` for the full list.
 
-```html
-<img src="https://zinnia-rho.vercel.app/api/streak?user=divijg19&theme=watchdog&cache=86400" />
-```
+## Cache
 
-### Trophy
-
-```html
-<img src="https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=watchdog&cache=86400" />
-```
-
-### LeetCode (US)
-
-```html
-<img src="https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&theme=watchdog&cache=86400" />
-```
-
-### GitHub (placeholder)
-
-```html
-<img src="https://zinnia-rho.vercel.app/api/github?username=divijg19&cache_seconds=86400" />
-```
-
-### Health Check
-
-```html
-<img src="https://zinnia-rho.vercel.app/api/health?text=OK&cache=60" />
-```
-
-**Tips**
-
-* Prefer the `cache` query parameter to reduce upstream load.
-* If an embed fails on GitHub, open the image URL directly and verify:
-
-  * `Content-Type: image/svg+xml`
-  * HTTP 200
-* `/api/health` always returns a valid SVG for diagnostics.
-
----
-
-## Cache Tuning
-
-Cache TTL can be controlled via query params or environment variables.
-Valid range: **0–604800 seconds** (7 days).
-
-### Defaults
-
-* Global default: `CACHE_SECONDS` (default: `86400`)
-
-### Service-specific overrides (optional)
-
-* `LEETCODE_CACHE_SECONDS`
-* `TROPHY_CACHE_SECONDS`
-* `STREAK_CACHE_SECONDS`
-* `STATS_CACHE_SECONDS`
-* `TOP_LANGS_CACHE_SECONDS`
-
-**Precedence**
+`?cache=` (seconds) wins, then the service override, then the global fallback:
 
 ```
-?cache → SERVICE_CACHE_SECONDS → CACHE_SECONDS → 86400
+?cache= → STATS_CACHE_SECONDS / TOP_LANGS_CACHE_SECONDS / STREAK_CACHE_SECONDS
+        / TROPHY_CACHE_SECONDS / LEETCODE_CACHE_SECONDS (+ GITHUB_/HEALTH_)
+        → CACHE_SECONDS → 86400 (health: 60)
 ```
 
----
+`?cache=` is clamped to `0–604800` (a `0`/unparseable value falls back to the base). Error/fallback responses use short/transient caching (`Cache-Control: no-store` on debug JSON, minimum 60s on fallbacks).
 
-## Environment Variables (Vercel)
+## Env vars
 
-Recommended non-secret defaults:
+Full matrix with defaults lives in `.env.example`. The short version:
 
-```
-CACHE_SECONDS=86400
-LEETCODE_CACHE_SECONDS=86400
-TROPHY_CACHE_SECONDS=86400
-STREAK_CACHE_SECONDS=86400
-STATS_CACHE_SECONDS=86400
-TOP_LANGS_CACHE_SECONDS=86400
-```
+| Group | Vars |
+| ----- | ---- |
+| Tokens | `PAT_1`…`PAT_5` (or a single `GITHUB_TOKEN` seed) |
+| KV | `UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN` (or `UPSTASH_PREFIX` variants), `PAT_STORE_NAMESPACE`, `REDIS_URL` |
+| Cache TTLs | `CACHE_SECONDS` + 7 service overrides (see above) |
+| Timeouts | `STATS_GRAPHQL_TIMEOUT_MS`, `STATS_REST_TIMEOUT_MS`, `STREAK_FETCH_TIMEOUT_MS`, `TROPHY_GRAPHQL_TIMEOUT_MS`, `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 8000ms; KV fixed at 5000ms) |
+| File cache | `CACHE_DIR`, `TROPHY_CACHE_DIR`, `STREAK_CACHE_DIR` (best-effort, off unless set) |
 
-Values can be scoped per environment (Production / Preview / Development).
+## Auth / PAT rotation
 
----
+Each service prefers its own token and falls back to global rotation (`SERVICE_PAT_MAP` in `lib/tokens.ts`):
 
-## Auth Tokens (GitHub PATs)
+| Service | Preferred |
+| ------- | --------- |
+| stats, top-langs | `PAT_1` |
+| leetcode | `PAT_2` |
+| trophy | `PAT_3` |
+| streak | `PAT_4` |
 
-Some endpoints require higher GitHub API limits.
+`PAT_1` is auto-seeded from `GITHUB_TOKEN` (or `GH_TOKEN`/`PAT`/…) and from `Authorization`/`x-github-token` request headers (`lib/env.ts`, `seedServicePat`). Exhausted tokens are skipped: rate-limited keys for 60s, auth failures for 300s (`RATE_LIMIT_TTL_SECONDS` / `AUTH_FAILURE_TTL_SECONDS`), persisted to KV when configured. Timeouts fail fast into the error SVG — tokens are never retried within one request.
 
-### PAT Mapping
+## Themes
 
-* `PAT_1` — stats & top-langs
-* `PAT_2` — leetcode
-* `PAT_3` — trophy
-* `PAT_4` — streak
-* `PAT_5` — optional global fallback
+96 themes live in `lib/themes/registry.ts` (with per-widget `streak`/`trophy`/`leetcode` overrides), adapted by `lib/themes/adapters/`. Preview them all in the local demo (`bun run demo:dev`) — there are no static theme tables to go stale.
 
-Each token should have `public_repo` (or equivalent) scope.
+## Build & deploy
 
-Endpoints will return a guidance SVG without PATs, but will be rate-limited.
+`bun run build` runs 5 `tsup` shards in parallel (`scripts/build-shards.sh`): leetcode core → `leetcode/packages/core/dist`, trophy renderer → `api/_build/trophy`, streak → `streak/dist` **and** minified sharp-external `api/_build/streak`, stats → `stats/api`. Vercel builds `bun run build && bun run demo:build` (`vercel.json`) and ships the bundles via `includeFiles`. Deploy: `bun run vercel:deploy` (needs `VERCEL_TOKEN`).
 
-### Optional Upstream Tokens
+`lib/` owns the shared architecture: `canonical/http_cache.ts` (responses, cache, ETags), `errors.ts`, `params.ts`, `tokens.ts`, `card-handler.ts`, `fetch-timeout.ts`, `kv/upstash.ts`, `themes/`.
 
-* Trophy upstream auth:
+## Tests
 
-  * Callers may pass a `token` query parameter
-  * Otherwise centralized PAT rotation is used
-  * Keys returning 401/403 are automatically marked as exhausted
+`vitest.config.ts` runs `tests/**` + `leetcode/test/**`: `tests/api` (route contracts), `tests/stats|streak|trophy|lib` (units + parity vs legacy fixtures), `tests/demo` + `tests/smoke` (offline handler smoke), `tests/lib/themes` (exact adapter parity). Shared doubles live in `tests/_testShim.ts` (`makeReq`/`makeRes`, PAT env, fetch mocks, loader/retryer factories). Live-network tests (e.g. the leetcode generator test) hit real endpoints and can flake in sandboxes — re-run in isolation before trusting a failure.
 
----
+## FAQ
 
-## Environment Validation
+**Streak doesn't match my contribution graph?** Stats are computed in UTC and cached — allow a few hours after pushing. Enable *Private contributions* in your GitHub profile settings to include private repos.
 
-Before deploying, validate configuration:
+**Something renders wrong?** Append `?debug=1` to any card URL for the JSON diagnostic (validation, PAT presence, timings) instead of guessing.
 
-```sh
-bun scripts/validate-env.mjs
-```
+## More docs
 
----
-
-## Cache Busting for GitHub Embeds
-
-GitHub caches images aggressively.
-To force refresh after a deploy, append a dummy query parameter:
-
-```markdown
-![stats](https://zinnia-rho.vercel.app/api/stats?username=divijg19&v=1730850000)
-```
-
----
-
-## Maintainer Notes
-
-* All configuration is centralized at the root.
-* New packages should extend existing root configs.
-* A single lockfile (`bun.lock`) is used for deterministic installs.
-* For CI caching strategies, refer to Vercel and GitHub Actions documentation.
-
----
-
-For questions, issues, or contributions, refer to the individual package READMEs or open an issue in the repository.
+- `CONTRIBUTING.md` / `SECURITY.md` — how to contribute, how to report issues.
+- `stats|streak|trophy|leetcode/README.md` — per-package route/param notes.
+- `stats|streak|trophy|leetcode/UPSTREAM.md` — vendoring provenance and sync policy.
