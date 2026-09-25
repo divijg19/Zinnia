@@ -27,9 +27,12 @@ All handlers live in `api/*.ts` (Vercel rewrites `/(.*)` → `/api/$1`):
 | `/api/streak?username=…` (`user=` also works) | contribution streak | `streak/src/fetcher.ts` + `streak/src/card.ts` |
 | `/api/trophy?username=…` | profile trophies | `trophy/src/Services/` + `trophy/src/renderer.ts` |
 | `/api/leetcode?username=…` | LeetCode stats | `leetcode/packages/core/src/` |
-| `/api/health` | health SVG | built-in |
+| `/api/health` | health **SVG** card (`?text=` custom label) | `api/health.ts` |
+| `/api/__health` | health **JSON** readiness probe (`{"ok":true}` + `X-Ready: 1`) | `api/__health.ts` |
 
 Stats and top-langs share the `createCardHandler` wrapper (`lib/card-handler.ts`). There is no `/api/github` route.
+
+Two health endpoints by design: `/api/health` is embeddable (an SVG card, so it renders in a README and honors `?cache=`/`HEALTH_CACHE_SECONDS` with a 60s fallback), while `/api/__health` is for machine probes — a plain JSON body and `X-Ready` header, no rendering, no cache headers.
 
 ## Response contract
 
