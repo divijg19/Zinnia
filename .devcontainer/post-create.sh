@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
+# Single post-create step for the devcontainer: install dependencies exactly
+# as CI does. (The old on-create.sh duplicated this and carried a dead
+# streak/composer.json guard; both are gone.)
 set -euo pipefail
 
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-/workspaces/zinnia}"
 cd "$WORKSPACE_ROOT"
 
-echo "Running consolidated .devcontainer post-create tasks from $WORKSPACE_ROOT"
-
-# Install root JS deps if missing
-if [ -f "package.json" ]; then
-  echo "Installing root JS dependencies..."
-  if command -v bun >/dev/null 2>&1; then
-    bun install || true
-  else
-    npm install || true
-  fi
-fi
+echo "Installing dependencies (frozen lockfile)..."
+bun install --frozen-lockfile
 
 echo "post-create tasks complete"

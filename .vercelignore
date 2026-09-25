@@ -6,12 +6,9 @@ benchmarks
 coverage
 tests
 .gitignore
-.github
-README.md
 LICENSE
-debug.ts
-.env
 **/*.md
+.env*
 **/*.svg
 
 # Ignore node_modules and build artifacts from uploads
@@ -20,10 +17,9 @@ dist/
 .wrangler/
 
 # Editor config and IDE
-.vscode/
 .idea/
 
-# Ignore devcontainers and husky hooks
-.devcontainer/
-.husky/
-
+# Local junk that should never upload (regenerable)
+cache/
+tmp/
+*.tsbuildinfo
