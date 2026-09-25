@@ -11,16 +11,14 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
 				v ? `${String(v).slice(0, 6)}…${String(v).slice(-4)}` : null,
 			]),
 		);
+		// Report only the token keys this endpoint already inspects. Never
+		// enumerate process.env wholesale: the route is public, and key names
+		// alone disclose infrastructure (presence of STRIPE_*, AWS_*, DB URLs…).
+		const presentKeys = Object.keys(masked).filter((k) => masked[k]);
 		res.setHeader("content-type", "application/json");
 		res
 			.status(200)
-			.send(
-				JSON.stringify(
-					{ visible: masked, presentKeys: Object.keys(process.env) },
-					null,
-					2,
-				),
-			);
+			.send(JSON.stringify({ visible: masked, presentKeys }, null, 2));
 	} catch (e) {
 		res.status(500).send(String(e));
 	}
