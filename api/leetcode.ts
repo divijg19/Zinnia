@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				req,
 				res,
 				"Missing or invalid ?username=...",
-				"LEETCODE_INVALID",
+				"UNKNOWN",
 			);
 		}
 
@@ -40,7 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				req,
 				res,
 				"Missing or invalid ?username=...",
-				"LEETCODE_INVALID",
+				"UNKNOWN",
 			);
 		}
 		type SanitizedOptions = {
