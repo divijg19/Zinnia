@@ -1,55 +1,31 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import * as utils from "../../api/_utils";
+import * as canonical from "../../lib/canonical/http_cache.js";
 
-describe("trophy cache metadata helpers", () => {
-	const url = `https://example.com/test-${Date.now()}-${Math.random()}`;
-	const body = "<svg>OK</svg>";
-	const etag = "test-etag-123";
-	const cacheDir =
-		process.env.TROPHY_CACHE_DIR || path.join(process.cwd(), "cache", "trophy");
-
-	afterAll(async () => {
-		// cleanup files if present
-		try {
-			// import computeCacheKey at runtime to avoid mocked module interference
-			vi.resetModules();
-			const mod = await import("../../api/_utils");
-			const { computeCacheKey } = mod;
-			const key = computeCacheKey(url);
-			await fs.unlink(path.join(cacheDir, `${key}.svg`));
-		} catch (_e) {
-			// ignore
-		}
-		try {
-			// import computeCacheKey at runtime (second attempt in case of race)
-			vi.resetModules();
-			const mod2 = await import("../../api/_utils");
-			const { computeCacheKey: computeCacheKey2 } = mod2;
-			const key = computeCacheKey2(url);
-			await fs.unlink(path.join(cacheDir, `${key}.meta.json`));
-		} catch (_e) {
-			// ignore
-		}
-		// remove cache directory if empty
-		try {
-			await fs.rm(cacheDir, { recursive: true, force: true });
-		} catch (_e) {
-			// ignore
-		}
+describe("api/_utils re-export shim", () => {
+	// `api/_utils` is a pure `export *` + default re-export of the canonical
+	// module. It used to be imported for real only by the (now removed) trophy
+	// FS-cache round-trip test, so these assertions keep the shim contract
+	// pinned: routes import through this path at runtime.
+	it("re-exports the canonical functions by reference", () => {
+		expect(utils.computeEtag).toBe(canonical.computeEtag);
+		expect(utils.resolveCacheSeconds).toBe(canonical.resolveCacheSeconds);
+		expect(utils.getCacheAdapterForService).toBe(
+			canonical.getCacheAdapterForService,
+		);
+		expect(utils.sendSuccessSvg).toBe(canonical.sendSuccessSvg);
+		expect(utils.sendShortSvg).toBe(canonical.sendShortSvg);
+		expect(utils.sendFallbackSvg).toBe(canonical.sendFallbackSvg);
 	});
 
-	test("write then read returns same body and etag", async () => {
-		// Import the real module at test time to avoid other tests' vi.doMock affecting this test
-		vi.resetModules();
-		const mod = await import("../../api/_utils");
-		const { readTrophyCacheWithMeta, writeTrophyCacheWithMeta } = mod;
+	it("re-exports the canonical default object", () => {
+		expect(utils.default).toBe(canonical.default);
+		expect(utils.default.computeEtag).toBe(canonical.computeEtag);
+	});
 
-		await writeTrophyCacheWithMeta(url, body, etag);
-		const got = await readTrophyCacheWithMeta(url);
-		expect(got).not.toBeNull();
-		expect(got?.body).toBe(body);
-		expect(got?.etag).toBe(etag);
-		expect(typeof got?.ts).toBe("number");
+	it("computes stable etags through the shim", () => {
+		const body = "<svg>OK</svg>";
+		expect(utils.computeEtag(body)).toBe(canonical.computeEtag(body));
+		expect(utils.computeEtag(body)).not.toBe(utils.computeEtag(`${body}x`));
 	});
 });

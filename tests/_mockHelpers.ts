@@ -27,8 +27,10 @@ export function mockApiUtilsFactory({
 
 	return () => {
 		const allowedThemes = new Set(["watchdog", "light", "dark", "onedark"]);
-		// Mock `api/cache` as well so handlers that import it directly are
-		// covered by tests that only mock `api/_utils`.
+		// Mock `api/cache` defensively: it is the filesystem layer under
+		// lib/canonical/http_cache, so a test that mocks only `api/_utils`
+		// still needs cache reads/writes stubbed. No handler imports it
+		// directly today; keep this in sync with the real module's surface.
 		const cacheMock = () => ({
 			computeCacheKey: (u: string) =>
 				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
@@ -47,10 +49,6 @@ export function mockApiUtilsFactory({
 			computeCacheKey: (u: string) =>
 				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
 			computeEtag: (b: string) => computeEtag(b),
-			readTrophyCache: readImpl,
-			readTrophyCacheWithMeta: readMetaImpl,
-			writeTrophyCacheWithMeta: writeImpl,
-			writeTrophyCache: writeImpl,
 			isValidUsername: (username: string | null | undefined) => {
 				if (!username) return false;
 				return /^[A-Za-z0-9-]{1,39}$/.test(String(username));

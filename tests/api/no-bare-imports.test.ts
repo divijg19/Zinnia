@@ -36,7 +36,18 @@ function tsFiles(dir: string): string[] {
 
 function resolvable(fromFile: string, spec: string): boolean {
 	const base = resolve(dirname(fromFile), spec);
-	const candidates = [base, `${base}.ts`, join(base, "index.ts")];
+	// A specifier with an extension may point at a real file of that name
+	// (plain-JS runtime modules, e.g. lib/canonical/*.js) or at a `.ts`
+	// source in-repo (the dominant convention). Accept either, plus the
+	// extensionless and directory-index forms.
+	const asTs = base.replace(/\.js$/, ".ts");
+	const candidates = [
+		base,
+		asTs,
+		`${asTs}.ts`,
+		join(base, "index.ts"),
+		join(asTs, "index.ts"),
+	];
 	try {
 		return candidates.some((c) => {
 			try {
@@ -73,8 +84,7 @@ describe("no bare relative imports in function-shipped code", () => {
 				for (const spec of specs) {
 					if (!/\.(js|ts|json)$/.test(spec)) {
 						violations.push(`${file} -> ${spec} (missing extension)`);
-					} else if (!resolvable(file, spec.replace(/\.js$/, ""))) {
-						// .js specifiers map to .ts sources in-repo.
+					} else if (!resolvable(file, spec)) {
 						violations.push(`${file} -> ${spec} (unresolvable)`);
 					}
 				}
