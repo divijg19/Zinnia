@@ -8,7 +8,7 @@
 	"packageManager": "bun@1.3.14",
 	"scripts": {
 		"pretest": "bun run build",
-		"build": "tsup leetcode/packages/core/src/index.ts --format esm --out-dir leetcode/packages/core/dist --platform node --target node24 --sourcemap --clean && tsup trophy/src/renderer.ts --format esm --out-dir api/_build/trophy --platform node --target node24 --sourcemap --clean && tsup streak/src/index.ts --format esm --out-dir streak/dist --platform node --target node24 --sourcemap --clean && tsup streak/src/index.ts --format esm --out-dir api/_build/streak --platform node --target node24 --external sharp --minify --clean && tsup stats/src/index.ts --format esm --out-dir stats/api --platform node --target node24 --sourcemap --clean",
+		"build": "bash scripts/build-shards.sh",
 		"demo:build": "bun scripts/generate-demo-assets.js && mkdir -p public/demo && cp -r demo/* public/demo/",
 		"demo:dev": "bun scripts/generate-demo-assets.js && bunx serve demo",
 		"vercel:deploy": "vercel --prod --token $VERCEL_TOKEN --yes",

@@ -240,6 +240,19 @@ function formatNumber(num: number, locale = "en", useShort = false): string {
 	}
 }
 
+// Cache of compiled split patterns by width. The key space is the handful
+// of distinct card widths, so this stays tiny.
+const splitLinesPatterns = new Map<number, RegExp>();
+
+function splitLinesPattern(maxChars: number): RegExp {
+	let pattern = splitLinesPatterns.get(maxChars);
+	if (!pattern) {
+		pattern = new RegExp(`.{1,${maxChars}}(?:s|$)`, "g");
+		splitLinesPatterns.set(maxChars, pattern);
+	}
+	return pattern;
+}
+
 function splitLines(
 	text: string,
 	maxChars: number,
@@ -247,9 +260,7 @@ function splitLines(
 ): string {
 	if (!text) return "";
 	if (maxChars > 0 && text.length > maxChars && !text.includes("\n")) {
-		const parts = text.match(new RegExp(`.{1,${maxChars}}(?:s|$)`, "g")) || [
-			text,
-		];
+		const parts = text.match(splitLinesPattern(maxChars)) || [text];
 		if (parts.length > 1) {
 			return `<tspan x='0' dy='${line1Offset}'>${parts[0].trim()}</tspan><tspan x='0' dy='16'>${parts.slice(1).join(" ").trim()}</tspan>`;
 		}
