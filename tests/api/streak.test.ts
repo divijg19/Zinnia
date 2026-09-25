@@ -151,13 +151,10 @@ describe("/api/streak handler", () => {
 		);
 
 		const body = res.send.mock.calls[0][0] as string;
-		if (body.includes("Upstream streak returned 200")) {
-			expect(body).toContain("Upstream streak returned 200");
-			expect(body).toContain("ZINNIA_ERR:STREAK_UPSTREAM_STATUS");
-		} else {
-			// local fallback SVG accepted
-			expect(body).toContain("<svg");
-		}
+		// The api/ route has no non-SVG upstream branch (that message only
+		// exists in the legacy package handler): unreachable upstream errors
+		// fall through to the local renderer, so any 200 SVG is accepted.
+		expect(body).toContain("<svg");
 	});
 
 	it("always returns 200 with full SVG body and ETag set on If-None-Match match", async () => {

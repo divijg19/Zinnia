@@ -50,6 +50,8 @@ export default defineConfig({
 				path.join(repoRoot, "stats/src"),
 				path.join(repoRoot, "streak/src"),
 				path.join(repoRoot, "trophy/src"),
+				path.join(repoRoot, "api/**/*.ts"),
+				path.join(repoRoot, "lib/**/*.ts"),
 			],
 			exclude: [
 				"leetcode/packages/**/src/**/demo/**",
