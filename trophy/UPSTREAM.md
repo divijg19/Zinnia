@@ -3,7 +3,7 @@ Pinned commit: eb5e82f9dec8b37616bac4acdce9dc1a6d708c78 (imported 2025-12-22T22:
 
 Notes:
 - Vendored to replace Deno-specific implementation with a Node/Vercel-friendly proxy and a local TS SVG renderer.
-- Local changes: `api/index.ts` supports `mode=proxy` (default) and `mode=local` feature flag; unified cache headers.
+- Local changes: `api/trophy.ts` route with a Node/Vercel-friendly local TS SVG renderer (`src/renderer.ts`); unified cache headers.
 
 Sync strategy:
 - The local renderer is intentionally minimal; proxy mode tracks upstream output.
