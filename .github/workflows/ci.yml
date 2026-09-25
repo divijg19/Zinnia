@@ -13,11 +13,18 @@ concurrency:
 permissions:
   contents: read
 
+# Shared setup, repeated per job (each job gets a fresh runner):
+# - Bun is pinned to package.json packageManager (1.3.14), never `latest`.
+# - setup-node stays (cheap insurance for tsc/vercel compat) but without
+#   check-latest, so day-to-day runs are reproducible.
+# - Bun's install cache is restored per bun.lock hash; cold installs only
+#   happen when the lockfile changes.
+
 jobs:
-  test:
-    name: Lint and test
+  lint:
+    name: Lint and typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
@@ -27,24 +34,144 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          check-latest: true
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.3.14"
+
+      - name: Restore Bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check & Format
-        run: bunx biome check --error-on-warnings .
-
       - name: Lint / typecheck
         run: bun run lint
 
+  build:
+    name: Build shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Restore Bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Build
         run: bun run build
+
+      - name: Upload build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            streak/dist
+            api/_build
+            leetcode/packages/core/dist
+            stats/api
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Restore Bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Download build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      # NOTE: vitest is invoked directly, not via `bun run test`, because the
+      # `pretest` hook would rebuild all 5 tsup shards a second time. The
+      # build job already produced them (see the artifact above).
+      - name: Tests
+        env:
+          CI: true
+        run: bunx vitest --run
+
+  demo:
+    name: Demo build + determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Restore Bun install cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: Demo build + determinism
         run: |
@@ -54,8 +181,3 @@ jobs:
           find demo/assets -type f | sort | xargs sha256sum > /tmp/demo-assets-b.txt
           diff /tmp/demo-assets-a.txt /tmp/demo-assets-b.txt
           bun tests/demo-assets.smoke.js
-
-      - name: Tests
-        env:
-          CI: true
-        run: bun run test
