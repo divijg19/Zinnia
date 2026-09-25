@@ -10,7 +10,7 @@ RUN apt-get update -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Node 24 matches .nvmrc, package.json engines, and CI. Installed via
+# Node 24 matches package.json engines and CI. Installed via
 # NodeSource so the version is pinned, not whatever the base image ships.
 RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
