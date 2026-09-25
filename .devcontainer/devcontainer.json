@@ -7,10 +7,9 @@
 	"workspaceFolder": "/workspaces/zinnia",
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/zinnia,type=bind,consistency=cached",
 	"postCreateCommand": "./.devcontainer/post-create.sh",
-	"onCreateCommand": "./.devcontainer/on-create.sh",
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash"
 	},
-	"extensions": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"],
+	"extensions": ["biomejs.biome"],
 	"remoteUser": "vscode"
 }
