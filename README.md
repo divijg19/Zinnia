@@ -31,16 +31,6 @@ All handlers live in `api/*.ts` (Vercel rewrites `/(.*)` → `/api/$1`):
 
 Stats and top-langs share the `createCardHandler` wrapper (`lib/card-handler.ts`). There is no `/api/github` route.
 
-## Embeds
-
-```md
-![stats](https://zinnia-rho.vercel.app/api/stats?username=divijg19&theme=watchdog&cache=86400)
-![top-langs](https://zinnia-rho.vercel.app/api/top-langs?username=divijg19&layout=compact&cache=86400)
-![streak](https://zinnia-rho.vercel.app/api/streak?username=divijg19&theme=watchdog)
-![trophy](https://zinnia-rho.vercel.app/api/trophy?username=divijg19&theme=watchdog)
-![leetcode](https://zinnia-rho.vercel.app/api/leetcode?username=divijg19&theme=watchdog)
-```
-
 ## Response contract
 
 Every card route keeps the same promise, enforced by `lib/canonical/http_cache.ts` and covered by `tests/api/etag_contract.test.ts`:
