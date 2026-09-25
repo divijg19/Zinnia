@@ -91,12 +91,6 @@ export class Catalog {
 		return true;
 	}
 
-	setThemeRegistry(themeRegistry) {
-		this.themeRegistry = themeRegistry || [];
-		this.filteredThemes = [...this.themeRegistry];
-		this.render();
-	}
-
 	updateTheme(themeName) {
 		this.currentTheme = themeName;
 		this.render();

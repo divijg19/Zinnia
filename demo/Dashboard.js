@@ -20,10 +20,6 @@ export class Dashboard {
 		await this.render();
 	}
 
-	setThemeRegistry(themeRegistry) {
-		this.themeRegistry = themeRegistry;
-	}
-
 	async render() {
 		if (!this.container || !this.widgetFactory || !this.themeRegistry) return;
 
