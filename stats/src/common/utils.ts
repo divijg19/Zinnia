@@ -15,6 +15,26 @@ let emojiMap: { get(key: string): string | undefined } | null = null;
 
 export const ERROR_CARD_LENGTH = 576.5;
 
+// Cache of derived stats themes by "selected|fallback" name pair. The
+// derivation is pure over registry singletons and the key space is bounded
+// (~100 theme names), so this never grows without limit.
+const statsThemeCache = new Map<string, ReturnType<typeof toStatsTheme>>();
+
+function getCachedStatsTheme(
+	selectedName: string,
+	fallbackName: string,
+	selectedTheme: (typeof themes)[string],
+	defaultTheme: (typeof themes)[string],
+): ReturnType<typeof toStatsTheme> {
+	const key = `${selectedName}|${fallbackName}`;
+	let cached = statsThemeCache.get(key);
+	if (!cached) {
+		cached = toStatsTheme(selectedTheme, defaultTheme);
+		statsThemeCache.set(key, cached);
+	}
+	return cached;
+}
+
 export const flexLayout = ({
 	items,
 	gap,
@@ -78,10 +98,13 @@ export const kFormatter = (num: number) => {
 		: Math.sign(num) * Math.abs(num);
 };
 
+// Hoisted: isValidHexColor runs per color token per request; constructing
+// the RegExp on every call is pure overhead.
+const HEX_COLOR_RE =
+	/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{4})$/;
+
 export const isValidHexColor = (hexColor: string) => {
-	return new RegExp(
-		/^([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{4})$/,
-	).test(hexColor);
+	return HEX_COLOR_RE.test(hexColor);
 };
 
 export const parseBoolean = (
@@ -196,7 +219,14 @@ export const getCardColors = ({
 	// Resolve per-theme properties, falling back to the default theme for any
 	// missing keys (e.g. border_color). Mirrors the historical behavior where a
 	// property absent on the selected theme is replaced by the default's value.
-	const adapted = toStatsTheme(selectedTheme, defaultTheme);
+	// Memoized by theme-name pair: the derivation is pure and consumers only
+	// read the result, so sharing it across requests is safe.
+	const adapted = getCachedStatsTheme(
+		theme || "",
+		fallbackTheme,
+		selectedTheme,
+		defaultTheme,
+	);
 	const titleColor = fallbackColor(
 		title_color || adapted.title_color,
 		`#${defaultStats.title_color}`,

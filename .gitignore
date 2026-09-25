@@ -146,6 +146,7 @@ _vendor_backup/
 _vendor_backup/**
 
 scripts/*
+!scripts/build-shards.sh
 !scripts/generate-demo-assets.js
 !scripts/smoke-embeds.js
 .vercel
@@ -193,6 +194,7 @@ stats/api/*.js.map
 # Trophy and stats package-specific ignores
 deno.lock
 *.sh
+!scripts/build-shards.sh
 !scripts/e2e_smoke.sh
 vercel_token
 benchmarks
