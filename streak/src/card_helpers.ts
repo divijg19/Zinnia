@@ -169,116 +169,25 @@ export function convertHexColors(svg: string): string {
 export function removeAnimations(svg: string): string {
 	if (!svg) return svg;
 
-	// Optionally use a DOM-based sanitizer when `SVG_DOM_SANITIZE=1` is set.
-	// By default we use the regex-based sanitizer to preserve exact output
-	// formatting and casing expected by tests and consumers.
-	if (process.env.SVG_DOM_SANITIZE === "1") {
-		// Prefer a DOM-based sanitizer when `linkedom` is available for robust
-		// removal of scripts, SMIL animation elements, and inline event handlers.
-		try {
-			// Prefer linkedom when available, fall back to jsdom (already a devDependency)
-			let domImpl: any = null;
-			try {
-				domImpl = require("linkedom");
-			} catch {
-				try {
-					domImpl = require("jsdom");
-				} catch {
-					domImpl = null;
-				}
-			}
-			if (domImpl) {
-				let document: any;
-				if (domImpl.parseHTML && typeof domImpl.parseHTML === "function") {
-					// linkedom
-					document = domImpl.parseHTML(svg).document;
-				} else if (domImpl.JSDOM) {
-					const { JSDOM } = domImpl;
-					const dom = new JSDOM(svg, { contentType: "image/svg+xml" });
-					document = dom.window.document;
-				} else {
-					document = null;
-				}
-				if (document) {
-					// remove style blocks that might contain animations
-					const styles = document.querySelectorAll("style");
-					styles.forEach((n: any) => {
-						n.remove();
-					});
-
-					// remove scripts and SMIL animation elements
-					const badTags = [
-						"script",
-						"animate",
-						"animateTransform",
-						"animateMotion",
-						"set",
-					];
-					for (const t of badTags) {
-						const nodes = document.getElementsByTagName(t);
-						Array.from(nodes).forEach((n: any) => {
-							n.remove();
-						});
-					}
-
-					// remove inline event handlers and javascript: hrefs/xlink:hrefs
-					const all = document.querySelectorAll("*");
-					all.forEach((el: any) => {
-						for (const a of Array.from(el.attributes || []) as Attr[]) {
-							const name = String(a.name || "").toLowerCase();
-							const val = String(a.value || "");
-							if (name.startsWith("on")) el.removeAttribute(a.name);
-							if (
-								(name === "href" || name === "xlink:href") &&
-								/^javascript:/i.test(val)
-							)
-								el.removeAttribute(a.name);
-							if (name.startsWith("xmlns:")) el.removeAttribute(a.name);
-						}
-					});
-
-					// remove anchor wrappers but keep their children
-					const anchors = document.querySelectorAll("a");
-					anchors.forEach((a: any) => {
-						const parent = a.parentNode;
-						while (a.firstChild) parent.insertBefore(a.firstChild, a);
-						a.remove();
-					});
-
-					// normalize opacity styles if present (avoid invisible text)
-					const els = document.querySelectorAll("*[style]");
-					els.forEach((el: any) => {
-						const s = el.getAttribute("style") || "";
-						el.setAttribute(
-							"style",
-							s.replace(/opacity:\s*0;/gi, "opacity: 1;"),
-						);
-					});
-
-					// Preserve optional XML declaration if present
-					const declMatch = svg.match(/^(<\?xml[\s\S]*?\?>)\s*/);
-					const decl = declMatch ? `${declMatch[1]}\n` : "";
-					const inner = document.documentElement
-						? document.documentElement.outerHTML
-						: document.toString();
-					return decl + inner;
-				}
-			}
-		} catch {}
-	}
-
-	// --- Regex fallback sanitizer (best-effort) ---
+	// --- Regex sanitizer ---
 	// remove entire <style> blocks
 	svg = svg.replace(/<style>[\s\S]*?<\/style>/gi, "");
 
 	// strip script blocks (safety)
 	svg = svg.replace(/<script\b[\s\S]*?<\/script>/gi, "");
 
-	// remove SMIL animation elements and related tags
-	svg = svg.replace(/<animate[\s\S]*?<\/animate>/gi, "");
-	svg = svg.replace(/<animateTransform[\s\S]*?<\/animateTransform>/gi, "");
-	svg = svg.replace(/<animateMotion[\s\S]*?<\/animateMotion>/gi, "");
-	svg = svg.replace(/<set[\s\S]*?<\/set>/gi, "");
+	// Remove SMIL animation elements. They appear both paired
+	// (`<animate>…</animate>`) and self-closing (`<animate …/>`), and the tag
+	// names share prefixes (animate / animateTransform / animateMotion), so each
+	// form is matched per tag behind a word boundary. Matching only the paired
+	// form left self-closing SMIL in the output, which the DOM-based sanitizer
+	// used to hide but which never ran in production.
+	for (const tag of ["animate", "animateTransform", "animateMotion", "set"]) {
+		svg = svg.replace(
+			new RegExp(`<${tag}\\b[^>]*\\/>|<${tag}\\b[\\s\\S]*?<\\/${tag}>`, "gi"),
+			"",
+		);
+	}
 
 	// make any opacity: 0 => opacity: 1 to avoid invisible text in embeddings
 	svg = svg.replace(/opacity:\s*0;/gi, "opacity: 1;");
