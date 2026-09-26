@@ -40,7 +40,6 @@
 		"streak/src/**/*.ts",
 		"streak/api/**/*.ts",
 		"leetcode/api/**/*.ts",
-		"github/api/**/*.ts",
 		"types/**/*.d.ts"
 	],
 	"exclude": [

@@ -1,29 +1,21 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Notable changes to the `streak/` package.
 
 ## Unreleased
 
-- feat: complete TypeScript port of Streak renderer with deterministic gradients and LRU caches
-- fix: robust stream handling and Buffer/Uint8Array interop in compare helpers
-- test: added structural SVG comparator and compare integration tests
-- refactor: remove default exports in favor of named exports; consolidate public types
-- docs: developer runbook and local PHP harness for parity testing
+- Ported the package from PHP to TypeScript.
+  - Core modules: `fetcher`, `stats`, `card` (SVG renderer), `card_helpers`, `themes`, `translations`, and `cache`.
+  - Deterministic gradients (linear and radial), ETag/304 parity, and PNG conversion through `sharp`.
+  - Vitest unit tests and `tsc` type-checking.
+  - A GitHub Actions workflow running type-check and tests on pull requests.
+- Completed the renderer port with deterministic gradients and LRU caches.
+- Fixed stream handling and `Buffer`/`Uint8Array` interop in the compare helpers.
+- Added a structural SVG comparator and compare integration tests.
+- Replaced default exports with named exports and consolidated the public types.
+- Removed the original PHP sources.
 
-## 0.0.0 - Unreleased
-- Initial draft of TypeScript refactor and parity tooling
-# Changelog — streak migration
+## Notes
 
-## Unreleased
-
-- Ported `streak` subproject from PHP to TypeScript.
-  - Core modules: `fetcher`, `stats`, `card` (SVG renderer), `card_helpers`, `themes`, `translations`, `cache`.
-  - Deterministic gradients (linear + radial), ETag/304 parity, PNG conversion via `sharp`.
-  - Non-destructive archival of original PHP sources under `streak/archive_php/`.
-  - Added Vitest unit tests and type-checking with `tsc`.
-  - Added GitHub Actions workflow to run type-check and tests on PRs.
-
-### Notes
-
-- Visual pixel-regression tests are recommended before fully deprecating PHP in production.
-- Verify `sharp` availability in your target runtime (Edge vs serverless vs Node). Provide an SVG fallback if native modules are not supported.
+- Visual pixel-regression tests are still worth adding before the PHP path is considered fully retired.
+- `sharp` availability depends on the runtime. On a target without native module support, the route serves the SVG fallback instead of a PNG.
