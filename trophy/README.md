@@ -1,17 +1,23 @@
-# trophy/ — GitHub profile-trophy card
+# trophy/
 
-Vendored from [ryo-ma/github-profile-trophy](https://github.com/ryo-ma/github-profile-trophy) (`trophy/UPSTREAM.md`), with the Deno implementation replaced by a Node/Vercel-friendly renderer. Project-level docs (install, tests, CI, env) live in the root `README.md`.
+GitHub profile-trophy card.
+
+Vendored from [ryo-ma/github-profile-trophy](https://github.com/ryo-ma/github-profile-trophy), pinned in [UPSTREAM.md](UPSTREAM.md), with the Deno implementation replaced by a Node and Vercel friendly renderer. Setup, build, and test instructions live in the root [README](../README.md) and [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Route
 
-`/api/trophy?username=…` → `api/trophy.ts` → `renderTrophySVG` (`src/renderer.ts`).
+`/api/trophy?username=…` serves `api/trophy.ts`, which calls `renderTrophySVG` in `src/renderer.ts`.
 
-Responses are cached (`TROPHY_CACHE_SECONDS`, fallback `86400`) behind the always-200 + ETag contract.
+Responses are cached under `TROPHY_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
 
 ## Ranks
 
-Trophies rank up through SECRET, SSS, SS, S, AAA, AA, A, B, C (worst). Each trophy defines its own score thresholds in `src/trophy.ts` — e.g. different commit/star/follower counts per tier.
+Trophies rank up through SECRET, SSS, SS, S, AAA, AA, A, B, and C (worst). Each trophy sets its own score thresholds in `src/trophy.ts`, so the commit, star, and follower counts required differ per tier.
 
-## Key params
+## Parameters
 
-`theme`, `columns`, `margin_w`, `margin_h`, `no-frame`, `no-bg`, `title` overrides. Preview every theme in the local demo (`bun run demo:dev`) — `lib/themes/registry.ts` is the source of truth.
+`theme`, `columns`, `margin_w`, `margin_h`, `no-frame`, `no-bg`, and `title` overrides.
+
+## Themes
+
+`lib/themes/registry.ts` is the source of truth for themes. Run `bun run demo:dev` to preview them.

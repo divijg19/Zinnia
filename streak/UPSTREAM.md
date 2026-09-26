@@ -1,5 +1,5 @@
 Source: https://github.com/DenverCoder1/github-readme-streak-stats
-Pinned commit: (unpinned — ported, see notes)
+Pinned commit: not pinned, the code was ported rather than vendored verbatim (see notes)
 
 Notes:
 - Ported from PHP to TypeScript in this monorepo (`streak/CHANGELOG.md`).

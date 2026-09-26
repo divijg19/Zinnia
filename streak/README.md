@@ -1,18 +1,21 @@
-# streak/ — GitHub contribution-streak card (TypeScript port)
+# streak/
 
-Ported from [DenverCoder1/github-readme-streak-stats](https://github.com/DenverCoder1/github-readme-streak-stats) (PHP) to TypeScript (`streak/CHANGELOG.md`). Project-level docs (install, tests, CI, env) live in the root `README.md`.
+GitHub contribution-streak card, ported to TypeScript (see [CHANGELOG.md](CHANGELOG.md)).
+
+Ported from [DenverCoder1/github-readme-streak-stats](https://github.com/DenverCoder1/github-readme-streak-stats), pinned in [UPSTREAM.md](UPSTREAM.md). Setup, build, and test instructions live in the root [README](../README.md) and [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Route
 
-`/api/streak?username=…` (also accepts `?user=`) → `api/streak.ts` → `fetchContributions` + `generateOutput` (`src/index.ts`).
+`/api/streak?username=…` serves `api/streak.ts`, which calls `fetchContributions` and `generateOutput` from `src/index.ts`. `?user=` is accepted as an alias for `?username=`.
 
-Data comes from the GitHub GraphQL API when a `PAT_*` is configured (`STREAK_FETCH_TIMEOUT_MS`, default 8000ms), with a public-contributions scrape fallback. Responses are cached (`STREAK_CACHE_SECONDS`, fallback `86400`) behind the always-200 + ETag contract.
+Data comes from the GitHub GraphQL API when a `PAT_*` is configured, with a public-contributions scrape as the fallback. `STREAK_FETCH_TIMEOUT_MS` bounds both (default 8000ms). Responses are cached under `STREAK_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
 
-## Key params
+## Parameters
 
-`theme`, `mode` (`daily`/`weekly`), `locale`, `date_format`, `exclude_days`, `card_width`, `disable_animations`, color overrides. `?theme=` names normalize `_` to `-` (first-registered theme wins on collision — see the demo).
+`theme`, `mode` (`daily` or `weekly`), `locale`, `date_format`, `exclude_days`, `card_width`, `disable_animations`, and the color overrides. Theme names normalize `_` to `-`; on a collision the first registered name wins.
 
-## Notes
+`?type=png` renders through `sharp`. When conversion is unavailable the route serves the SVG instead.
 
-- `?type=png` renders via `sharp`; when conversion is unavailable the route serves the SVG fallback.
-- Preview every theme in the local demo (`bun run demo:dev`) — `lib/themes/registry.ts` is the source of truth.
+## Themes
+
+`lib/themes/registry.ts` is the source of truth for themes. Run `bun run demo:dev` to preview them.
