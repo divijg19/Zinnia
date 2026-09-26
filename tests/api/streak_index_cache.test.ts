@@ -26,7 +26,10 @@ describe("streak/api/index handler (TS renderer + cache)", () => {
 		await cache.set(cacheKey, "<svg>CACHED</svg>");
 
 		const mod = await import("../../streak/api/index.ts");
-		const handler = mod.default;
+		const handler = mod.default as unknown as (
+			req: TestRequest,
+			res: TestResponse,
+		) => Promise<unknown>;
 
 		const req: TestRequest = makeReq("/api/streak?user=test");
 		const res: TestResponse = makeRes();

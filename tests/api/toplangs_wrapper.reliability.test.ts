@@ -106,10 +106,12 @@ describe("/api/top-langs wrapper reliability", () => {
 				async () => {
 					seen = process.env.PAT_1;
 					return {
-						langs: [
-							{ name: "TypeScript", color: "#3178c6", size: 123, count: 1 },
-						],
-						totalLanguageSize: 123,
+						TypeScript: {
+							name: "TypeScript",
+							color: "#3178c6",
+							size: 123,
+							count: 1,
+						},
 					};
 				},
 			);

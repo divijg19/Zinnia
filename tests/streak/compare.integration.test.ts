@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import { compareCases } from "../../streak/src/compare.ts";
+import { required } from "../_testShim";
 
 describe("compareCases integration (injected generateOutput)", () => {
 	it("handles string body, no php baseline", async () => {
@@ -10,7 +11,7 @@ describe("compareCases integration (injected generateOutput)", () => {
 			cases: [{ name: "string-body", params: {} }],
 			generateOutput: async () => ({ body: "<svg>ok</svg>" }),
 		});
-		expect(details[0].name).toBe("string-body");
+		expect(required(details[0]).name).toBe("string-body");
 		expect(success).toBe(true);
 	});
 
@@ -22,7 +23,7 @@ describe("compareCases integration (injected generateOutput)", () => {
 				body: Readable.from([Buffer.from("a"), Buffer.from("b")]),
 			}),
 		});
-		expect(details[0].name).toBe("stream-body");
+		expect(required(details[0]).name).toBe("stream-body");
 		expect(success).toBe(true);
 	});
 
@@ -36,7 +37,7 @@ describe("compareCases integration (injected generateOutput)", () => {
 			cases: [{ name: "async-gen-body", params: {} }],
 			generateOutput: async () => ({ body: gen() }),
 		});
-		expect(details[0].name).toBe("async-gen-body");
+		expect(required(details[0]).name).toBe("async-gen-body");
 		expect(success).toBe(true);
 	});
 });

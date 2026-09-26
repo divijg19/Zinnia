@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderStatsCard } from "../../stats/src/cards/stats";
 import { CustomError } from "../../stats/src/common/error";
+import { required } from "../_testShim";
 
 const stats = {
 	name: "Anurag Hazra",
@@ -21,12 +22,16 @@ describe("Test renderStatsCard", () => {
 	it("should render correctly", () => {
 		document.body.innerHTML = renderStatsCard(stats);
 
-		expect(document.getElementsByClassName("header")[0].textContent).toBe(
-			"Anurag Hazra's GitHub Stats",
-		);
+		expect(
+			required(document.getElementsByClassName("header")[0], "header")
+				.textContent,
+		).toBe("Anurag Hazra's GitHub Stats");
 
 		expect(
-			document.body.getElementsByTagName("svg")[0].getAttribute("height"),
+			required(
+				document.body.getElementsByTagName("svg")[0],
+				"svg",
+			).getAttribute("height"),
 		).toBe("195");
 		const starsEl = document.querySelector('[data-testid="stars"]');
 		const commitsEl = document.querySelector('[data-testid="commits"]');
@@ -52,14 +57,16 @@ describe("Test renderStatsCard", () => {
 
 	it("should have proper name apostrophe", () => {
 		document.body.innerHTML = renderStatsCard({ ...stats, name: "Anil Das" });
-		expect(document.getElementsByClassName("header")[0].textContent).toBe(
-			"Anil Das' GitHub Stats",
-		);
+		expect(
+			required(document.getElementsByClassName("header")[0], "header")
+				.textContent,
+		).toBe("Anil Das' GitHub Stats");
 
 		document.body.innerHTML = renderStatsCard({ ...stats, name: "Felix" });
-		expect(document.getElementsByClassName("header")[0].textContent).toBe(
-			"Felix's GitHub Stats",
-		);
+		expect(
+			required(document.getElementsByClassName("header")[0], "header")
+				.textContent,
+		).toBe("Felix's GitHub Stats");
 	});
 
 	it("should hide individual stats", () => {
@@ -68,7 +75,10 @@ describe("Test renderStatsCard", () => {
 		});
 
 		expect(
-			document.body.getElementsByTagName("svg")[0].getAttribute("height"),
+			required(
+				document.body.getElementsByTagName("svg")[0],
+				"svg",
+			).getAttribute("height"),
 		).toBe("150");
 
 		expect(document.querySelector('[data-testid="stars"]')).not.toBeNull();

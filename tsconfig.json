@@ -40,6 +40,11 @@
 		"streak/src/**/*.ts",
 		"streak/api/**/*.ts",
 		"leetcode/api/**/*.ts",
+		// Tests were outside the program entirely, so `tsc --noEmit` (and thus
+		// `bun run lint`) never type-checked them. Included as `tests/**/*`
+		// rather than `tests/**/*.ts` so the .js test files are covered too
+		// (allowJs is already on).
+		"tests/**/*",
 		"types/**/*.d.ts"
 	],
 	"exclude": [

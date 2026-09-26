@@ -12,6 +12,7 @@ import {
 	headerValue,
 	makeReq,
 	makeRes,
+	required,
 	type TestRequest,
 	type TestResponse,
 } from "../_testShim";
@@ -49,7 +50,7 @@ describe("/api/streak handler", () => {
 
 		assertSvgHeadersOnRes(res);
 		// Accept either the exact upstream body or the local fallback SVG
-		const sent0 = res.send.mock.calls[0][0] as string;
+		const sent0 = required(res.send.mock.calls[0])[0] as string;
 		if (sent0 === "<svg>OK</svg>") {
 			expect(sent0).toBe("<svg>OK</svg>");
 		} else {
@@ -89,7 +90,7 @@ describe("/api/streak handler", () => {
 		);
 
 		// Accept either the recovered upstream body or a fallback SVG
-		const sent1 = res.send.mock.calls[0][0] as string;
+		const sent1 = required(res.send.mock.calls[0])[0] as string;
 		if (sent1 === "<svg>RECOVERED</svg>") {
 			expect(sent1).toBe("<svg>RECOVERED</svg>");
 		} else {
@@ -118,7 +119,7 @@ describe("/api/streak handler", () => {
 		// When upstream permanently fails we prefer to serve a cached
 		// last-known-good SVG if available; otherwise return a standardized
 		// error SVG. Accept either behavior in tests (cached fallback or error).
-		const body = res.send.mock.calls[0][0] as string;
+		const body = required(res.send.mock.calls[0])[0] as string;
 		if (body.includes("Upstream streak fetch failed")) {
 			expect(body).toContain("ZINNIA_ERR:STREAK_UPSTREAM_FETCH");
 		} else {
@@ -150,7 +151,7 @@ describe("/api/streak handler", () => {
 			res as unknown as VercelResponse,
 		);
 
-		const body = res.send.mock.calls[0][0] as string;
+		const body = required(res.send.mock.calls[0])[0] as string;
 		// The api/ route has no non-SVG upstream branch (that message only
 		// exists in the legacy package handler): unreachable upstream errors
 		// fall through to the local renderer, so any 200 SVG is accepted.
@@ -220,7 +221,7 @@ describe("/api/streak handler", () => {
 		// The handler returns 200 for embeddability but exposes the
 		// original upstream status via a header and marks the response transient.
 		// Always-200 contract: never a bare 304; full SVG body sent with ETag set.
-		const sent2 = res.send.mock.calls[0][0] as string;
+		const sent2 = required(res.send.mock.calls[0])[0] as string;
 		expect(sent2).toBe("<svg>NOTFOUND</svg>");
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.setHeader).toHaveBeenCalledWith(

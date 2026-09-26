@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { required } from "../_testShim";
 
 // Vercel runs compiled output as plain Node ESM, which throws
 // ERR_UNSUPPORTED_DIR_IMPORT for bare relative imports (no extension).
@@ -79,7 +80,7 @@ describe("no bare relative imports in function-shipped code", () => {
 				const specs = new Set<string>();
 				for (const re of [SPEC_RE, DYNAMIC_RE]) {
 					re.lastIndex = 0;
-					for (const m of src.matchAll(re)) specs.add(m[1]);
+					for (const m of src.matchAll(re)) specs.add(required(m[1]));
 				}
 				for (const spec of specs) {
 					if (!/\.(js|ts|json)$/.test(spec)) {

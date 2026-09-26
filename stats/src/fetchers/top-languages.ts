@@ -2,7 +2,7 @@ import { excludeRepositories } from "../common/envs.js";
 import { CustomError, MissingParamError } from "../common/error.js";
 import { retryer } from "../common/retryer.js";
 import { logger, request, wrapTextMultiline } from "../common/utils.js";
-import type { TopLangData } from "./types.js";
+import type { Lang } from "./types.js";
 
 type Variables = { login: string };
 
@@ -12,10 +12,15 @@ type RepoNodeShape = {
 	languages: { edges: Edge[] };
 	size?: number;
 };
-type LangAccumulator = Record<
-	string,
-	{ name: string; color: string; size: number; count: number }
->;
+
+/**
+ * One language entry as this fetcher returns it: the card's `Lang` plus the
+ * `count` this fetcher aggregates. The return type used to be declared as
+ * `TopLangData` (i.e. `Record<string, Lang>`), which omitted `count` even
+ * though the accumulator below always sets it.
+ */
+export type TopLangEntry = Lang & { count: number };
+type LangAccumulator = Record<string, TopLangEntry>;
 
 const fetcher = (variables: Variables, token?: string) => {
 	return request(
@@ -52,7 +57,7 @@ export const fetchTopLanguages = async (
 	exclude_repo: string[] = [],
 	size_weight = 1,
 	count_weight = 0,
-): Promise<TopLangData> => {
+): Promise<LangAccumulator> => {
 	if (!username) {
 		throw new MissingParamError(["username"]);
 	}
@@ -153,5 +158,5 @@ export const fetchTopLanguages = async (
 			return result;
 		}, {} as LangAccumulator);
 
-	return topLangsObj as TopLangData;
+	return topLangsObj as LangAccumulator;
 };

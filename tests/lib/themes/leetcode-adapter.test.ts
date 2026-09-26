@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { themes } from "../../../lib/themes";
 import { toLeetCodeTheme } from "../../../lib/themes/adapters/leetcode";
+import { required } from "../../_testShim";
 
 // Historical palettes captured verbatim from the removed legacy fixture
 // modules (leetcode/packages/core/src/theme/*.ts completed by _theme.ts).
@@ -119,14 +120,14 @@ describe("lib/themes/adapters/leetcode", () => {
 				registryTheme,
 				`theme '${name}' present in registry`,
 			).toBeDefined();
-			const adapted = toLeetCodeTheme(registryTheme);
+			const adapted = toLeetCodeTheme(required(registryTheme, `theme ${name}`));
 			expect(adapted.palette, `${name}.palette`).toEqual(expected.palette);
 			expect(adapted.css, `${name}.css`).toBe(expected.css);
 		}
 	});
 
 	it("pads bg/text palettes to 4 entries", () => {
-		const adapted = toLeetCodeTheme(themes.dark);
+		const adapted = toLeetCodeTheme(required(themes.dark));
 		expect(adapted.palette.bg).toHaveLength(4);
 		expect(adapted.palette.text).toHaveLength(4);
 		expect(adapted.palette.bg).toEqual([
@@ -138,15 +139,15 @@ describe("lib/themes/adapters/leetcode", () => {
 	});
 
 	it("does not mutate canonical registry palette arrays", () => {
-		const before = JSON.stringify(themes.dark.colors?.palette);
-		toLeetCodeTheme(themes.dark);
-		toLeetCodeTheme(themes.dark);
-		expect(JSON.stringify(themes.dark.colors?.palette)).toBe(before);
-		expect(themes.dark.colors?.palette?.bg).toHaveLength(2);
+		const before = JSON.stringify(required(themes.dark).colors?.palette);
+		toLeetCodeTheme(required(themes.dark));
+		toLeetCodeTheme(required(themes.dark));
+		expect(JSON.stringify(required(themes.dark).colors?.palette)).toBe(before);
+		expect(required(themes.dark).colors?.palette?.bg).toHaveLength(2);
 	});
 
 	it("applies legacy defaults when a theme has no palette", () => {
-		const adapted = toLeetCodeTheme(themes.wtf);
+		const adapted = toLeetCodeTheme(required(themes.wtf));
 		expect(adapted.palette.bg).toEqual([
 			"#fff",
 			"#e5e5e5",
@@ -163,7 +164,7 @@ describe("lib/themes/adapters/leetcode", () => {
 	});
 
 	it("derives palette entries from theme tokens when no palette exists", () => {
-		const adapted = toLeetCodeTheme(themes.dracula);
+		const adapted = toLeetCodeTheme(required(themes.dracula));
 		expect(adapted.palette.bg).toEqual([
 			"#282a36",
 			"#e5e5e5",
@@ -181,7 +182,7 @@ describe("lib/themes/adapters/leetcode", () => {
 	});
 
 	it("falls back per entry for gradient tokens", () => {
-		const adapted = toLeetCodeTheme(themes.ambient_gradient);
+		const adapted = toLeetCodeTheme(required(themes.ambient_gradient));
 		// Gradient background cannot fill flat vars; historical defaults win.
 		expect(adapted.palette.bg).toEqual([
 			"#fff",
@@ -190,7 +191,7 @@ describe("lib/themes/adapters/leetcode", () => {
 			"#e5e5e5",
 		]);
 		// Plain-hex tokens from the same theme still apply.
-		expect(adapted.palette.text[0]).toBe("#ffffff");
+		expect(required(adapted.palette.text, `${name}.text`)[0]).toBe("#ffffff");
 	});
 
 	it("covers every listed theme with padded, renderable palettes", () => {
@@ -201,9 +202,9 @@ describe("lib/themes/adapters/leetcode", () => {
 			expect(adapted.palette.bg, `${name}.bg length`).toHaveLength(4);
 			expect(adapted.palette.text, `${name}.text length`).toHaveLength(4);
 			for (const value of [
-				...adapted.palette.bg,
-				...adapted.palette.text,
-				...adapted.palette.color,
+				...required(adapted.palette.bg, `${name}.bg`),
+				...required(adapted.palette.text, `${name}.text`),
+				...required(adapted.palette.color, `${name}.color`),
 			]) {
 				expect(value, `${name} palette entry ${JSON.stringify(value)}`).toMatch(
 					/^(#[0-9a-fA-F]{3,8}|url\(#.+\)|rgba?\(.+\)|)$/,

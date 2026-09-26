@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { retryer } from "../../stats/src/common/retryer";
+import { type FetcherFunction, retryer } from "../../stats/src/common/retryer";
 import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
 
 // Mirrors how stats' `request()` maps a raw fetch Response onto the
-// `{ data, statusText }` shape the retryer consumes.
+// `{ data, statusText }` shape the retryer consumes. Derived from the real type
+// so this stub can never drift from it again.
+type FetchBasedResult = Awaited<ReturnType<FetcherFunction<{ login: string }>>>;
+
 const fetchBasedFetcher = async (
-	_vars: unknown,
+	_vars: { login: string },
 	token?: string,
-): Promise<{ data: unknown; statusText: string }> => {
+): Promise<FetchBasedResult> => {
 	const res = await fetch("https://api.github.com/graphql", {
 		headers: { Authorization: String(token) },
 	});
@@ -67,7 +70,7 @@ describe("retryer HTTP-level token rotation (fetch resolves non-2xx)", () => {
 			recordingFetch([
 				httpLike(401, { message: "Bad credentials" }),
 				httpLike(200, { data: { user: { login: "ok" } } }),
-			]) as unknown as Response,
+			]),
 		);
 
 		const result = await retryer(fetchBasedFetcher, { login: "user" });
@@ -84,7 +87,7 @@ describe("retryer HTTP-level token rotation (fetch resolves non-2xx)", () => {
 						"API rate limit exceeded for 1.2.3.4. (But here's the good news: Authenticated requests get a higher rate limit.)",
 				}),
 				httpLike(200, { data: { user: { login: "ok-2" } } }),
-			]) as unknown as Response,
+			]),
 		);
 
 		const result = await retryer(fetchBasedFetcher, { login: "user" });
@@ -98,7 +101,7 @@ describe("retryer HTTP-level token rotation (fetch resolves non-2xx)", () => {
 			recordingFetch([
 				httpLike(403, { message: "Sorry. Your account was suspended." }),
 				httpLike(200, { data: { user: { login: "ok-3" } } }),
-			]) as unknown as Response,
+			]),
 		);
 
 		const result = await retryer(fetchBasedFetcher, { login: "user" });
@@ -113,7 +116,7 @@ describe("retryer HTTP-level token rotation (fetch resolves non-2xx)", () => {
 				httpLike(200, {
 					data: { user: { login: "fresh" } },
 				}),
-			]) as unknown as Response,
+			]),
 		);
 
 		const result = await retryer(fetchBasedFetcher, { login: "user" });

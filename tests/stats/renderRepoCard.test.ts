@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderRepoCard } from "../../stats/src/cards/repo";
+import { required } from "../_testShim";
 
 const data_repo = {
 	repository: {
@@ -30,7 +31,8 @@ describe("Test renderRepoCard", () => {
 		expect((header as HTMLElement).textContent).toContain("convoychat");
 		expect((header as HTMLElement).textContent).not.toContain("anuraghazra");
 		expect(
-			document.getElementsByClassName("description")[0].textContent,
+			required(document.getElementsByClassName("description")[0], "description")
+				.textContent,
 		).toContain("Help us take over the world! React + TS + GraphQL Chat App");
 		const stargazers = document.querySelector('[data-testid="stargazers"]');
 		const forkcount = document.querySelector('[data-testid="forkcount"]');

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { themes } from "../../../lib/themes";
 import { toTrophyTheme } from "../../../lib/themes/adapters/trophy";
 import { COLORS as legacyTrophyThemes } from "../../../trophy/src/theme";
+import { required } from "../../_testShim";
 
 describe("lib/themes/adapters/trophy", () => {
 	it("reproduces every legacy trophy theme exactly (all 26 themes)", () => {
@@ -11,13 +12,13 @@ describe("lib/themes/adapters/trophy", () => {
 				registryTheme,
 				`theme '${name}' present in canonical registry`,
 			).toBeDefined();
-			const adapted = toTrophyTheme(registryTheme);
+			const adapted = toTrophyTheme(required(registryTheme, `theme ${name}`));
 			expect(adapted).toEqual(legacyTheme);
 		}
 	});
 
 	it("derives valid trophy properties for non-trophy canonical themes (e.g. merko)", () => {
-		const adapted = toTrophyTheme(themes.merko);
+		const adapted = toTrophyTheme(required(themes.merko));
 		expect(adapted.BACKGROUND).toBe("#0a0f0b");
 		expect(adapted.TITLE).toBe("#abd200");
 		expect(adapted.ICON_CIRCLE).toBe("#b7d364");

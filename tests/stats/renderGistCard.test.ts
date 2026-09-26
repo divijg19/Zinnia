@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderGistCard } from "../../stats/src/cards/gist";
 import { themes } from "../../stats/themes/index.js";
+import { required } from "../_testShim";
 
 const data = {
 	name: "test",
@@ -20,7 +21,8 @@ describe("test renderGistCard", () => {
 		expect(header?.textContent).not.toContain("anuraghazra");
 
 		expect(
-			document.getElementsByClassName("description")[0].textContent,
+			required(document.getElementsByClassName("description")[0], "description")
+				.textContent,
 		).toContain("Small test repository with different Python programs.");
 
 		const stars = document.querySelector('[data-testid="starsCount"]');
@@ -62,11 +64,14 @@ describe("test renderGistCard", () => {
 				"The quick brown fox jumps over the lazy dog is an English-language pangram—a sentence that contains all of the letters of the English alphabet",
 		});
 
-		const desc = document.getElementsByClassName("description")[0];
-		expect(desc.children[0].textContent).toContain(
+		const desc = required(
+			document.getElementsByClassName("description")[0],
+			"description",
+		);
+		expect(required(desc.children[0]).textContent).toContain(
 			"The quick brown fox jumps over the lazy dog is an",
 		);
-		expect(desc.children[1].textContent).toContain(
+		expect(required(desc.children[1]).textContent).toContain(
 			"English-language pangram—a sentence that contains all",
 		);
 	});
@@ -138,7 +143,7 @@ describe("test renderGistCard", () => {
 	});
 
 	it("should render without rounding and fallback description", () => {
-		document.body.innerHTML = renderGistCard(data, { border_radius: "0" });
+		document.body.innerHTML = renderGistCard(data, { border_radius: 0 });
 		const rectEl = document.querySelector("rect");
 		expect(rectEl).not.toBeNull();
 		expect((rectEl as Element).getAttribute("rx")).toBe("0");
@@ -149,10 +154,11 @@ describe("test renderGistCard", () => {
 
 		document.body.innerHTML = renderGistCard({
 			...data,
-			description: undefined,
+			description: null,
 		});
 		expect(
-			document.getElementsByClassName("description")[0].textContent,
+			required(document.getElementsByClassName("description")[0], "description")
+				.textContent,
 		).toContain("No description provided");
 	});
 });

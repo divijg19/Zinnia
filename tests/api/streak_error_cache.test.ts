@@ -30,7 +30,7 @@ function uniqueUser(): string {
 
 async function importHandler() {
 	const mod = await import("../../api/streak.js");
-	return mod.default as (
+	return mod.default as unknown as (
 		req: TestRequest,
 		res: TestResponse,
 	) => Promise<unknown>;

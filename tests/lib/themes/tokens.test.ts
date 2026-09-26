@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ThemeColors } from "../../../lib/themes/registry";
 import {
 	normalizeColor,
 	resolveWithFallback,
@@ -7,7 +8,12 @@ import {
 
 describe("lib/themes/tokens", () => {
 	it("tokenHex reads string, hex-struct, and gradient forms", () => {
-		expect(tokenHex({ title: "abc123" }, "title")).toBe("abc123");
+		// `ColorToken` is typed as `{ hex: string }` and no theme uses the raw
+		// string form, but `tokenHex` handles it defensively (as its docs
+		// describe), so that branch is pinned here explicitly.
+		expect(
+			tokenHex({ title: "abc123" } as unknown as ThemeColors, "title"),
+		).toBe("abc123");
 		expect(tokenHex({ title: { hex: "abc123" } }, "title")).toBe("abc123");
 		expect(
 			tokenHex(
