@@ -18,9 +18,19 @@ export type ErrorCode =
 	| "LEETCODE_BUILD_MISSING"
 	| "UNKNOWN";
 
-/** Redact GitHub-style secret tokens from a diagnostic string. */
+/**
+ * Redact GitHub-style secret tokens from a diagnostic string.
+ *
+ * Covers the classic `ghp_`/`gho_`/`ghu_`/`ghs_`/`ghr_` prefixes plus
+ * `github_pat_`, which is GitHub's currently recommended fine-grained format
+ * and was previously not matched (so a fine-grained token could reach a
+ * `?debug=1` response). Over-redacting is the safe direction here.
+ */
 export function redactSecretTokens(value: string): string {
-	return String(value).replace(/gh[pousr]_[A-Za-z0-9_]{10,}/g, "[REDACTED]");
+	return String(value).replace(
+		/github_pat_[A-Za-z0-9_]{10,}|gh[pousr]_[A-Za-z0-9_]{10,}/g,
+		"[REDACTED]",
+	);
 }
 
 /** Send a machine-readable diagnostics payload (for `?debug=1`). Never cached. */
