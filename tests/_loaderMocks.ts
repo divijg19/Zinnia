@@ -17,6 +17,14 @@ type RetryResponder = (
 ) => unknown;
 
 /**
+ * A fixed GraphQL payload. Deliberately excludes `unknown`: including it in
+ * the union below would absorb `RetryResponder` and strip contextual typing
+ * from the responder's parameters, making every inline arrow param an
+ * implicit `any`.
+ */
+type RetryPayload = string | number | boolean | object | null | undefined;
+
+/**
  * Build a `vi.doMock` factory for the stats GraphQL retryer. Pass a fixed
  * `data` payload for the common case, or a responder when the reply depends
  * on the query variables:
@@ -24,7 +32,7 @@ type RetryResponder = (
  *   vi.doMock("../../stats/src/common/retryer", retryerFactory(data_langs));
  */
 export function retryerFactory(
-	dataOrRespond: unknown | RetryResponder,
+	dataOrRespond: RetryResponder | RetryPayload,
 ): () => { retryer: RetryResponder } {
 	const respond: RetryResponder =
 		typeof dataOrRespond === "function"

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
+import { required } from "../_testShim";
 
 describe("patStore prefix detection (ZINNIA)", () => {
 	beforeEach(() => {
@@ -31,8 +32,8 @@ describe("patStore prefix detection (ZINNIA)", () => {
 
 		expect(v).toBe(1);
 		expect(calls.length).toBeGreaterThan(0);
-		expect(calls[0].url).toBe(process.env.ZINNIA_REST_URL);
-		const body = JSON.parse(calls[0].opts.body as string);
+		expect(required(calls[0]).url).toBe(process.env.ZINNIA_REST_URL);
+		const body = JSON.parse(required(calls[0]).opts.body as string);
 		expect(body[0]).toBe("INCR");
 	});
 });

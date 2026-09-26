@@ -42,7 +42,7 @@ function suffix(n: number): string {
 }
 
 function tooltipCountText(isoDate: string, count: number): string {
-	const [y, m, d] = isoDate.split("-").map(Number);
+	const [y, m, d] = isoDate.split("-").map(Number) as [number, number, number];
 	const month = new Date(Date.UTC(y, m - 1, d)).toLocaleString("en-US", {
 		month: "long",
 		timeZone: "UTC",
@@ -108,17 +108,31 @@ describe("streak fetchContributions scrape full-history (no PAT)", () => {
 				return {
 					ok: true,
 					status: 200,
-					json: async () => ({ created_at: "2025-08-16T00:00:00Z" }),
-					text: async () =>
+					json: async (): Promise<unknown> => ({
+						created_at: "2025-08-16T00:00:00Z",
+					}),
+					text: async (): Promise<string> =>
 						JSON.stringify({ created_at: "2025-08-16T00:00:00Z" }),
 				};
 			}
 			if (url.includes("contributions?from=2025-"))
-				return { ok: true, status: 200, text: async () => year2025 };
+				return {
+					ok: true,
+					status: 200,
+					text: async (): Promise<string> => year2025,
+				};
 			if (url.includes("contributions?from=2026-"))
-				return { ok: true, status: 200, text: async () => year2026 };
+				return {
+					ok: true,
+					status: 200,
+					text: async (): Promise<string> => year2026,
+				};
 			if (url.includes("contributions"))
-				return { ok: true, status: 200, text: async () => bare };
+				return {
+					ok: true,
+					status: 200,
+					text: async (): Promise<string> => bare,
+				};
 			throw new Error(`unexpected fetch: ${url}`);
 		});
 		setGlobalFetchMock(fetchMock);
@@ -159,16 +173,30 @@ describe("streak fetchContributions scrape full-history (no PAT)", () => {
 					return {
 						ok: true,
 						status: 200,
-						json: async () => ({ created_at: "2025-08-16T00:00:00Z" }),
-						text: async () => "{}",
+						json: async (): Promise<unknown> => ({
+							created_at: "2025-08-16T00:00:00Z",
+						}),
+						text: async (): Promise<string> => "{}",
 					};
 				}
 				if (url.includes("contributions?from=2025-"))
-					return { ok: true, status: 200, text: async () => week2025 };
+					return {
+						ok: true,
+						status: 200,
+						text: async (): Promise<string> => week2025,
+					};
 				if (url.includes("contributions?from=2026-"))
-					return { ok: true, status: 200, text: async () => week2026 };
+					return {
+						ok: true,
+						status: 200,
+						text: async (): Promise<string> => week2026,
+					};
 				if (url.includes("contributions"))
-					return { ok: true, status: 200, text: async () => bare };
+					return {
+						ok: true,
+						status: 200,
+						text: async (): Promise<string> => bare,
+					};
 				throw new Error(`unexpected fetch: ${url}`);
 			}),
 		);
@@ -192,15 +220,23 @@ describe("streak fetchContributions scrape full-history (no PAT)", () => {
 					return {
 						ok: false,
 						status: 403,
-						json: async () => ({}),
-						text: async () => "{}",
+						json: async (): Promise<unknown> => ({}),
+						text: async (): Promise<string> => "{}",
 					};
 				}
 				if (url.includes("contributions?from=")) {
-					return { ok: true, status: 200, text: async () => "" };
+					return {
+						ok: true,
+						status: 200,
+						text: async (): Promise<string> => "",
+					};
 				}
 				if (url.includes("contributions"))
-					return { ok: true, status: 200, text: async () => bare };
+					return {
+						ok: true,
+						status: 200,
+						text: async (): Promise<string> => bare,
+					};
 				throw new Error(`unexpected fetch: ${url}`);
 			}),
 		);

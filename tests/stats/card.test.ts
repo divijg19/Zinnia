@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { Card } from "../../stats/src/common/Card";
 import { icons } from "../../stats/src/common/icons";
 import { getCardColors } from "../../stats/src/common/utils";
+import { required } from "../_testShim";
 
 describe("Card", () => {
 	it("should hide border", () => {
@@ -60,24 +61,27 @@ describe("Card", () => {
 	});
 
 	it("title should have prefix icon when provided", () => {
-		const card = new Card({ title: "ok", titlePrefixIcon: icons.contribs });
+		const card = new Card({
+			customTitle: "ok",
+			titlePrefixIcon: icons.contribs,
+		});
 		document.body.innerHTML = card.render(``);
 		expect(document.getElementsByClassName("icon")[0]).not.toBeUndefined();
 	});
 
 	it("should have proper height and width", () => {
-		const card = new Card({ height: 200, width: 200, title: "ok" });
+		const card = new Card({ height: 200, width: 200, customTitle: "ok" });
 		document.body.innerHTML = card.render(``);
-		const svg = document.getElementsByTagName("svg")[0];
+		const svg = required(document.getElementsByTagName("svg")[0], "svg");
 		expect(svg.getAttribute("height")).toBe("200");
 		expect(svg.getAttribute("width")).toBe("200");
 	});
 
 	it("should adjust height when title hidden", () => {
-		const card = new Card({ height: 200, title: "ok" });
+		const card = new Card({ height: 200, customTitle: "ok" });
 		card.setHideTitle(true);
 		document.body.innerHTML = card.render(``);
-		const svg = document.getElementsByTagName("svg")[0];
+		const svg = required(document.getElementsByTagName("svg")[0], "svg");
 		expect(svg.getAttribute("height")).toBe("170");
 	});
 

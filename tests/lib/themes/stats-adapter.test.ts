@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { themes } from "../../../lib/themes";
 import { toStatsTheme } from "../../../lib/themes/adapters/stats";
 import { themes as legacyStatsThemes } from "../../../stats/themes/index.js";
+import { required } from "../../_testShim";
 
 /**
  * Parity tests: prove the canonical registry + stats adapter reproduce the
@@ -15,7 +16,7 @@ describe("lib/themes/adapters/stats", () => {
 	});
 
 	it("maps `default` fully (all present properties)", () => {
-		expect(toStatsTheme(themes.default)).toEqual({
+		expect(toStatsTheme(required(themes.default))).toEqual({
 			title_color: "2f80ed",
 			icon_color: "4c71f2",
 			text_color: "434d58",
@@ -26,7 +27,7 @@ describe("lib/themes/adapters/stats", () => {
 	});
 
 	it("maps `dark` with border falling back to `default`", () => {
-		expect(toStatsTheme(themes.dark)).toEqual({
+		expect(toStatsTheme(required(themes.dark))).toEqual({
 			title_color: "fff",
 			icon_color: "79ff97",
 			text_color: "9f9f9f",
@@ -37,7 +38,7 @@ describe("lib/themes/adapters/stats", () => {
 	});
 
 	it("maps `transparent` preserving the alpha/transparent bg", () => {
-		expect(toStatsTheme(themes.transparent)).toEqual({
+		expect(toStatsTheme(required(themes.transparent))).toEqual({
 			title_color: "006AFF",
 			icon_color: "0579C3",
 			text_color: "417E87",
@@ -48,7 +49,7 @@ describe("lib/themes/adapters/stats", () => {
 	});
 
 	it("maps `watchdog` preserving the gradient bg token", () => {
-		expect(toStatsTheme(themes.watchdog)).toEqual({
+		expect(toStatsTheme(required(themes.watchdog))).toEqual({
 			title_color: "fe428e",
 			icon_color: "f8d847",
 			text_color: "a9fef7",
@@ -59,7 +60,7 @@ describe("lib/themes/adapters/stats", () => {
 	});
 
 	it("maps `gruvbox` with border falling back to `default`", () => {
-		expect(toStatsTheme(themes.gruvbox)).toEqual({
+		expect(toStatsTheme(required(themes.gruvbox))).toEqual({
 			title_color: "fabd2f",
 			icon_color: "fe8019",
 			text_color: "8ec07c",
@@ -71,13 +72,13 @@ describe("lib/themes/adapters/stats", () => {
 
 	it("supports an explicit custom fallback theme", () => {
 		const darkThemed = themes.dark;
-		expect(toStatsTheme(themes.gruvbox, darkThemed).border_color).toBe(
-			undefined,
-		);
+		expect(
+			toStatsTheme(required(themes.gruvbox), darkThemed).border_color,
+		).toBe(undefined);
 	});
 
 	it("returns normalized hex values without prefixes (renderer normalizes)", () => {
-		const grad = toStatsTheme(themes.watchdog);
+		const grad = toStatsTheme(required(themes.watchdog));
 		expect(grad.bg_color).toMatch(/,/);
 		expect(grad.bg_color).not.toMatch(/^#/);
 	});

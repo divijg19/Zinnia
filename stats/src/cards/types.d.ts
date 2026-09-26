@@ -1,4 +1,10 @@
-type ThemeNames = keyof typeof import("../../themes/index.js");
+// Theme names are looked up dynamically (`themes[name] || defaultTheme`) from
+// user-supplied query params, so this is a plain string. The previous
+// `keyof typeof import("../../themes/index.js")` aliased a path that does not
+// exist and, even if it resolved, `keyof typeof` on a module yields its
+// *export* names — so it collapsed to `"default" | "themes"` rather than
+// theme names. Matches the `theme?: string` the card options are built with in
+// `src/common/utils.ts`.
 type RankIcon = "default" | "github" | "percentile";
 
 export type CommonOptions = {
@@ -6,7 +12,7 @@ export type CommonOptions = {
 	icon_color: string;
 	text_color: string;
 	bg_color: string;
-	theme: ThemeNames;
+	theme: string;
 	border_radius: number;
 	border_color: string;
 	locale: string;

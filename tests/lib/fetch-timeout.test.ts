@@ -4,7 +4,11 @@ import {
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../lib/fetch-timeout";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
+import {
+	clearGlobalFetchMock,
+	required,
+	setGlobalFetchMock,
+} from "../_testShim";
 
 describe("lib/fetch-timeout", () => {
 	afterEach(() => {
@@ -22,11 +26,13 @@ describe("lib/fetch-timeout", () => {
 	});
 
 	it("resolves healthy fetches untouched", async () => {
-		const fetchMock = vi.fn(async () => new Response("ok"));
+		const fetchMock = vi.fn(
+			async (_url: string, _init: RequestInit) => new Response("ok"),
+		);
 		setGlobalFetchMock(fetchMock);
 		const res = await fetchWithTimeout("https://example.com", undefined, 8000);
 		expect(await res.text()).toBe("ok");
-		expect(fetchMock.mock.calls[0][1]).toHaveProperty("signal");
+		expect(required(fetchMock.mock.calls[0])[1]).toHaveProperty("signal");
 	});
 
 	it("rejects hung fetches with fetch-timeout", async () => {

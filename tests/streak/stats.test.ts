@@ -4,11 +4,16 @@ import {
 	getContributionStats,
 	getWeeklyContributionStats,
 } from "../../streak/src/stats.js";
+import type { ContributionDay } from "../../streak/src/types.js";
+import { required } from "../_testShim";
 
-function mapToArray(obj: Record<string, number>) {
-	return Object.keys(obj)
-		.sort()
-		.map((d) => ({ date: d, count: obj[d] }));
+function mapToArray(obj: Record<string, number>): ContributionDay[] {
+	return (
+		Object.keys(obj)
+			.sort()
+			// Safe: we iterate this same object's keys, so every lookup is present.
+			.map((d) => ({ date: d, count: required(obj[d]) }))
+	);
 }
 
 describe("stats computations", () => {

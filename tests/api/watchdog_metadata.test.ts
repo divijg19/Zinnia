@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { makeReq, makeRes } from "../_testShim";
+import { makeReq, makeRes, required } from "../_testShim";
 
 describe("/api/streak/metadata exposes watchdog gradient token", () => {
 	beforeEach(() => {
@@ -19,6 +19,6 @@ describe("/api/streak/metadata exposes watchdog gradient token", () => {
 		const parsed = JSON.parse(body);
 		const bg = parsed?.themes?.watchdog?.background as string | undefined;
 		expect(typeof bg).toBe("string");
-		expect(bg.includes(",")).toBe(true);
+		expect(required(bg, "watchdog background").includes(",")).toBe(true);
 	});
 });

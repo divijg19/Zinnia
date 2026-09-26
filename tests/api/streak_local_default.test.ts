@@ -1,11 +1,10 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { describe, expect, it, vi } from "vitest";
 import {
 	clearGlobalFetchMock,
 	makeReq,
 	makeRes,
 	setGlobalFetchMock,
-	type TestRequest,
-	type TestResponse,
 } from "../_testShim";
 
 const loaderMocks = vi.hoisted(() => ({
@@ -50,10 +49,10 @@ describe("api/streak defaults to the canonical local renderer", () => {
 
 		try {
 			const { default: handler } = await import("../../api/streak.js");
-			const res = makeRes("/api/streak?user=longstreak");
+			const res = makeRes();
 			await handler(
-				makeReq("/api/streak?user=longstreak") as TestRequest,
-				res as unknown as TestResponse,
+				makeReq("/api/streak?user=longstreak") as unknown as VercelRequest,
+				res as unknown as VercelResponse,
 			);
 
 			expect(upstreamFetch).not.toHaveBeenCalled();

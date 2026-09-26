@@ -3,13 +3,25 @@ import { ThemeExtension } from "../../leetcode/packages/core/src/exts/theme";
 import { Item, resetItemCounter } from "../../leetcode/packages/core/src/item";
 import { THEME_EXTENDS } from "../../leetcode/packages/core/src/theme/defs";
 import { themes } from "../../lib/themes";
+import { required } from "../_testShim";
+
+// `core/types` declares `Generator` but does not export it, so derive the
+// double types from the extension's own signature instead of naming them.
+type Extension = ReturnType<typeof ThemeExtension>;
+type Gen = Parameters<Extension>[0];
+type Data = Parameters<Extension>[1];
 
 function runExtension(theme: unknown) {
 	const extension = ThemeExtension();
 	const body: Record<string, (...args: unknown[]) => Item> = {};
 	const styles: string[] = [];
-	const generator = { config: { theme } };
-	return extension(generator, {}, body, styles).then(() => ({ body, styles }));
+	// The extension only reads `generator.config.theme`, so a minimal double is
+	// enough; the real `Generator` type is far wider than this test needs.
+	const generator = { config: { theme } } as unknown as Gen;
+	// `Extension` returns `Promise<void> | void`, so normalize before `.then`.
+	return Promise.resolve(extension(generator, {} as Data, body, styles)).then(
+		() => ({ body, styles }),
+	);
 }
 
 describe("leetcode ThemeExtension", () => {
@@ -23,7 +35,7 @@ describe("leetcode ThemeExtension", () => {
 		const extension = ThemeExtension();
 		const body: Record<string, (...args: unknown[]) => Item> = {};
 		const styles: string[] = [];
-		await extension({ config: {} }, {}, body, styles);
+		await extension({ config: {} } as unknown as Gen, {} as Data, body, styles);
 		expect(body).toEqual({});
 		expect(styles).toEqual([]);
 	});
@@ -32,7 +44,7 @@ describe("leetcode ThemeExtension", () => {
 		const { body, styles } = await runExtension("unicorn");
 		expect(typeof body["theme-ext"]).toBe("function");
 		resetItemCounter();
-		const defs = (body["theme-ext"]() as Item).stringify();
+		const defs = (required(body["theme-ext"])() as Item).stringify();
 		expect(defs).toContain('id="g-bg"');
 		expect(defs).toContain('id="g-text"');
 		expect(styles.join("\n")).toContain("--bg-0");
@@ -42,7 +54,7 @@ describe("leetcode ThemeExtension", () => {
 		const { body } = await runExtension("watchdog");
 		expect(typeof body["theme-ext"]).toBe("function");
 		resetItemCounter();
-		const defs = (body["theme-ext"]() as Item).stringify();
+		const defs = (required(body["theme-ext"])() as Item).stringify();
 		expect(defs).toContain('id="g-watchdog-bg"');
 		expect(defs).toContain('id="g-ring"');
 	});
@@ -61,7 +73,7 @@ describe("leetcode ThemeExtension", () => {
 			for (const values of Object.values(palette)) {
 				for (const value of values ?? []) {
 					const match = /url\(#([^)]+)\)/.exec(value);
-					if (match) referenced.add(match[1]);
+					if (match?.[1]) referenced.add(match[1]);
 				}
 			}
 			if (referenced.size === 0) continue;

@@ -45,7 +45,8 @@ describe("/api/health", () => {
 			req as unknown as VercelRequest,
 			res as unknown as VercelResponse,
 		);
-		const [[body]] = res.send.mock.calls;
+		const [firstCall] = res.send.mock.calls ?? [];
+		const body = firstCall?.[0] as string;
 		expect(body).not.toContain("<script>");
 		expect(body).toContain("&lt;script&gt;");
 		expect(res.status).toHaveBeenCalledWith(200);
