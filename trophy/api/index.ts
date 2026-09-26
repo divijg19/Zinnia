@@ -4,6 +4,7 @@ import {
 	setSvgHeaders,
 } from "../../lib/canonical/http_cache.js";
 import { loadTrophyModule } from "../../lib/canonical/trophy_loader.js";
+import { statusCardSvg } from "../../lib/status-svg.js";
 import { getGithubPATWithKeyForServiceAsync } from "../../lib/tokens.js";
 
 // Default cache: 48 hours (in seconds) unless overridden via env
@@ -15,7 +16,7 @@ const DEFAULT_TROPHY_CACHE =
 // Retry/timeouts removed — upstream proxying was consolidated out.
 
 function svgError(message: string, cacheSeconds = DEFAULT_TROPHY_CACHE) {
-	const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${message}"><title>${message}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${message}</text></svg>`;
+	const body = statusCardSvg(message);
 	return new Response(body, {
 		status: 200,
 		headers: new Headers({
@@ -231,8 +232,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		setSvgHeaders(res);
 		setShortCacheHeaders(res, 60);
 		res.status(200);
-		return res.send(
-			`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="trophy: internal error"><title>trophy: internal error</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">trophy: internal error</text></svg>`,
-		);
+		return res.send(statusCardSvg("trophy: internal error"));
 	}
 }
