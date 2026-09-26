@@ -4,9 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	clearGlobalFetchMock,
 	makeFetchResolved,
+	makeReq,
+	makeRes,
 	setGlobalFetchMock,
-} from "../_globalFetchMock";
-import { makeReq, makeRes } from "../_testShim";
+} from "../_testShim";
 
 // Helper to load handler fresh per scenario
 async function loadHandlerWithMocks(

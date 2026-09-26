@@ -1,8 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { makeFetchResolved, setGlobalFetchMock } from "../_globalFetchMock";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
-import { makeReq, makeRes } from "../_testShim";
+import {
+	makeFetchResolved,
+	makeReq,
+	makeRes,
+	setGlobalFetchMock,
+} from "../_testShim";
 
 describe("Trophy handler always-200 + ETag on If-None-Match", () => {
 	afterEach(() => {

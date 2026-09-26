@@ -1,9 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { findEnv, upstashCall } from "../../../lib/kv/upstash";
-import {
-	clearGlobalFetchMock,
-	setGlobalFetchMock,
-} from "../../_globalFetchMock";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../../_testShim";
 
 describe("lib/kv/upstash", () => {
 	beforeEach(clearGlobalFetchMock);

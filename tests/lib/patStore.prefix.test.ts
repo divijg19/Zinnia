@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
-import { required } from "../_testShim";
+import {
+	clearGlobalFetchMock,
+	required,
+	setGlobalFetchMock,
+} from "../_testShim";
 
 describe("patStore prefix detection (ZINNIA)", () => {
 	beforeEach(() => {

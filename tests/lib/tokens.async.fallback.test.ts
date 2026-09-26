@@ -3,7 +3,7 @@ import {
 	clearGlobalFetchMock,
 	makeFetchRejected,
 	setGlobalFetchMock,
-} from "../_globalFetchMock";
+} from "../_testShim";
 
 describe("tokens async fallback behavior", () => {
 	let prevNodeEnv: string | undefined;

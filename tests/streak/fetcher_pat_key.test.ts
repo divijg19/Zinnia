@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
 
 const mocks = vi.hoisted(() => ({
 	getPat: vi.fn(),

@@ -1,7 +1,6 @@
 // Timezone-aware streak calculation helpers
 import { shiftDateKey } from "./current_streak.ts";
-
-export type ContributionDay = { date: string; count: number };
+import type { ContributionDay } from "./types.ts";
 
 export type Streaks = {
 	currentStreak: number;
