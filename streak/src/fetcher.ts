@@ -394,7 +394,6 @@ export async function fetchContributions(
 	);
 	try {
 		if (process.env.STREAK_DEBUG === "1") {
-			// eslint-disable-next-line no-console
 			console.debug(
 				"streak/fetcher: year=%s graphql response keys=%o",
 				thisYear,
@@ -449,7 +448,6 @@ export async function fetchContributions(
 		);
 		try {
 			if (process.env.STREAK_DEBUG === "1") {
-				// eslint-disable-next-line no-console
 				console.debug(
 					"streak/fetcher: year=%d graphql keys=%o",
 					y,

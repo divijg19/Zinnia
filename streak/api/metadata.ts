@@ -17,7 +17,6 @@ export default async function handler(_req: RequestLike, res: ResponseLike) {
 		const rawThemes = themesMod.THEMES ?? themesMod.default ?? themesMod;
 		const THEMES: Record<string, Record<string, string>> = {};
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
 			for (const [k, v] of Object.entries(rawThemes || {})) {
 				if (v && typeof v === "object") {

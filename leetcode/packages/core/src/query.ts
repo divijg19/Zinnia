@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LeetCode } from "./shims/leetcode-query.js";
 import type { FetchedData } from "./types.js";
 

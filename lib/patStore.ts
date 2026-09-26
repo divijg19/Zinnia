@@ -129,7 +129,6 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 	if (!redisUrl) return null;
 	try {
 		// dynamic import to avoid requiring ioredis in environments that don't need it
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const IORedis = require("ioredis");
 		const client = new IORedis(redisUrl);
 		return {

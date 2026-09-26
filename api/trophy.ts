@@ -180,17 +180,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					try {
 						if (!p) {
 							// log missing candidate
-							// eslint-disable-next-line no-console
 							console.debug("trophy: candidate missing", cand.join("/"));
 							continue;
 						}
-						// eslint-disable-next-line no-console
 						console.debug("trophy: trying import", p);
 						const mod = (await importByPath(p)) as any;
 						// if import succeeded but we couldn't find an export, log keys
 						if (mod && !renderer) {
 							try {
-								// eslint-disable-next-line no-console
 								console.debug(
 									"trophy: imported module keys ->",
 									Object.keys(mod),
@@ -224,12 +221,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						}
 						if (renderer) {
 							loaded = true;
-							// eslint-disable-next-line no-console
 							console.debug("trophy: renderer loaded from", p);
 							break;
 						}
 					} catch (e) {
-						// eslint-disable-next-line no-console
 						console.error(
 							"trophy: failed to import",
 							cand.join("/"),

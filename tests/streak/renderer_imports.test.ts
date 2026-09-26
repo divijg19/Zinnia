@@ -75,7 +75,6 @@ describe("renderer import permutations", () => {
 		clearGlobalFetchMock();
 		// Ensure any previous test-injected renderer fallback is cleared
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			delete (globalThis as any).__STREAK_TEST_RENDERER;
 		} catch {}
 		process.env.STREAK_USE_TS = "1";

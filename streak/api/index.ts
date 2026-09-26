@@ -14,7 +14,6 @@ import type { RequestLike, ResponseLike } from "../src/server_types";
 function sendSvgError(res: ResponseLike, message: string, cacheSeconds = 60) {
 	// Attempt to render a themed error card using local renderer if available
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const cardMod = require("../src/card");
 		if (cardMod && typeof cardMod.generateErrorCard === "function") {
 			const body = cardMod.generateErrorCard(message, {});
@@ -60,7 +59,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						typeof (globalThis as any).vi !== "undefined")
 				) {
 					try {
-						// eslint-disable-next-line no-console
 						console.debug("streak/api: test-mode: about to import loader");
 					} catch {}
 				}
@@ -73,7 +71,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						typeof (globalThis as any).vi !== "undefined")
 				) {
 					try {
-						// eslint-disable-next-line no-console
 						console.debug("streak/api: test-mode: loaded renderer from loader");
 					} catch {}
 				}
@@ -81,7 +78,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				const paramsObj = Object.fromEntries(url.searchParams);
 				const cacheKey = `streak:svg:${user}:${JSON.stringify(paramsObj)}`;
 				try {
-					// eslint-disable-next-line no-console
 					console.debug("streak/api: computed cacheKey", cacheKey);
 				} catch {}
 
@@ -96,7 +92,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 							typeof (globalThis as any).vi !== "undefined")
 					) {
 						try {
-							// eslint-disable-next-line no-console
 							console.debug("streak/api: test-mode: about to import cache");
 						} catch {}
 					}
@@ -105,12 +100,10 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 						try {
 							localCache = await cacheMod.getCache();
 							try {
-								// eslint-disable-next-line no-console
 								console.debug("streak/api: obtained localCache from module");
 							} catch {}
 						} catch (err) {
 							try {
-								// eslint-disable-next-line no-console
 								console.debug(
 									"streak/api: test-mode: cache.getCache error",
 									String(err),
@@ -125,7 +118,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 							typeof (globalThis as any).vi !== "undefined")
 					) {
 						try {
-							// eslint-disable-next-line no-console
 							console.debug(
 								"streak/api: test-mode: finished cache import/init",
 							);
@@ -133,7 +125,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					}
 				} catch (err) {
 					try {
-						// eslint-disable-next-line no-console
 						console.debug(
 							"streak/api: test-mode: import cache failed",
 							String(err),
@@ -143,12 +134,10 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 				}
 
 				try {
-					// eslint-disable-next-line no-console
 					console.debug("streak/api: calling localCache.get for", cacheKey);
 				} catch {}
 				const cached = await localCache.get(cacheKey);
 				try {
-					// eslint-disable-next-line no-console
 					console.debug("streak/api: localCache.get returned", typeof cached);
 				} catch {}
 				if (cached) {
@@ -192,7 +181,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					tries.push(() => fn({ name: user, ...paramsObj }));
 
 					try {
-						// eslint-disable-next-line no-console
 						console.debug(
 							"streak/api: renderer spec =>",
 							(globalThis as any).__STREAK_RENDERER_SPEC || "<none>",
@@ -218,19 +206,16 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 								/Expected\s+NAME|Expected\s+\w+,\s+actual/i.test(bodyStr)
 							) {
 								try {
-									// eslint-disable-next-line no-console
 									console.debug("streak/api: renderer rejected shape", i);
 								} catch {}
 								continue;
 							}
 							try {
-								// eslint-disable-next-line no-console
 								console.debug("streak/api: renderer accepted shape", i);
 							} catch {}
 							return res;
 						} catch (err) {
 							try {
-								// eslint-disable-next-line no-console
 								console.debug(
 									"streak/api: renderer shape error",
 									i,
@@ -257,7 +242,6 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					}
 				} catch (renderErr) {
 					try {
-						// eslint-disable-next-line no-console
 						console.debug(
 							"streak/api: renderer failed or timed out",
 							String(renderErr),

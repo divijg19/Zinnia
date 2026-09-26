@@ -12,7 +12,6 @@ import { escapeXml } from "./svg_builder.ts";
 import { THEMES as IMPORTED_THEMES } from "./themes.ts";
 import type { Params, Stats, Theme } from "./types_public.ts";
 
-/* eslint-disable @typescript-eslint/no-var-requires */
 let THEMES: Record<string, Theme> = {};
 let _themesLoaded = false;
 
@@ -77,7 +76,6 @@ function loadThemesSync(): Record<string, Theme> {
 	} catch {}
 
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const mod = require("./themes.js");
 		let candidate: unknown =
 			mod && (mod.THEMES || mod.default)
@@ -94,7 +92,6 @@ function loadThemesSync(): Record<string, Theme> {
 			if (looksLikeSingleTheme) {
 				// attempt alternate resolution
 				try {
-					// eslint-disable-next-line @typescript-eslint/no-var-requires
 					const alt = require("./themes");
 					const altCandidate = alt && (alt.THEMES || alt.default || alt);
 					if (altCandidate && typeof altCandidate === "object") {
@@ -111,7 +108,6 @@ function loadThemesSync(): Record<string, Theme> {
 						const raw = v as Record<string, string | undefined>;
 						// normalize legacy snake_case keys to canonical names
 						// use shared helper to keep behavior consistent across modules
-						// eslint-disable-next-line @typescript-eslint/no-var-requires
 						const {
 							normalizeThemeKeys,
 						} = require("../../lib/theme-helpers.ts");

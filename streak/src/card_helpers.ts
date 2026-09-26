@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 import type { Translations } from "./types_public.ts";
 
 let _TRANSLATIONS: Record<string, Translations> = {};
@@ -12,7 +10,6 @@ function loadTranslationsSync(): Record<string, Translations> {
 		// Resolve the translations module deterministically for Node-like
 		// runtimes. In ESM-only/edge runtimes `require` may be unavailable;
 		// in that case we leave the map empty and rely on build-time wiring.
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		let mod: unknown = {};
 		try {
 			if (typeof require === "function") {
@@ -180,7 +177,6 @@ export function removeAnimations(svg: string): string {
 		// removal of scripts, SMIL animation elements, and inline event handlers.
 		try {
 			// Prefer linkedom when available, fall back to jsdom (already a devDependency)
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			let domImpl: any = null;
 			try {
 				domImpl = require("linkedom");

@@ -125,7 +125,6 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
 						process.env.NODE_ENV !== "test" &&
 						process.env.TOKENS_DEBUG === "1"
 					) {
-						// eslint-disable-next-line no-console
 						console.info(`[tokens] getGithubPATAsync -> ${k}`);
 					}
 				} catch (_e) {
@@ -176,7 +175,6 @@ export async function getGithubPATWithKeyAsync(): Promise<
 						process.env.NODE_ENV !== "test" &&
 						process.env.TOKENS_DEBUG === "1"
 					) {
-						// eslint-disable-next-line no-console
 						console.info(`[tokens] getGithubPATWithKeyAsync -> ${k}`);
 					}
 				} catch {}

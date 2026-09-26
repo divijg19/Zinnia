@@ -122,7 +122,6 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 		if (found) {
 			const mod = (await importByPath(found)) as any;
 			try {
-				// eslint-disable-next-line no-console
 				console.debug("streak: imported module keys ->", Object.keys(mod));
 			} catch {}
 			// prefer named export renderForUser, then default function, then render
@@ -166,7 +165,6 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 		// This ensures the API returns a valid SVG for embeds instead of
 		// propagating an import error that results in a 500 response.
 		try {
-			// eslint-disable-next-line no-console
 			console.warn(
 				"streak: centralized loader failed",
 				e instanceof Error ? e.message : String(e),
@@ -184,7 +182,6 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 			}
 		} catch (e2) {
 			try {
-				// eslint-disable-next-line no-console
 				console.warn("streak: fallback renderer unavailable", e2);
 			} catch {}
 		}
@@ -192,7 +189,6 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 		// If all recovery attempts fail, provide a minimal deterministic SVG
 		// renderer as a last-resort so embeds remain functional in dev/CI.
 		try {
-			// eslint-disable-next-line no-console
 			console.warn("streak: using minimal inline fallback renderer");
 		} catch {}
 		_renderForUser = async (user: string) => {
@@ -443,7 +439,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				];
 
 				try {
-					// eslint-disable-next-line no-console
 					console.debug(
 						"api/streak: renderer spec =>",
 						(globalThis as any).__STREAK_RENDERER_SPEC || "unknown",
@@ -500,7 +495,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					/Expected\s+NAME|Expected\s+\w+,\s+actual/i.test(bodyStr)
 				) {
 					try {
-						// eslint-disable-next-line no-console
 						console.warn(
 							"streak: renderer produced error SVG, attempting fallback",
 						);
@@ -516,7 +510,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 						}
 					} catch (e) {
 						try {
-							// eslint-disable-next-line no-console
 							console.warn("streak: fallback render failed", String(e));
 						} catch {}
 					}

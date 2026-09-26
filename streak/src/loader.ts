@@ -82,7 +82,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 	// function, an object with `renderForUser`, or an object with `default`.
 	if (isTest) {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const injected = (globalThis as any).__STREAK_TEST_RENDERER;
 			if (injected) {
 				if (typeof injected === "function") return injected as StreakRenderer;
@@ -115,7 +114,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 		// fallback. This avoids dynamic-import races in Vitest that can
 		// cause the test runner to hang while mocks settle.
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const injected2 = (globalThis as any).__STREAK_TEST_RENDERER;
 			if (injected2) {
 				const svgBuilder = await import("./svg_builder.js");
@@ -175,7 +173,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 			const mod = await import(spec as any);
 			if (isTest) {
 				try {
-					// eslint-disable-next-line no-console
 					console.debug(
 						"streak/loader: imported module keys for",
 						spec,
@@ -184,7 +181,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 					try {
 						if ("default" in mod) {
 							const d = (mod as any).default;
-							// eslint-disable-next-line no-console
 							console.debug(
 								"streak/loader: imported module default type and keys for",
 								spec,
@@ -205,7 +201,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 			if (typeof fn === "function") {
 				if (isTest) {
 					try {
-						// eslint-disable-next-line no-console
 						console.debug("streak/loader: selected renderer from spec:", spec);
 					} catch {}
 				}
@@ -226,7 +221,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 				try {
 					const d = (mod as any).default;
 					if (d && (d as any).renderForUser) {
-						// eslint-disable-next-line no-console
 						try {
 							console.debug(
 								"streak/loader: using default.renderForUser wrapper for",
@@ -260,7 +254,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 					const fn2 = pickExport(mod2 as Record<string, any>);
 					if (typeof fn2 === "function") {
 						try {
-							// eslint-disable-next-line no-console
 							console.debug(
 								"streak/loader: recovered renderer on retry for",
 								spec,
@@ -287,7 +280,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 	// diagnosing why vitest mocks aren't being selected.
 	if (isTest) {
 		try {
-			// eslint-disable-next-line no-console
 			console.debug(
 				"streak/loader: import attempts:",
 				JSON.stringify(failures),
@@ -302,7 +294,6 @@ export async function loadStreakRenderer(): Promise<StreakRenderer> {
 		if (failures.length > 0) {
 			// Helpful debug during test runs: show what specs failed to import
 			// so mock ids and dynamic imports can be diagnosed.
-			// eslint-disable-next-line no-console
 			console.warn("streak loader: import failures:", failures);
 		}
 		const svgBuilder = await import("./svg_builder.js");

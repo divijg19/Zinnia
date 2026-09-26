@@ -7,9 +7,7 @@ process.env.VITEST = "1";
 
 // Register snapshot serializer for SVG normalization
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { expect } = require("vitest");
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const serializer = require("./snapshot-serializers/svg-serializer").default;
 	if (
 		expect &&
@@ -24,7 +22,6 @@ try {
 
 // Ensure any test-injected renderer fallback is cleared before tests run
 try {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	delete (globalThis as any).__STREAK_TEST_RENDERER;
 } catch {}
 
