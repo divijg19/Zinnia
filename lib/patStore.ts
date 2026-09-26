@@ -91,16 +91,12 @@ async function createUpstashStore(): Promise<PatStore | null> {
 			return Number(r || 0);
 		},
 		isExhausted: async (patKey: string) => {
-			// Check namespaced first, then legacy key format for backward compatibility
 			const rNs = await upstashCall(url, token, "GET", `${EX_PREFIX}${patKey}`);
-			if (rNs !== null && rNs !== undefined) return true;
-			const rLegacy = await upstashCall(url, token, "GET", `ex:${patKey}`);
-			return rLegacy !== null && rLegacy !== undefined;
+			return rNs !== null && rNs !== undefined;
 		},
 		setExhausted: async (patKey: string, ttlSeconds = 300) => {
 			// Atomic SET with EX so a failed call can never leave a
-			// persistent key behind. Both namespaced and legacy keys ease
-			// migrations.
+			// persistent key behind.
 			const ttl = String(Math.max(1, Math.floor(ttlSeconds)));
 			await upstashCall(
 				url,
@@ -111,12 +107,10 @@ async function createUpstashStore(): Promise<PatStore | null> {
 				"EX",
 				ttl,
 			);
-			await upstashCall(url, token, "SET", `ex:${patKey}`, "1", "EX", ttl);
 		},
 		clearExhausted: async (patKey: string) => {
 			try {
 				await upstashCall(url, token, "DEL", `${EX_PREFIX}${patKey}`);
-				await upstashCall(url, token, "DEL", `ex:${patKey}`);
 			} catch (_e) {
 				// ignore
 			}
@@ -136,10 +130,7 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 			incrCounter: async (key: string) =>
 				Number(await client.incr(key || RR_COUNTER_KEY)),
 			isExhausted: async (patKey: string) =>
-				Boolean(
-					(await client.get(`${EX_PREFIX}${patKey}`)) ||
-						(await client.get(`ex:${patKey}`)),
-				),
+				Boolean(await client.get(`${EX_PREFIX}${patKey}`)),
 			setExhausted: async (patKey: string, ttlSeconds = 300) => {
 				await client.set(
 					`${EX_PREFIX}${patKey}`,
@@ -147,16 +138,9 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 					"EX",
 					Math.max(1, Math.floor(ttlSeconds)),
 				);
-				await client.set(
-					`ex:${patKey}`,
-					"1",
-					"EX",
-					Math.max(1, Math.floor(ttlSeconds)),
-				);
 			},
 			clearExhausted: async (patKey: string) => {
 				await client.del(`${EX_PREFIX}${patKey}`);
-				await client.del(`ex:${patKey}`);
 			},
 		};
 	} catch (_e) {

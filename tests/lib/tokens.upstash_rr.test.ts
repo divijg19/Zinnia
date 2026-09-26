@@ -10,6 +10,9 @@ describe("getGithubPATAsync round-robin with Upstash", () => {
 		delete process.env.UPSTASH_REST_TOKEN;
 		delete process.env.ZINNIA_REST_URL;
 		delete process.env.ZINNIA_REST_TOKEN;
+		// The KV exhaustion key is namespaced; pin the namespace so this test does
+		// not depend on ambient env.
+		delete process.env.PAT_STORE_NAMESPACE;
 	});
 
 	it("rotates across PAT_1..PAT_5 and skips exhausted keys", async () => {
@@ -24,7 +27,9 @@ describe("getGithubPATAsync round-robin with Upstash", () => {
 		let incrCounter = 0;
 
 		// Mock Upstash REST API: INCR returns incrementing numbers (1,2,3...),
-		// GET returns non-null for the exhausted key ex:PAT_3, causing it to be skipped.
+		// GET returns non-null for the exhausted namespaced key, causing it to
+		// be skipped. Only the namespaced form is written or read (the legacy
+		// `ex:<key>` format was removed).
 		setGlobalFetchMock(
 			vi.fn().mockImplementation(async (url: string, opts: any) => {
 				const body = JSON.parse(opts.body as string);
@@ -36,12 +41,12 @@ describe("getGithubPATAsync round-robin with Upstash", () => {
 				}
 				if (cmd === "GET") {
 					const key = body[1];
-					if (typeof key === "string" && key === "ex:PAT_3") {
+					if (typeof key === "string" && key === "zinnia:ex:PAT_3") {
 						return { ok: true, json: async () => ({ result: "1" }) };
 					}
 					return { ok: true, json: async () => ({ result: null }) };
 				}
-				// default for SET/EXPIRE/DEL
+				// default for SET/DEL
 				return { ok: true, json: async () => ({ result: "OK" }) };
 			}),
 		);
