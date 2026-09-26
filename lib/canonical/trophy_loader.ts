@@ -54,7 +54,6 @@ export async function loadTrophyModule(): Promise<any> {
 	for (const p of candidates) {
 		try {
 			// dynamic import of candidate
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const mod = await import(p);
 			return mod;
 		} catch {

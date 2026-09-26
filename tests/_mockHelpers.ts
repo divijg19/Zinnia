@@ -186,7 +186,6 @@ export function mockStreakRenderer(mockExport: unknown) {
 		typeof mockExport === "function" ? { default: mockExport } : mockExport;
 	// expose global fallback used by loader to make tests deterministic
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(globalThis as any).__STREAK_TEST_RENDERER = moduleMock;
 	} catch {}
 	vi.doMock(STREAK_DIST_MOCK_ID, () => moduleMock as any);

@@ -121,7 +121,6 @@ export async function handleWeb(req: Request): Promise<Response> {
 				);
 				return new Response(svg, { headers });
 			} catch (e) {
-				// eslint-disable-next-line no-console
 				console.error("trophy: local render failed", e);
 				return svgError("trophy: local render failed", cacheSeconds);
 			}
@@ -150,7 +149,6 @@ export async function handleWeb(req: Request): Promise<Response> {
 					);
 					return new Response(svg, { headers });
 				} catch (e) {
-					// eslint-disable-next-line no-console
 					console.error("trophy: renderTrophySVG threw", e);
 					// fall through to fallback
 				}
@@ -158,7 +156,6 @@ export async function handleWeb(req: Request): Promise<Response> {
 		} catch (e) {
 			// Log the loader failure for diagnostics; fall through to fallback
 			// so request still returns a simple stub SVG instead of 500.
-			// eslint-disable-next-line no-console
 			console.error("trophy: loadTrophyModule failed", e);
 
 			// Try to recover by importing the local source renderer directly
@@ -183,12 +180,10 @@ export async function handleWeb(req: Request): Promise<Response> {
 						);
 						return new Response(svg, { headers });
 					} catch (e2) {
-						// eslint-disable-next-line no-console
 						console.error("trophy: source renderer threw", e2);
 					}
 				}
 			} catch (e2) {
-				// eslint-disable-next-line no-console
 				console.error("trophy: source renderer import failed", e2);
 			}
 		}

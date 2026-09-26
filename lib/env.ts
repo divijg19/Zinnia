@@ -6,7 +6,6 @@ export async function loadDotenv(): Promise<void> {
 	if (process.env.NODE_ENV === "production") return;
 	try {
 		// dynamic import so production builds without dotenv don't fail
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const mod = await import("dotenv");
 		try {
 			mod.config();
@@ -36,7 +35,6 @@ try {
 				try {
 					process.env.PAT_1 = v.trim();
 					if (process.env.TOKENS_DEBUG === "1") {
-						// eslint-disable-next-line no-console
 						console.info(`[env] seeded PAT_1 from ${k}`);
 					}
 				} catch {}
