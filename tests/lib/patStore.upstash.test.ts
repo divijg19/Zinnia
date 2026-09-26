@@ -7,7 +7,7 @@ describe("patStore Upstash adapter", () => {
 		clearGlobalFetchMock();
 	});
 
-	it("uses Upstash REST for INCR and GET/SET/EXPIRE", async () => {
+	it("uses Upstash REST for INCR and GET/SET/DEL", async () => {
 		const calls: Array<{ body: any }> = [];
 		// simple mock of Upstash REST: INCR returns incrementing number
 		let counter = 0;
@@ -21,13 +21,15 @@ describe("patStore Upstash adapter", () => {
 					return { ok: true, json: async () => ({ result: counter }) };
 				}
 				if (cmd === "GET") {
-					// simulate GET returning null initially, and after SET return "1"
+					// simulate GET returning null initially, and after SET return "1".
+					// The exhaustion key is namespaced (`<ns>:ex:<key>`), so match
+					// the namespace-agnostic infix rather than a fixed prefix.
 					const key = body[1];
-					if (key.startsWith("ex:") && counter > 0)
+					if (typeof key === "string" && key.includes(":ex:") && counter > 0)
 						return { ok: true, json: async () => ({ result: "1" }) };
 					return { ok: true, json: async () => ({ result: null }) };
 				}
-				// SET/EXPIRE/DEL return simple OK
+				// SET/DEL return simple OK
 				return { ok: true, json: async () => ({ result: "OK" }) };
 			}),
 		);
