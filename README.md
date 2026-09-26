@@ -36,7 +36,7 @@ There are two health endpoints. `/api/health` returns an SVG card, so it can be 
 
 ## Response contract
 
-Every card route follows the same contract. It is implemented in `lib/canonical/http_cache.ts` and covered by `tests/api/etag_contract.test.ts`.
+Every card route follows the same contract. It is implemented in `lib/canonical/http_cache.js` and covered by `tests/api/etag_contract.test.ts`.
 
 - Responses are always HTTP 200 with a renderable SVG body. A bare 304 or an empty body is never sent. When an upstream call fails, the response is still a 200 carrying a fallback or error card.
 - Every response sets an `ETag`, plus `Content-Type: image/svg+xml`, `X-Content-Type-Options: nosniff`, and `Vary: Accept-Encoding`.
@@ -63,7 +63,7 @@ Full matrix with defaults lives in `.env.example`. The short version:
 | ----- | ---- |
 | Tokens | `PAT_1` through `PAT_5`, or a single `GITHUB_TOKEN` seed |
 | KV | `UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN` (or `UPSTASH_PREFIX` variants), `PAT_STORE_NAMESPACE`, `REDIS_URL` |
-| Cache TTLs | `CACHE_SECONDS` + 7 service overrides (see above) |
+| Cache TTLs | `CACHE_SECONDS` + 6 service overrides (see above) |
 | Timeouts | `STATS_GRAPHQL_TIMEOUT_MS`, `STATS_REST_TIMEOUT_MS`, `STREAK_FETCH_TIMEOUT_MS`, `TROPHY_GRAPHQL_TIMEOUT_MS`, `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 8000ms; KV fixed at 5000ms) |
 | File cache | `CACHE_DIR`, `TROPHY_CACHE_DIR`, `STREAK_CACHE_DIR` (best-effort, off unless set) |
 
@@ -80,7 +80,7 @@ Each service prefers its own token and falls back to global rotation (`SERVICE_P
 
 `PAT_1` is seeded automatically from `GITHUB_TOKEN` and the other common aliases, and from `Authorization` or `x-github-token` request headers. See `lib/env.ts` and `seedServicePat`.
 
-Exhausted tokens are skipped: a rate-limited key is set aside for 60s and an auth failure for 300s (`RATE_LIMIT_TTL_SECONDS`, `AUTH_FAILURE_TTL_SECONDS`). That state is persisted to KV when a store is configured. A fetch timeout returns the error card immediately; tokens are never retried within the same request.
+Exhausted tokens are skipped. A rate-limited key is set aside for 60s and an auth failure for 300s; both windows are hardcoded in `stats/src/common/retryer.ts` rather than configurable. Stats, top-langs, and streak mark exhaustion; the trophy and leetcode routes do not, so a key that rate-limits those two is retried on the next request. Exhaustion state is persisted to KV when a store is configured. A fetch timeout returns the error card immediately; tokens are never retried within the same request.
 
 ## Themes
 

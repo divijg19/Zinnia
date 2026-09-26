@@ -214,7 +214,6 @@ export function removeAnimations(svg: string): string {
 }
 
 export {
-	normalizeHexToken,
 	normalizeThemeKeys,
 	parseBackgroundToken,
 } from "../../lib/theme-helpers.ts";

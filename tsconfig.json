@@ -32,9 +32,6 @@
 		"lib/**/*.ts",
 		"api/**/*.ts",
 		"stats/src/**/*.ts",
-		// Note: stats/api contains both .js (Vercel) and .ts (Cloudflare Worker) versions
-		// We exclude the .ts versions via explicit exclude list below
-		"stats/api/**/*.ts",
 		"trophy/src/renderer.ts",
 		"trophy/api/**/*.ts",
 		"streak/src/**/*.ts",
@@ -47,9 +44,6 @@
 		"trophy/main.ts",
 		"trophy/deps.ts",
 		"trophy/src/StaticRenderRegeneration/**",
-		"trophy/src/Types/deno.d.ts",
-		// Exclude Cloudflare Worker API files (have .js equivalents for Vercel)
-		"stats/api/index.ts",
-		"stats/api/gist.ts"
+		"trophy/src/Types/deno.d.ts"
 	]
 }

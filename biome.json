@@ -25,7 +25,6 @@
 			"!package.json",
 			"!api/_build",
 			"!cache",
-			"!trophy/dist",
 			"!streak/dist",
 			"!stats/api",
 			"!.git/",
