@@ -2,6 +2,7 @@ import {
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "../../lib/canonical/http_cache.js";
+import { statusCardSvg } from "../../lib/status-svg.js";
 import { createHeaders } from "../packages/cloudflare-worker/src/headers.js";
 import { sanitize } from "../packages/cloudflare-worker/src/sanitize.js";
 import { Generator } from "../packages/core/src/card.js";
@@ -17,7 +18,7 @@ async function generate(
 		sanitized = sanitize(config) as unknown as Config;
 	} catch (err) {
 		const msg = (err as Error).message || "Invalid parameters";
-		const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${msg}"><title>${msg}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${msg}</text></svg>`;
+		const body = statusCardSvg(msg);
 		return new Response(body, {
 			headers: new Headers({
 				"Content-Type": "image/svg+xml; charset=utf-8",
@@ -52,7 +53,7 @@ async function generate(
 		return new Response(svg, { headers: headers.toObject() });
 	} catch (err) {
 		const msg = (err as Error).message || "LeetCode generation failed";
-		const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="${msg}"><title>${msg}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${msg}</text></svg>`;
+		const body = statusCardSvg(msg);
 		return new Response(body, {
 			headers: new Headers({
 				"Content-Type": "image/svg+xml; charset=utf-8",
@@ -117,8 +118,6 @@ export default async function handler(req: any, res: any) {
 		setSvgHeaders(res);
 		setShortCacheHeaders(res, 60);
 		res.status(200);
-		return res.send(
-			`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="leetcode: internal error"><title>leetcode: internal error</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">leetcode: internal error</text></svg>`,
-		);
+		return res.send(statusCardSvg("leetcode: internal error"));
 	}
 }
