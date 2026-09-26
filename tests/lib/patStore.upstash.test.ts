@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
 
 describe("patStore Upstash adapter", () => {
 	beforeEach(() => {

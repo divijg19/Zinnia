@@ -1,18 +1,16 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	clearGlobalFetchMock,
-	makeFetchRejected,
-	makeFetchResolved,
-	setGlobalFetchMock,
-} from "../_globalFetchMock";
-import {
 	assertSvgHeadersOnRes as assert2,
 	assertSvgHeadersOnRes,
+	clearGlobalFetchMock,
 	headerValue,
+	makeFetchRejected,
+	makeFetchResolved,
 	makeReq,
 	makeRes,
 	required,
+	setGlobalFetchMock,
 	type TestRequest,
 	type TestResponse,
 } from "../_testShim";

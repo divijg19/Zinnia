@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { type FetcherFunction, retryer } from "../../stats/src/common/retryer";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
 
 // Mirrors how stats' `request()` maps a raw fetch Response onto the
 // `{ data, statusText }` shape the retryer consumes. Derived from the real type

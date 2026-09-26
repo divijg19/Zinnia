@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getContributionStats } from "../../streak/src/stats.ts";
-import { clearGlobalFetchMock, setGlobalFetchMock } from "../_globalFetchMock";
+import { clearGlobalFetchMock, setGlobalFetchMock } from "../_testShim";
 
 const tokens = vi.hoisted(() => ({
 	getPat: vi.fn(),

@@ -1,10 +1,12 @@
 import { beforeEach, describe, it, vi } from "vitest";
 import {
+	assertSvgHeadersOnRes,
 	clearGlobalFetchMock,
 	makeFetchResolved,
+	makeReq,
+	makeRes,
 	setGlobalFetchMock,
-} from "../_globalFetchMock";
-import { assertSvgHeadersOnRes, makeReq, makeRes } from "../_testShim";
+} from "../_testShim";
 
 describe("/api/streak embed headers", () => {
 	beforeEach(() => {
