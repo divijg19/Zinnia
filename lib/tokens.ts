@@ -218,10 +218,6 @@ export async function markPatExhaustedAsync(key: string, ttlSeconds = 300) {
 	}
 }
 
-export function unmarkPatExhausted(key: string) {
-	exhaustedUntil.delete(key);
-}
-
 /** True when any usable `PAT_n` value is configured. */
 export function hasAnyPatEnv(): boolean {
 	try {
@@ -306,33 +302,6 @@ export async function withPatEnv<T>(fn: () => Promise<T>): Promise<T> {
 			else process.env.PAT_1 = prevPat1;
 		} catch {}
 	}
-}
-
-export async function unmarkPatExhaustedAsync(key: string) {
-	exhaustedUntil.delete(key);
-	try {
-		const store = await getPatStore();
-		if (store && typeof store.clearExhausted === "function") {
-			await store.clearExhausted(key);
-		}
-	} catch (_e) {
-		// ignore
-	}
-}
-
-export function listPatStatus() {
-	return discoverPatKeys().map((k) => {
-		const until = exhaustedUntil.get(k) || null;
-		const remaining = until
-			? Math.max(0, Math.ceil((until - Date.now()) / 1000))
-			: 0;
-		return {
-			key: k,
-			present: Boolean(process.env[k]),
-			exhausted: remaining > 0,
-			exhaustedTtlSec: remaining,
-		};
-	});
 }
 
 export { STATIC_PAT_KEYS as PAT_KEYS };

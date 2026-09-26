@@ -1,16 +1,5 @@
 import type { VercelResponse } from "@vercel/node";
-import {
-	computeEtag as _computeEtag,
-	resolveCacheSeconds as _resolveCacheSeconds,
-	setCacheHeaders as _setCacheHeaders,
-	setEtagAndAlwaysSend200 as _setEtagAndAlwaysSend200,
-	setSvgHeaders as _setSvgHeaders,
-} from "./canonical/http_cache.js";
-
-export const resolveCacheSeconds = _resolveCacheSeconds;
-export const setCacheHeaders = _setCacheHeaders;
-export const setSvgHeaders = _setSvgHeaders;
-export const computeEtag = _computeEtag;
+import { setEtagAndAlwaysSend200 } from "./canonical/http_cache.js";
 
 /**
  * Forward a web-standard `Response` body to a `VercelResponse` under the
@@ -40,7 +29,7 @@ export async function forwardWebResponseToVercel(
 		} catch {}
 	}
 
-	_setEtagAndAlwaysSend200(res, body);
+	setEtagAndAlwaysSend200(res, body);
 	res.status(200);
 	return res.send(body);
 }

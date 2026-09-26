@@ -1,4 +1,4 @@
-/* Shared theme helpers: parseBackgroundToken and normalizeHexToken */
+/* Shared theme helpers: parseBackgroundToken and normalizeThemeKeys */
 
 export function parseBackgroundToken(
 	bgRaw?: string | null,
@@ -47,23 +47,6 @@ export function parseBackgroundToken(
 	} catch {
 		return null;
 	}
-}
-
-export function normalizeHexToken(hex?: string | null): string | null {
-	if (!hex) return null;
-	const s = String(hex).trim();
-	if (s.startsWith("url(") || s.startsWith("linear-gradient(")) return s;
-	if (s.includes(",")) return s;
-	const noHash = s.replace(/^#/, "");
-	if (/^[0-9a-fA-F]{3}$/.test(noHash)) {
-		return `#${noHash
-			.split("")
-			.map((c) => c + c)
-			.join("")
-			.toLowerCase()}`;
-	}
-	if (/^[0-9a-fA-F]{6}$/.test(noHash)) return `#${noHash.toLowerCase()}`;
-	return s;
 }
 
 export function normalizeThemeKeys(

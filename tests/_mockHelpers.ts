@@ -6,17 +6,14 @@ export function mockApiUtilsFactory({
 	readBody = null,
 	readMeta = null,
 	writeSpy = undefined,
-	readSpy = undefined,
 	computeEtag = (b: string) => (b ? String(b).slice(0, 16) : "mock-etag"),
 }: {
 	readBody?: string | null;
 	readMeta?: { body: string; etag: string } | null;
 	writeSpy?: any;
-	readSpy?: any;
 	computeEtag?: (b: string) => string;
 } = {}) {
 	const writeImpl = writeSpy ?? vi.fn(async () => {});
-	const readImpl = readSpy ?? vi.fn(async () => readBody);
 	const readMetaImpl = vi.fn(async () =>
 		readMeta
 			? readMeta
@@ -32,12 +29,8 @@ export function mockApiUtilsFactory({
 		// still needs cache reads/writes stubbed. No handler imports it
 		// directly today; keep this in sync with the real module's surface.
 		const cacheMock = () => ({
-			computeCacheKey: (u: string) =>
-				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
 			computeEtag: (b: string) => computeEtag(b),
-			readCache: readImpl,
 			readCacheWithMeta: readMetaImpl,
-			writeCache: writeImpl,
 			writeCacheWithMeta: writeImpl,
 		});
 		vi.doMock("../../api/cache", cacheMock);
@@ -46,8 +39,6 @@ export function mockApiUtilsFactory({
 		vi.doMock("../../api/cache.js", cacheMock);
 
 		return {
-			computeCacheKey: (u: string) =>
-				(u || "").slice(0, 16).replace(/[^a-z0-9]/gi, "_"),
 			computeEtag: (b: string) => computeEtag(b),
 			isValidUsername: (username: string | null | undefined) => {
 				if (!username) return false;

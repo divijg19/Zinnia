@@ -45,41 +45,6 @@ async function ensureCacheDir(service: string): Promise<void> {
 	}
 }
 
-export async function writeCache(
-	service: string,
-	url: string,
-	body: string,
-): Promise<void> {
-	try {
-		const dir = serviceCacheDir(service);
-		if (!dir) return; // filesystem cache disabled
-
-		await ensureCacheDir(service);
-		const key = computeKeyFromUrl(url);
-		const file = path.join(dir, `${key}.svg`);
-		await fs.writeFile(file, body, "utf8");
-	} catch (_e) {
-		// best-effort
-	}
-}
-
-export async function readCache(
-	service: string,
-	url: string,
-): Promise<string | null> {
-	try {
-		const dir = serviceCacheDir(service);
-		if (!dir) return null; // filesystem cache disabled
-
-		const key = computeKeyFromUrl(url);
-		const file = path.join(dir, `${key}.svg`);
-		const data = await fs.readFile(file, "utf8");
-		return data;
-	} catch (_e) {
-		return null;
-	}
-}
-
 export async function writeCacheWithMeta(
 	service: string,
 	url: string,
@@ -136,5 +101,3 @@ export function computeEtag(body: string): string {
 	const hash = crypto.createHash("sha1").update(body, "utf8").digest("hex");
 	return hash.slice(0, 16);
 }
-
-export { computeKeyFromUrl as computeCacheKey };

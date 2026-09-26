@@ -1,28 +1,15 @@
 // Prefer `src` during development/tests and `dist` in production.
 type TrophyRenderer = (opts: any) => string;
 let cached: TrophyRenderer | undefined;
-let injected: TrophyRenderer | undefined;
-
-export function __testSetRenderer(fn: TrophyRenderer) {
-	injected = fn;
-}
-
-export function __testResetRenderer() {
-	injected = undefined;
-	cached = undefined;
-}
 
 async function loadRenderer(): Promise<TrophyRenderer> {
-	if (injected) return injected;
 	if (cached) return cached;
 	// Prefer local source renderer first so the repository's canonical implementation
-	// is used during development and CI. Keep _build and dist outputs as fallbacks.
+	// is used during development and CI. Keep _build outputs as fallbacks.
 	const specCandidates = [
 		"../trophy/src/renderer",
-		"../trophy/src/index",
 		"./_build/trophy/renderer",
 		"./_build/trophy/index",
-		"../trophy/dist/index.js",
 	];
 
 	const failures: Array<{ spec: string; err: string }> = [];
