@@ -136,6 +136,58 @@ describe("card route render cache", () => {
 		expect(stats).toHaveBeenCalledTimes(1);
 	});
 
+	it("reports a diagnosable failure instead of a blank timing block", async () => {
+		// The deadline bug shipped because the diagnostic that would have named it
+		// came back with `timing: {}` and a `cache` block carrying no status, so a
+		// reader of `?debug=1` had no way to tell a slow render from a broken one.
+		process.env.PAT_1 = "ghp_test_token";
+		const { handler } = await load({ throwWith: new Error("upstream down") });
+
+		const res = makeRes();
+		await handler(
+			makeReq(`${URL_PATH}&debug=1`) as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
+		const payload = JSON.parse(res._body());
+
+		expect(payload.stage).toBe("error");
+		expect(payload.code).toBe("STATS_INTERNAL");
+		expect(payload.error).toContain("upstream down");
+		expect(payload.timing.totalMs).toBeGreaterThanOrEqual(0);
+		expect(payload.cache.status).toBe("miss");
+		expect(payload.cache.ttlSeconds).toBe(86400);
+	});
+
+	it("serves a degraded card as a success, and says it was stale", async () => {
+		// A producer failure with a cached body is not an error response: the route
+		// answers 200 with the previous render. The diagnostics must reflect that
+		// rather than report a failure, and must not claim a fetch happened.
+		process.env.PAT_1 = "ghp_test_token";
+		const { handler, rc } = await load({
+			throwWith: new Error("upstream down"),
+		});
+		await rc.setCachedRender(
+			"stats",
+			cacheKeyFor(rc),
+			"<svg>PREVIOUS</svg>",
+			0,
+		);
+
+		const res = makeRes();
+		await handler(
+			makeReq(`${URL_PATH}&debug=1`) as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
+		const payload = JSON.parse(res._body());
+
+		expect(payload.ok).toBe(true);
+		expect(payload.stage).toBe("done");
+		expect(payload.cache.status).toBe("stale");
+		expect(payload.cache.ageMs).toBeGreaterThanOrEqual(0);
+		expect(payload.timing.fetchMs).toBeUndefined();
+		expect(payload.timing.totalMs).toBeGreaterThanOrEqual(0);
+	});
+
 	it("reports an error card when there is nothing cached to fall back on", async () => {
 		process.env.PAT_1 = "ghp_test_token";
 		const { handler } = await load({ throwWith: new Error("upstream down") });

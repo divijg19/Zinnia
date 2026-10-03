@@ -4,7 +4,7 @@ import {
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./canonical/http_cache.js";
-import { sendDebugJson } from "./debug.js";
+import { type Diag, sendDebugJson } from "./debug.js";
 import { statusCardSvg } from "./status-svg.js";
 import { isUserNotFoundError, userNotFoundMessage } from "./user-errors.js";
 
@@ -51,6 +51,42 @@ export function missingUsername(
 	return sendErrorSvg(req, res, ERR_MISSING_USERNAME, code);
 }
 
+/**
+ * A rejected request, answered the same way by every card route: JSON
+ * diagnostics when `?debug=1` is set, otherwise the standard error card.
+ *
+ * Four routes each grew their own copy of this, with three different message
+ * strings for the same missing-username condition, so the diagnostics an
+ * embedder sees differed by route.
+ */
+export function validationFailure(
+	req: VercelRequest,
+	res: VercelResponse,
+	opts: {
+		debug: boolean;
+		diag: Diag;
+		message?: string;
+		code?: ErrorCode;
+		/** Echoed into the debug payload so a bad value is identifiable. */
+		username?: string | null;
+	},
+) {
+	const message = opts.message ?? ERR_MISSING_USERNAME;
+	const code = opts.code ?? "UNKNOWN";
+	if (opts.debug) {
+		return sendDebugJson(res, {
+			...opts.diag,
+			stage: "validation",
+			error: message,
+			code,
+			...(opts.username === undefined
+				? {}
+				: { params: { ...(opts.diag.params ?? {}), username: opts.username } }),
+		});
+	}
+	return sendErrorSvg(req, res, message, code);
+}
+
 /** Throw for empty renderer output so callers route to the error path. */
 export function emptyRenderer(service: string): never {
 	throw new Error(`${service} renderer returned empty body`);
@@ -68,7 +104,7 @@ export function handleRouteError(
 		service: string;
 		code: ErrorCode;
 		debug: boolean;
-		diag: Record<string, unknown>;
+		diag: Diag;
 		username?: string;
 	},
 ) {
@@ -83,7 +119,8 @@ export function handleRouteError(
 	const code: ErrorCode = userMissing ? "USER_NOT_FOUND" : opts.code;
 	const message = userMissing
 		? userNotFoundMessage(
-				opts.username ?? (opts.diag.params as { username?: string })?.username,
+				(opts.diag.params as { username?: string } | undefined)?.username ??
+					opts.username,
 			)
 		: `${opts.service}: internal error`;
 	if (opts.debug) {

@@ -137,6 +137,15 @@ export function Ranking(ranking: number) {
 	return item;
 }
 
+// Length of the solved arc on the `#total-solved-ring` circle, guarding a zero
+// total. This is the ring's *final* state: the animation extension relies on it
+// being present in the base style so the card renders correctly with animation
+// disabled. `0/0` would serialize as `NaN` and invalidate the declaration.
+function ringProgress(solved: number, total: number): number {
+	if (!Number.isFinite(total) || total <= 0) return 0;
+	return (80 * Math.PI * solved) / total;
+}
+
 export function TotalSolved(total: number, solved: number) {
 	return new Item("g", {
 		id: "total-solved",
@@ -162,7 +171,7 @@ export function TotalSolved(total: number, solved: number) {
 					r: "40px",
 					transform: "rotate(-90deg)",
 					"transform-origin": "40px 40px",
-					"stroke-dasharray": `${(80 * Math.PI * solved) / total} 10000`,
+					"stroke-dasharray": `${ringProgress(solved, total)} 10000`,
 					stroke: "var(--color-0)",
 					"stroke-width": "6px",
 					"stroke-linecap": "round",

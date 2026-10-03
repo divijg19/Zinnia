@@ -61,6 +61,14 @@ Created by potrace 1.15, written by Peter Selinger 2001-2017
 </svg>`;
 };
 
+/**
+ * Reduce an arbitrary label to characters safe inside an SVG/CSS identifier,
+ * falling back when nothing usable survives (an all-punctuation label).
+ */
+const sanitizeId = (value: string, fallback: string): string => {
+	return String(value).replace(/[^A-Za-z0-9_-]/g, "") || fallback;
+};
+
 export const getNextRankBar = (
 	title: string,
 	percentage: number,
@@ -68,17 +76,19 @@ export const getNextRankBar = (
 ): string => {
 	const maxWidth = 80;
 	// sanitize title to produce safe CSS identifiers and ids
-	let safeTitle = String(title).replace(/[^A-Za-z0-9_-]/g, "");
-	if (!safeTitle) safeTitle = "trophy";
+	const safeTitle = sanitizeId(title, "trophy");
 	const animName = `${safeTitle}RankAnimation`;
 	const progressId = `${safeTitle}-rank-progress`;
 	const toWidth = Number((maxWidth * percentage).toFixed(3));
-	// emit CSS with spaces and semicolons to match golden formatting
-	const style = `@keyframes ${animName} { from { width: 0px; } to { width: ${toWidth}px; } } #${progressId}{ animation: ${animName} 1s forwards ease-in-out; }`;
+	// `backwards` fills only the delay, so the bar's width must already be its
+	// final value in the base rule. With `forwards` and no `width` attribute the
+	// bar existed only while its animation ran, so it vanished wherever
+	// animations do not run.
+	const style = `@keyframes ${animName} { from { width: 0px; } to { width: ${toWidth}px; } } #${progressId}{ animation: ${animName} 1s backwards ease-in-out; }`;
 	return `
       <style> ${style} </style>
       <rect x="15" y="101" rx="1" width="${maxWidth}" height="3.2" opacity="0.3" fill="${color}" />
-      <rect id="${progressId}" x="15" y="101" rx="1" height="3.2" fill="${color}" />
+      <rect id="${progressId}" x="15" y="101" rx="1" width="${toWidth}" height="3.2" fill="${color}" />
     `;
 };
 
@@ -104,7 +114,18 @@ const getSmallTrophyIcon = (
 	// Single Rank
 	return "";
 };
-export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
+/**
+ * Render one trophy cell's rank icon.
+ *
+ * `cellKey` must be unique per cell in the assembled card: it is appended to the
+ * gradient's `id` so cells that share a rank do not emit duplicate document
+ * IDs. Omit it only when a single icon is rendered on its own.
+ */
+export const getTrophyIcon = (
+	theme: Theme,
+	rank = RANK.UNKNOWN,
+	cellKey = "",
+) => {
 	const SECRET_NEON = {
 		// keep as fixed neon palette regardless of theme
 		RANK_1: "#ff1744", // neon red
@@ -169,8 +190,8 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
 	const icon = `
     <path d="M7 10h2v4H7v-4z"/>
     <path d="M10 11c0 .552-.895 1-2 1s-2-.448-2-1 .895-1 2-1 2 .448 2 1z"/>
-    <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 1 1 6 0 3 3 0 0 1-6 0z"/>
-    <path d="M3 1h10c-.495 3.467-.5 10-5 10S3.495 4.467 3 1zm0 15a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1H3zm2-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1H5z"/>
+    <path fill-rule="evenodd" d="M12.5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-3 2a3 3 0 0 1 6 0 3 3 0 0 1-6 0zm-6-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+    <path d="M3 1h10c-.495 3.467-.5 10-5 10S3 5.4 3 1zm2 2h6M3 1v3m4 12c-.495 3.467-.5 10-5 10S3 16.4 3 13"/>
     <circle cx="8" cy="6" r="4" fill="${ICON_CIRCLE}" />
     <text x="6" y="8" font-family="Courier New, Courier, monospace" font-size="7" fill="${rankColor}">${rank.slice(
 			0,
@@ -178,15 +199,23 @@ export const getTrophyIcon = (theme: Theme, rank = RANK.UNKNOWN) => {
 		)}</text>
   `;
 	const optionRankIcon = getSmallTrophyIcon(icon, color, rank.length - 1);
+	// `id` must be unique across the whole document, and every trophy cell emits
+	// its own gradient. Keying on the rank alone meant two cells of the same rank
+	// produced duplicate IDs; `url(#...)` then resolves to whichever came first.
+	// They happened to be identical, so nothing rendered wrongly, but any
+	// per-cell variation would silently paint the wrong gradient.
+	const gradientId = cellKey
+		? `rank-${rank}-${sanitizeId(cellKey, "cell")}`
+		: `rank-${rank}`;
 	return `
   ${backgroundIcon}
   ${optionRankIcon}
   <defs>
-    <linearGradient id="rank-${rank}" gradientTransform="rotate(45)">
+    <linearGradient id="${gradientId}" gradientTransform="rotate(45)">
     ${gradationColor}
     </linearGradient>
   </defs>
-  <svg x="28" y="20" width="100" height="100" viewBox="0 0 30 30" fill="url(#rank-${rank})" xmlns="http://www.w3.org/2000/svg">
+  <svg x="28" y="20" width="100" height="100" viewBox="0 0 30 30" fill="url(#${gradientId})" xmlns="http://www.w3.org/2000/svg">
     ${icon}
   </svg>
   `;

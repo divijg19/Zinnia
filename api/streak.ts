@@ -1,13 +1,12 @@
 //
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { getDebugFlag, newDiag, sendDebugJson } from "../lib/debug.js";
 import {
-	type Diag,
-	getDebugFlag,
-	newDiag,
-	sendDebugJson,
-} from "../lib/debug.js";
-import { handleRouteError, sendErrorSvg } from "../lib/errors.js";
+	handleRouteError,
+	sendErrorSvg,
+	validationFailure,
+} from "../lib/errors.js";
 import { fetchWithTimeout } from "../lib/fetch-timeout.js";
 import {
 	importByPath,
@@ -615,7 +614,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const url = safeUrl(req, "/api/streak");
 		const debug = getDebugFlag(url);
 		const user = getUsername(url, ["username", "user"]);
-		if (!user) return respondValidation(req, res, debug, diag);
+		if (!user) {
+			return validationFailure(req, res, {
+				debug,
+				diag,
+				message: "Missing or invalid ?user= or ?username=...",
+				username:
+					url.searchParams.get("user") ?? url.searchParams.get("username"),
+			});
+		}
 		diag.params = {
 			username: user,
 			theme: url.searchParams.get("theme") ?? "default",
@@ -733,25 +740,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			diag,
 		});
 	}
-}
-
-/** Missing or malformed `?user=` / `?username=`. */
-function respondValidation(
-	req: VercelRequest,
-	res: VercelResponse,
-	debug: boolean,
-	diag: Diag,
-) {
-	const message = "Missing or invalid ?user= or ?username=...";
-	if (debug) {
-		return sendDebugJson(res, {
-			...diag,
-			stage: "validation",
-			error: message,
-			code: "UNKNOWN",
-		});
-	}
-	return sendErrorSvg(req, res, message, "UNKNOWN");
 }
 
 type Captured = {

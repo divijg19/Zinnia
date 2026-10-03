@@ -115,6 +115,11 @@ const getStyles = ({
 	show_icons: boolean;
 	progress: number;
 }) => {
+	// Every animated property keeps its final value in the base rule and the
+	// animation only fills `backwards`, so the card still reads correctly where
+	// animations do not run. `.rank-circle` in particular needs its final
+	// `stroke-dashoffset` here: without it the rank progress lived solely in the
+	// keyframe's `to` frame and vanished on `backwards`.
 	return `
         .stat {
             font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: ${textColor};
@@ -122,15 +127,15 @@ const getStyles = ({
         @supports(-moz-appearance: auto) {
             .stat { font-size:12px; }
         }
-        .stagger { opacity: 0; animation: fadeInAnimation 0.3s ease-in-out forwards; }
-        .rank-text { font: 800 24px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; animation: scaleInAnimation 0.3s ease-in-out forwards; }
+        .stagger { animation: fadeInAnimation 0.3s ease-in-out backwards; }
+        .rank-text { font: 800 24px 'Segoe UI', Ubuntu, Sans-Serif; fill: ${textColor}; animation: scaleInAnimation 0.3s ease-in-out backwards; }
         .rank-percentile-header { font-size: 14px; }
         .rank-percentile-text { font-size: 16px; }
         .not_bold { font-weight: 400 }
         .bold { font-weight: 700 }
         .icon { fill: ${iconColor}; display: ${show_icons ? "block" : "none"}; }
         .rank-circle-rim { stroke: ${ringColor}; fill: none; stroke-width: 6; opacity: 0.2; }
-        .rank-circle { stroke: ${ringColor}; stroke-dasharray: 250; fill: none; stroke-width: 6; stroke-linecap: round; opacity: 0.8; transform-origin: -10px 8px; transform: rotate(-90deg); animation: rankAnimation 1s forwards ease-in-out; }
+        .rank-circle { stroke: ${ringColor}; stroke-dasharray: 250; stroke-dashoffset: ${calculateCircleProgress(progress)}; fill: none; stroke-width: 6; stroke-linecap: round; opacity: 0.8; transform-origin: -10px 8px; transform: rotate(-90deg); animation: rankAnimation 1s backwards ease-in-out; }
         ${process.env.NODE_ENV === "test" ? "" : getProgressAnimation({ progress })}
     `;
 };

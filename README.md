@@ -39,6 +39,7 @@ There are two health endpoints. `/api/health` returns an SVG card, so it can be 
 Every card route follows the same contract. It is implemented in `lib/canonical/http_cache.js` and covered by `tests/api/etag_contract.test.ts`.
 
 - Responses are always HTTP 200 with a renderable SVG body. A bare 304 or an empty body is never sent. When an upstream call fails, the response is still a 200 carrying the last good render, or an error card when there is nothing cached.
+- No card depends on a CSS animation to become visible. Every property an animation touches already holds its final value in the element's own style, and the animation only fills `backwards`. Otherwise a reader with reduced motion, an embedder that suppresses motion, or a renderer that drops the style block gets a blank card. The same rule requires every emitted `<style>` block to be brace-balanced: a stray `}` once landed on top of a theme's `:root` rules, so the parser discarded the palette and the card rendered as a white rectangle. `tests/api/card_css_invariants.test.ts` and `embed:smoke` both enforce this.
 - Every response sets an `ETag`, plus `Content-Type: image/svg+xml`, `X-Content-Type-Options: nosniff`, and `Vary: Accept-Encoding`.
 - Every response reports which tier answered in `X-Cache-Status`: `hit` (served from the render cache), `miss` (rendered now), `stale` (served from the render cache because the refresh failed or overran its deadline), `fallback` (a compatibility branch, not an embeddable card), `static` (a fixed card), or `transient` (an error card).
 - Adding `?debug=1` returns JSON diagnostics instead of an image, on every card route: the validation stage, whether a PAT is present (never its value), the render-cache decision, and fetch and render timings. A cache hit reports no `fetchMs`, because no fetch happened.
@@ -62,7 +63,16 @@ Note which cache this reaches. Vercel rewrites the client-facing `Cache-Control`
 
 ### Render cache
 
-`lib/render-cache.ts` stores rendered SVGs in process memory and, when configured, Upstash KV (`UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN`). It exists so a revalidation is answered from the previous render instead of re-running the GitHub fetch, and so a fetch that fails or overruns `RENDER_DEADLINE_MS` (default 3500ms) still returns a card. GitHub Camo gives up fetching an origin image after 10s, so a miss inside that window rendered blank and only a refresh seemed to fix it; a served render does not depend on the timing at all.
+`lib/render-cache.ts` stores rendered SVGs in process memory and, when configured, Upstash KV (`UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN`). It exists so a revalidation is answered from the previous render instead of re-running the GitHub fetch, and so a fetch that fails still returns a card. GitHub Camo gives up fetching an origin image after 10s, so a miss inside that window rendered blank and only a refresh seemed to fix it; a served render does not depend on the timing at all.
+
+Two render budgets, because they answer different questions:
+
+| Budget | Default | Applies when | Why |
+| ------ | ------- | ------------ | --- |
+| `RENDER_DEADLINE_MS` | 3500ms | a previous render is cached | latency choice: at the budget a stale card can be served immediately |
+| `RENDER_CEILING_MS` | 8500ms | nothing is cached | the real card is the only good answer, so an error card would be strictly worse |
+
+The ceiling sits above the longest outbound fetch (8000ms by default), so it only fires after the upstream has already given up, and below Camo's 10s limit. A single shared budget got this wrong: at 3500ms roughly a quarter of cold stats renders - measured 2.7-6.3s - returned an error card instead of a card.
 
 - `?debug=` and `?cache=` are excluded from the cache key, along with `_`-prefixed params: they select a response mode or a TTL rather than a different card. Underscore params also let `embed:smoke --cold` probe a CDN miss without evicting the card.
 - Concurrent requests for the same card share one render. Five cards on one README page share a TTL, so they expire together; without coalescing that is five simultaneous GitHub API calls.
@@ -71,7 +81,9 @@ Note which cache this reaches. Vercel rewrites the client-facing `Cache-Control`
 
 ### Checking a deploy
 
-`bun run embed:smoke --base <origin> --cold --budget <ms>` renders all five cards with a unique query string, checks status, media type, `ETag`, a cacheable `Cache-Control`, and a structurally renderable `<svg>` with intrinsic `width`/`height`/`viewBox`, and fails when any response exceeds the budget. The budget matters on its own: an endpoint that answers 200 in 9s is still a blank embed in a README, because Camo stops waiting at 10s.
+`bun run embed:smoke --base <origin> --cold --budget <ms>` renders all five cards with a unique query string, checks status, media type, `ETag`, a cacheable `Cache-Control`, and a structurally renderable `<svg>` with intrinsic `width`/`height`/`viewBox`, a brace-balanced stylesheet and no element hidden behind an animation. It fails when any response exceeds the budget. The budget matters on its own: an endpoint that answers 200 in 9s is still a blank embed in a README, because Camo stops waiting at 10s.
+
+Note that GitHub Camo caches each card for its `max-age`, so a newly deployed fix will not reach a browser that already holds the old copy. Purge Camo or add a cache-busting param to the embed URL when verifying.
 
 ## Env vars
 
