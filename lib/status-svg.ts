@@ -26,6 +26,10 @@ function escapeXml(value: string): string {
  * Render the status card. `marker` appends a trailing HTML comment carrying a
  * machine-readable code (used by the route error path so embedders and tests
  * can identify the failure); omit it for plain status/handler-failure cards.
+ *
+ * `viewBox` is what lets a card be resized by an embedder. Without it, an
+ * `<img width="355">` crops the 600-unit content instead of scaling it, which
+ * reads as a broken image rather than a layout problem.
  */
 export function statusCardSvg(
 	message: string,
@@ -34,5 +38,5 @@ export function statusCardSvg(
 	height = 60,
 ): string {
 	const safe = escapeXml(message);
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" role="img" aria-label="${safe}"><title>${safe}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${safe}</text></svg>${marker ? `\n<!-- ${marker} -->` : ""}`;
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${safe}"><title>${safe}</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${safe}</text></svg>${marker ? `\n<!-- ${marker} -->` : ""}`;
 }

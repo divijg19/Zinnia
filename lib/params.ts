@@ -36,9 +36,3 @@ export function parseNumber(value: string | undefined): number | undefined {
 	if (Number.isFinite(n)) return n;
 	return undefined;
 }
-
-/** `?debug=1` / `?debug=true` diagnostics flag shared by card routes. */
-export function getDebugFlag(url: URL): boolean {
-	const debugParam = (url.searchParams.get("debug") || "").toLowerCase();
-	return debugParam === "1" || debugParam === "true";
-}

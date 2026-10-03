@@ -48,43 +48,20 @@ const NAMESPACE = (process.env.PAT_STORE_NAMESPACE || "zinnia").toLowerCase();
 const RR_COUNTER_KEY = `${NAMESPACE}:rr:pat`;
 const EX_PREFIX = `${NAMESPACE}:ex:`;
 
-// Allow a configurable prefix (e.g., ZINNIA) for env vars injected by
-// the Vercel Marketplace. Default is UPSTASH. Set `UPSTASH_PREFIX=ZINNIA`
-// in Vercel if you used a custom prefix when installing the integration.
-const UPSTASH_PREFIX = (process.env.UPSTASH_PREFIX || "UPSTASH").toUpperCase();
-
-// Shared Upstash REST primitives (single implementation in lib/kv).
-import { findEnv, upstashCall } from "./kv/upstash.js";
+// Shared KV primitives (single implementation in lib/kv).
+import {
+	hasKvEnvHint,
+	hasManagedRedisEnv,
+	resolveKvCredentials,
+} from "./kv/credentials.js";
+import { upstashCall } from "./kv/upstash.js";
 
 async function createUpstashStore(): Promise<PatStore | null> {
-	// Common candidate keys injected by Vercel Marketplace for Upstash
-	const url =
-		findEnv(
-			`${UPSTASH_PREFIX}_KV_REST_API_URL`,
-			`${UPSTASH_PREFIX}_KV_REST_API_URL`,
-			`${UPSTASH_PREFIX}_REST_URL`,
-			`${UPSTASH_PREFIX}_URL`,
-			`${UPSTASH_PREFIX}_KV_URL`,
-			`${UPSTASH_PREFIX}_REDIS_URL`,
-			"UPSTASH_REST_URL",
-			"UPSTASH_URL",
-			"ZINNIA_REST_URL",
-			"ZINNIA_KV_REST_API_URL",
-			"ZINNIA_KV_URL",
-		) || undefined;
-
-	const token =
-		findEnv(
-			`${UPSTASH_PREFIX}_KV_REST_API_TOKEN`,
-			`${UPSTASH_PREFIX}_KV_REST_API_READ_ONLY_TOKEN`,
-			`${UPSTASH_PREFIX}_REST_TOKEN`,
-			`${UPSTASH_PREFIX}_TOKEN`,
-			"UPSTASH_REST_TOKEN",
-			"UPSTASH_TOKEN",
-			"ZINNIA_REST_TOKEN",
-			"ZINNIA_KV_REST_API_TOKEN",
-		) || undefined;
-	if (!url || !token) return null;
+	// Endpoint discovery (marketplace prefixes, legacy aliases) lives in
+	// lib/kv/credentials so every KV consumer resolves the same bucket.
+	const creds = resolveKvCredentials();
+	if (!creds) return null;
+	const { url, token } = creds;
 	return {
 		incrCounter: async (key: string) => {
 			const r = await upstashCall(url, token, "INCR", key || RR_COUNTER_KEY);
@@ -150,14 +127,9 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 export async function getPatStore(): Promise<PatStore> {
 	if (STORE) return STORE;
 
-	// Provider selection order: explicit Upstash envs (including custom prefix), REDIS_URL, fallback in-memory
-	if (
-		process.env.UPSTASH_REST_URL ||
-		process.env.UPSTASH_URL ||
-		process.env[`${UPSTASH_PREFIX}_REST_URL`] ||
-		process.env.ZINNIA_REST_URL ||
-		process.env.ZINNIA_URL
-	) {
+	// Provider selection order: explicit Upstash envs (including custom
+	// prefix), REDIS_URL, fallback in-memory
+	if (hasKvEnvHint()) {
 		const s = await createUpstashStore();
 		if (s) {
 			STORE = s;
@@ -166,7 +138,7 @@ export async function getPatStore(): Promise<PatStore> {
 	}
 
 	if (
-		process.env.REDIS_URL ||
+		hasManagedRedisEnv() ||
 		(process.env.REDIS_PROVIDER || "").toLowerCase() === "redis"
 	) {
 		const s = await createManagedRedisStore();

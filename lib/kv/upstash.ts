@@ -4,12 +4,33 @@ import { fetchWithTimeout } from "../fetch-timeout.js";
  * Shared Upstash REST primitives (no external deps).
  *
  * Both `lib/patStore.ts` and `streak/src/cache.ts` build on these; KV must
- * never gate rendering, so every call fails fast (5s). Callers swallow
- * failures into their in-memory fallbacks.
+ * never gate rendering, so every call fails fast. Callers swallow failures
+ * into their in-memory fallbacks.
  */
+export const KV_CALL_TIMEOUT_MS = 5000;
+
 export async function upstashCall(
 	url: string,
 	token: string,
+	cmd: string,
+	...args: string[]
+): Promise<unknown> {
+	return upstashCallWithin(url, token, KV_CALL_TIMEOUT_MS, cmd, ...args);
+}
+
+/**
+ * `upstashCall` with an explicit per-call budget.
+ *
+ * The default 5s suits PAT coordination, which runs off the critical path.
+ * Callers that sit in front of a render (the render cache) pass a much smaller
+ * budget so a slow KV can never be the reason an embed exceeds GitHub Camo's
+ * fetch timeout. The budget is a named parameter rather than a trailing
+ * variadic one so a caller can never silently pass it as a Redis argument.
+ */
+export async function upstashCallWithin(
+	url: string,
+	token: string,
+	timeoutMs: number,
 	cmd: string,
 	...args: string[]
 ): Promise<unknown> {
@@ -24,7 +45,7 @@ export async function upstashCall(
 			},
 			body,
 		},
-		5000,
+		timeoutMs,
 	);
 	if (!res.ok) {
 		// Try to capture response text for diagnostics but limit size.

@@ -65,7 +65,7 @@ export function mockApiUtilsFactory({
 				try {
 					res.setHeader(
 						"Cache-Control",
-						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
+						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=86400, stale-if-error=86400`,
 					);
 				} catch (_e) {
 					// ignore
@@ -94,7 +94,7 @@ export function mockApiUtilsFactory({
 			},
 			setFallbackCacheHeaders: (res: any, seconds: number) => {
 				try {
-					const s = Math.max(60, Math.min(seconds, 604800));
+					const s = Math.max(60, Math.min(seconds, 3600));
 					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
 					res.setHeader(
 						"Cache-Control",
@@ -118,7 +118,7 @@ export function mockApiUtilsFactory({
 					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 					res.setHeader(
 						"Cache-Control",
-						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=43200, must-revalidate`,
+						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=86400, stale-if-error=86400`,
 					);
 					res.setHeader("ETag", `"${computeEtag(body)}"`);
 					res.status(200);
@@ -146,7 +146,7 @@ export function mockApiUtilsFactory({
 			sendFallbackSvg: (res: any, body: string, seconds: number) => {
 				try {
 					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-					const s = Math.max(60, Math.min(seconds, 604800));
+					const s = Math.max(60, Math.min(seconds, 3600));
 					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
 					res.setHeader(
 						"Cache-Control",

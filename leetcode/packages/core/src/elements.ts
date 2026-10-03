@@ -18,7 +18,12 @@ export function Root(config: Config, data: FetchedData) {
 			}),
 			new Item("style", {
 				id: "default-colors",
-				content: `svg{opacity:0}:root{--bg-0:#fff;--bg-1:#e5e5e5;--bg-2:#d3d3d3;--bg-3:#d3d3d3;--text-0:#000;--text-1:#808080;--text-2:#808080;--text-3:#808080;--color-0:#ffa116;--color-1:#5cb85c;--color-2:#f0ad4e;--color-3:#d9534f}`,
+				// No `svg{opacity:0}` pre-paint guard here. It used to hide the
+				// root until the last style block set `svg{opacity:1}`, which meant
+				// that any renderer dropping that trailing block produced a
+				// completely blank card. The guard bought nothing: the styles are
+				// all in-document and apply on first paint.
+				content: `:root{--bg-0:#fff;--bg-1:#e5e5e5;--bg-2:#d3d3d3;--bg-3:#d3d3d3;--text-0:#000;--text-1:#808080;--text-2:#808080;--text-3:#808080;--color-0:#ffa116;--color-1:#5cb85c;--color-2:#f0ad4e;--color-3:#d9534f}`,
 			}),
 			new Item("rect", {
 				id: "background",

@@ -28,20 +28,21 @@ All handlers live in `api/*.ts` (Vercel rewrites `/(.*)` → `/api/$1`):
 | `/api/trophy?username=…` | profile trophies | `trophy/src/Services/` + `trophy/src/renderer.ts` |
 | `/api/leetcode?username=…` | LeetCode stats | `leetcode/packages/core/src/` |
 | `/api/health` | health **SVG** card (`?text=` custom label) | `api/health.ts` |
-| `/api/__health` | health **JSON** readiness probe (`{"ok":true}` + `X-Ready: 1`) | `api/__health.ts` |
+| `/api/healthz` (`/api/__health` alias) | health **JSON** readiness probe (`{"ok":true}` + `X-Ready: 1`) | `api/healthz.ts` |
 
 Stats and top-langs share the `createCardHandler` wrapper (`lib/card-handler.ts`). There is no `/api/github` route.
 
-There are two health endpoints. `/api/health` returns an SVG card, so it can be embedded directly in a README; it accepts `?text=` and `?cache=` and defaults to a 60s TTL. `/api/__health` is a machine probe: a JSON body and an `X-Ready` header, with no rendering and no cache headers.
+There are two health endpoints. `/api/health` returns an SVG card, so it can be embedded directly in a README; it accepts `?text=` and `?cache=` and defaults to a 60s TTL. `/api/healthz` is a machine probe: a JSON body and an `X-Ready` header, with no rendering and no cache headers. `/api/__health` rewrites to `/api/healthz`; it used to be its own file, and Vercel never routed to it because files in `api/` whose names begin with an underscore are shared code, not functions (`tests/api/route_reachability.test.ts` keeps that honest).
 
 ## Response contract
 
 Every card route follows the same contract. It is implemented in `lib/canonical/http_cache.js` and covered by `tests/api/etag_contract.test.ts`.
 
-- Responses are always HTTP 200 with a renderable SVG body. A bare 304 or an empty body is never sent. When an upstream call fails, the response is still a 200 carrying a fallback or error card.
+- Responses are always HTTP 200 with a renderable SVG body. A bare 304 or an empty body is never sent. When an upstream call fails, the response is still a 200 carrying the last good render, or an error card when there is nothing cached.
 - Every response sets an `ETag`, plus `Content-Type: image/svg+xml`, `X-Content-Type-Options: nosniff`, and `Vary: Accept-Encoding`.
-- Adding `?debug=1` returns JSON diagnostics instead of an image: the validation stage, whether a PAT is present (never its value), and fetch and render timings.
-- Error cards carry a machine-readable code in a trailing comment, `<!-- ZINNIA_ERR:CODE -->`, for example `STATS_RATE_LIMIT`, `TROPHY_INTERNAL`, or `UNKNOWN`. `ErrorCode` in `lib/errors.ts` lists them all.
+- Every response reports which tier answered in `X-Cache-Status`: `hit` (served from the render cache), `miss` (rendered now), `stale` (served from the render cache because the refresh failed or overran its deadline), `fallback` (a compatibility branch, not an embeddable card), `static` (a fixed card), or `transient` (an error card).
+- Adding `?debug=1` returns JSON diagnostics instead of an image, on every card route: the validation stage, whether a PAT is present (never its value), the render-cache decision, and fetch and render timings. A cache hit reports no `fetchMs`, because no fetch happened.
+- Error cards carry a machine-readable code in a trailing comment, `<!-- ZINNIA_ERR:CODE -->`, for example `STATS_RATE_LIMIT`, `TROPHY_INTERNAL`, `USER_NOT_FOUND`, or `UNKNOWN`. `ErrorCode` in `lib/errors.ts` lists them all. A username that does not resolve reports `USER_NOT_FOUND` and names the username, instead of a generic internal error.
 
 ## Cache
 
@@ -53,7 +54,24 @@ Every card route follows the same contract. It is implemented in `lib/canonical/
         → CACHE_SECONDS → 86400 (health: 60)
 ```
 
-`?cache=` is clamped to `0–604800` (a `0`/unparseable value falls back to the base). Error/fallback responses use short/transient caching (`Cache-Control: no-store` on debug JSON, minimum 60s on fallbacks).
+`?cache=` is clamped to `0–604800` (a `0`/unparseable value falls back to the base). Error/fallback responses use short/transient caching (`Cache-Control: no-store` on debug JSON, minimum 60s on fallbacks, and at most an hour on a fallback body so an out-of-date card cannot be pinned downstream).
+
+Fresh responses carry `stale-while-revalidate` and `stale-if-error` and deliberately **not** `must-revalidate`. `must-revalidate` forbids serving stale, which cancels both of those directives; while it was present, every TTL expiry sent the first visitor back down the full cold path.
+
+Note which cache this reaches. Vercel rewrites the client-facing `Cache-Control` - it consumes `s-maxage` and `stale-while-revalidate` and re-emits only `max-age` - so these directives govern Vercel's own edge, and Camo is handed `max-age` alone. The render cache below, not the header, is what removes the blank-embed path: it answers regardless of what any intermediary does with the headers.
+
+### Render cache
+
+`lib/render-cache.ts` stores rendered SVGs in process memory and, when configured, Upstash KV (`UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN`). It exists so a revalidation is answered from the previous render instead of re-running the GitHub fetch, and so a fetch that fails or overruns `RENDER_DEADLINE_MS` (default 3500ms) still returns a card. GitHub Camo gives up fetching an origin image after 10s, so a miss inside that window rendered blank and only a refresh seemed to fix it; a served render does not depend on the timing at all.
+
+- `?debug=` and `?cache=` are excluded from the cache key, along with `_`-prefixed params: they select a response mode or a TTL rather than a different card. Underscore params also let `embed:smoke --cold` probe a CDN miss without evicting the card.
+- Concurrent requests for the same card share one render. Five cards on one README page share a TTL, so they expire together; without coalescing that is five simultaneous GitHub API calls.
+- The render is kept for a further `STALE_WINDOW_SECONDS` (24h) past its freshness window, so an upstream outage degrades to an out-of-date card rather than a broken one.
+- `RENDER_CACHE=0` disables it. Unset KV leaves process memory only, which is the previous behavior.
+
+### Checking a deploy
+
+`bun run embed:smoke --base <origin> --cold --budget <ms>` renders all five cards with a unique query string, checks status, media type, `ETag`, a cacheable `Cache-Control`, and a structurally renderable `<svg>` with intrinsic `width`/`height`/`viewBox`, and fails when any response exceeds the budget. The budget matters on its own: an endpoint that answers 200 in 9s is still a blank embed in a README, because Camo stops waiting at 10s.
 
 ## Env vars
 
@@ -62,7 +80,8 @@ Full matrix with defaults lives in `.env.example`. The short version:
 | Group | Vars |
 | ----- | ---- |
 | Tokens | `PAT_1` through `PAT_5`, or a single `GITHUB_TOKEN` seed |
-| KV | `UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN` (or `UPSTASH_PREFIX` variants), `PAT_STORE_NAMESPACE`, `REDIS_URL` |
+| KV | `UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN` (or `UPSTASH_PREFIX` variants), `PAT_STORE_NAMESPACE`, `REDIS_URL` — also backs the render cache |
+| Render cache | `RENDER_CACHE` (`0` disables), `RENDER_DEADLINE_MS` (default 3500) |
 | Cache TTLs | `CACHE_SECONDS` + 6 service overrides (see above) |
 | Timeouts | `STATS_GRAPHQL_TIMEOUT_MS`, `STATS_REST_TIMEOUT_MS`, `STREAK_FETCH_TIMEOUT_MS`, `TROPHY_GRAPHQL_TIMEOUT_MS`, `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 8000ms; KV fixed at 5000ms) |
 | File cache | `CACHE_DIR`, `TROPHY_CACHE_DIR`, `STREAK_CACHE_DIR` (best-effort, off unless set) |

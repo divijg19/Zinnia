@@ -5,6 +5,12 @@ import { afterAll, beforeAll } from "vitest";
 // Make test-mode detection deterministic for loader and helpers
 process.env.VITEST = "1";
 
+// The render cache (lib/render-cache.ts) keeps renders in process memory and KV,
+// which would make a route test serve an earlier case's SVG instead of exercising
+// the fetch it means to assert on. Off by default across the suite; the tests
+// that cover caching opt back in and drive it explicitly.
+process.env.RENDER_CACHE = "0";
+
 // Register snapshot serializer for SVG normalization
 try {
 	const { expect } = require("vitest");
