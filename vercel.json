@@ -20,6 +20,10 @@
 			"destination": "/demo/$1"
 		},
 		{
+			"source": "/api/__health",
+			"destination": "/api/healthz"
+		},
+		{
 			"source": "/(.*)",
 			"destination": "/api/$1"
 		}

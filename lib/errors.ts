@@ -4,7 +4,9 @@ import {
 	setShortCacheHeaders,
 	setSvgHeaders,
 } from "./canonical/http_cache.js";
+import { sendDebugJson } from "./debug.js";
 import { statusCardSvg } from "./status-svg.js";
+import { isUserNotFoundError, userNotFoundMessage } from "./user-errors.js";
 
 export type ErrorCode =
 	| "STATS_RATE_LIMIT"
@@ -16,6 +18,10 @@ export type ErrorCode =
 	| "TROPHY_INTERNAL"
 	| "LEETCODE_INTERNAL"
 	| "LEETCODE_BUILD_MISSING"
+	// A username that does not resolve to a user is a caller mistake, not an
+	// internal failure. It used to surface as `<service>: internal error`,
+	// which sent embedders looking at their PAT instead of their username.
+	| "USER_NOT_FOUND"
 	| "UNKNOWN";
 
 /**
@@ -31,23 +37,6 @@ export function redactSecretTokens(value: string): string {
 		/github_pat_[A-Za-z0-9_]{10,}|gh[pousr]_[A-Za-z0-9_]{10,}/g,
 		"[REDACTED]",
 	);
-}
-
-/** Send a machine-readable diagnostics payload (for `?debug=1`). Never cached. */
-export function sendDebugJson(
-	res: VercelResponse,
-	payload: Record<string, unknown>,
-) {
-	try {
-		res.setHeader("Content-Type", "application/json; charset=utf-8");
-	} catch {}
-	try {
-		res.setHeader("Cache-Control", "no-store");
-	} catch {}
-	try {
-		res.status(200);
-	} catch {}
-	return res.send(JSON.stringify(payload, null, 2));
 }
 
 /** Shared validation message for missing/invalid identity params. */
@@ -80,18 +69,29 @@ export function handleRouteError(
 		code: ErrorCode;
 		debug: boolean;
 		diag: Record<string, unknown>;
+		username?: string;
 	},
 ) {
 	const errName = err instanceof Error ? err.name : "Error";
 	const errMsg = redactSecretTokens(
 		err instanceof Error ? err.message : String(err),
 	).slice(0, 180);
+	// A missing user is a caller error with a different code and a different
+	// remedy than an internal fault, so it is reported as such rather than as
+	// `<service>: internal error`.
+	const userMissing = isUserNotFoundError(err);
+	const code: ErrorCode = userMissing ? "USER_NOT_FOUND" : opts.code;
+	const message = userMissing
+		? userNotFoundMessage(
+				opts.username ?? (opts.diag.params as { username?: string })?.username,
+			)
+		: `${opts.service}: internal error`;
 	if (opts.debug) {
 		return sendDebugJson(res, {
 			...opts.diag,
 			stage: "error",
 			error: `${errName}: ${errMsg}`,
-			code: opts.code,
+			code,
 		});
 	}
 	try {
@@ -102,13 +102,13 @@ export function handleRouteError(
 	} catch {}
 	try {
 		console.error(
-			`${opts.service}: internal error`,
+			`${opts.service}: ${userMissing ? "user not found" : "internal error"}`,
 			err instanceof Error ? err.stack || err.message : String(err),
 		);
 	} catch {}
 	setShortCacheHeaders(res, 60);
 	res.setHeader("X-Cache-Status", "transient");
-	return sendErrorSvg(req, res, `${opts.service}: internal error`, opts.code);
+	return sendErrorSvg(req, res, message, code);
 }
 
 /** Minimal standard error SVG with hidden error code comment. */

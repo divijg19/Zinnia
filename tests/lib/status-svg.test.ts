@@ -8,10 +8,13 @@ import { statusCardSvg } from "../../lib/status-svg";
 // edit is that the original ${...} placeholders are re-tokenized as @@name@@ so the
 // goldens read as plain data. They pin the exact bytes each call site emitted, so
 // the extraction is provably output-identical rather than merely "looks the same".
+//
+// One deliberate delta since: a `viewBox` was added to the root element so an
+// embedder can resize a card without cropping it. The rest is unchanged.
 const GOLDEN_CARD =
-	'<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" role="img" aria-label="@@msg@@"><title>@@msg@@</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">@@msg@@</text></svg>';
+	'<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" viewBox="0 0 600 60" role="img" aria-label="@@msg@@"><title>@@msg@@</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">@@msg@@</text></svg>';
 const GOLDEN_ERROR_CARD =
-	'<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="@@width@@" height="@@height@@" role="img" aria-label="@@message@@"><title>@@message@@</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">@@message@@</text></svg>\n<!-- ZINNIA_ERR:@@code@@ -->';
+	'<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="@@width@@" height="@@height@@" viewBox="0 0 @@width@@ @@height@@" role="img" aria-label="@@message@@"><title>@@message@@</title><rect width="100%" height="100%" fill="#1f2937"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#f9fafb" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">@@message@@</text></svg>\n<!-- ZINNIA_ERR:@@code@@ -->';
 
 const fill = (tpl: string, vars: Record<string, string>) =>
 	Object.entries(vars).reduce((acc, [k, v]) => acc.split(k).join(v), tpl);

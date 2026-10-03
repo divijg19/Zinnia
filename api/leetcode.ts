@@ -1,7 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendErrorSvg } from "../lib/errors.js";
+import {
+	describeCacheOutcome,
+	getDebugFlag,
+	newDiag,
+	sendDebugJson,
+} from "../lib/debug.js";
+import { handleRouteError, sendErrorSvg } from "../lib/errors.js";
 import { importByPath } from "../lib/loader/index.js";
 import {
 	filterThemeParam,
@@ -9,25 +15,32 @@ import {
 	resolveCacheSeconds,
 	safeUrl,
 } from "../lib/params.js";
+import {
+	markCacheStatus,
+	renderCacheKey,
+	renderWithFallback,
+	ttlForOutcome,
+} from "../lib/render-cache.js";
 import { sendSuccessSvg } from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+	let debug = false;
+	let username: string | undefined;
+	const diag = newDiag("leetcode");
 	try {
 		const url = safeUrl(req, "/api/leetcode");
+		debug = getDebugFlag(url);
+		const t0 = Date.now();
 		// path param support: /api/leetcode/<username>
 		const parts = url.pathname.replace(/^\//, "").split("/");
 		if (parts[0] === "api" && parts[1] === "leetcode" && parts[2]) {
 			url.searchParams.set("username", parts[2]);
 		}
-		const username = url.searchParams.get("username");
-		if (!isValidUsername(username)) {
-			return sendErrorSvg(
-				req,
-				res,
-				"Missing or invalid ?username=...",
-				"UNKNOWN",
-			);
+		const rawUsername = url.searchParams.get("username");
+		if (!isValidUsername(rawUsername)) {
+			return validationFailure(res, req, debug, diag, rawUsername);
 		}
+		username = rawUsername ?? undefined;
 
 		const config = Object.fromEntries(url.searchParams.entries()) as Record<
 			string,
@@ -36,12 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Minimal Node-safe sanitization to avoid importing worker-only code.
 		// Ensure required fields and set safe defaults. Extensions are optional.
 		if (!config.username?.trim() || !isValidUsername(config.username)) {
-			return sendErrorSvg(
-				req,
-				res,
-				"Missing or invalid ?username=...",
-				"UNKNOWN",
-			);
+			return validationFailure(res, req, debug, diag, config.username);
 		}
 		type SanitizedOptions = {
 			username: string;
@@ -70,6 +78,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 					: true,
 			theme: { light: "light", dark: "dark" },
 			cache: 60,
+		};
+
+		diag.params = {
+			username: sanitized.username,
+			theme: config.theme ?? "default",
+			animation: sanitized.animation,
+		};
+		diag.validation = {
+			username: true,
+			// The LeetCode API needs no GitHub token.
+			patConfigured: true,
 		};
 
 		// Add extensions based on ext/extension parameter
@@ -151,35 +170,78 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			["LEETCODE_CACHE_SECONDS", "CACHE_SECONDS"],
 			86400,
 		);
+		const cacheKey = renderCacheKey(url);
+		diag.cache = { key: cacheKey, ttlSeconds: cacheSeconds };
 
-		try {
-			const { Generator } = coreMod as { Generator: any };
-			const generator = new Generator(
-				null as unknown as Cache,
-				{} as Record<string, string>,
-			);
-			generator.verbose = false;
-			const svgOut = await generator.generate(sanitized);
-			if (!svgOut) throw new Error("leetcode renderer returned empty body");
-			// Always 200 + full body with ETag set. Some embedders treat a 304
-			// without a body as an error, so never send a bare 304.
-			return sendSuccessSvg(res, svgOut, cacheSeconds);
-		} catch (e) {
-			const error = e as Error;
-			console.error("LeetCode generation error:", error.message);
-			return sendErrorSvg(
-				req,
-				res,
-				error.message || "LeetCode generation failed",
-				"LEETCODE_INTERNAL",
-			);
+		const tRender0 = Date.now();
+		const timing: Record<string, unknown> = {};
+		const outcome = await renderWithFallback({
+			service: "leetcode",
+			cacheKey,
+			freshSeconds: cacheSeconds,
+			produce: async () => {
+				const { Generator } = coreMod as { Generator: any };
+				const generator = new Generator(
+					null as unknown as Cache,
+					{} as Record<string, string>,
+				);
+				generator.verbose = false;
+				const svgOut = await generator.generate(sanitized);
+				if (!svgOut) throw new Error("leetcode renderer returned empty body");
+				return { svg: svgOut, headers: {} };
+			},
+		});
+		if (outcome.status !== "hit") timing.renderMs = Date.now() - tRender0;
+
+		diag.timing = { ...timing, totalMs: Date.now() - t0 };
+		diag.cache = {
+			...(diag.cache as Record<string, unknown>),
+			...describeCacheOutcome(outcome),
+		};
+		const serveSeconds = ttlForOutcome(outcome, cacheSeconds);
+		if (debug) {
+			return sendDebugJson(res, {
+				...diag,
+				ok: true,
+				stage: "done",
+				render: { bytes: outcome.svg.length, cacheSeconds: serveSeconds },
+			});
 		}
-	} catch (_err) {
-		return sendErrorSvg(
-			req,
-			res,
-			"leetcode: internal error",
-			"LEETCODE_INTERNAL",
-		);
+		markCacheStatus(res, outcome.status);
+		// Always 200 + full body with ETag set. Some embedders treat a 304
+		// without a body as an error, so never send a bare 304.
+		return sendSuccessSvg(res, outcome.svg, serveSeconds);
+	} catch (err) {
+		return handleRouteError(req, res, err, {
+			service: "leetcode",
+			code: "LEETCODE_INTERNAL",
+			debug,
+			diag,
+			username,
+		});
 	}
+}
+
+/**
+ * Missing or malformed `?username=`. Answers with JSON when `?debug=1` is set,
+ * like every other card route, and with the standard error card otherwise.
+ */
+function validationFailure(
+	res: VercelResponse,
+	req: VercelRequest,
+	debug: boolean,
+	diag: ReturnType<typeof newDiag>,
+	rawUsername: string | null | undefined,
+) {
+	const message = "Missing or invalid ?username=...";
+	if (debug) {
+		return sendDebugJson(res, {
+			...diag,
+			stage: "validation",
+			error: message,
+			code: "UNKNOWN",
+			params: { username: rawUsername ?? null },
+		});
+	}
+	return sendErrorSvg(req, res, message, "UNKNOWN");
 }

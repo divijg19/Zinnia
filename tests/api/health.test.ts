@@ -54,7 +54,7 @@ describe("/api/health", () => {
 
 	it("always returns 200 with full SVG and ETag set when If-None-Match matches", async () => {
 		const text = "OK";
-		const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="320" height="40" role="img" aria-label="${text}"><title>${text}</title><rect width="100%" height="100%" fill="#111827"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#F9FAFB" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${text}</text></svg>`;
+		const body = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="320" height="40" viewBox="0 0 320 40" role="img" aria-label="${text}"><title>${text}</title><rect width="100%" height="100%" fill="#111827"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#F9FAFB" font-family="Segoe UI, Ubuntu, Sans-Serif" font-size="14">${text}</text></svg>`;
 		const etag = computeEtag(body);
 		const req = makeReq("/api/health", { "if-none-match": etag });
 		const res = makeRes();

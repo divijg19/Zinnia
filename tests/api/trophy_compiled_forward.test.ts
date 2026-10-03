@@ -1,9 +1,18 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { computeEtag } from "../../lib/canonical/http_cache.js";
-import { forwardWebResponseToVercel } from "../../lib/http.js";
 import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
 import { makeReq, makeRes } from "../_testShim";
+
+/**
+ * The embed contract for the trophy compiled-handler path.
+ *
+ * The contract itself - ignore an upstream error status, stale `Cache-Control`
+ * and a stale `ETag`; always answer 200 with the full body and our own ETag;
+ * never forward an empty body - is asserted through the route, which is the
+ * only place these headers are actually applied. `lib/http.ts` used to hold
+ * that logic as a standalone helper used solely by this route; folding it in
+ * removed the helper rather than leaving an orphaned copy of the contract.
+ */
 
 /** Mock the loader so the trophy compiled-handler path is deterministic. */
 function mockCompiledTrophy(compiledHandler: (webReq: Request) => unknown) {
@@ -30,53 +39,34 @@ function mockCompiledTrophy(compiledHandler: (webReq: Request) => unknown) {
 	vi.doMock("../../lib/loader/index", loaderMock);
 }
 
-describe("forwardWebResponseToVercel embed contract", () => {
-	afterEach(() => {
-		restoreMocks();
-	});
-
-	it("ignores upstream error status + stale cache/etag, sends 200 + fresh ETag", async () => {
-		const body = "<svg>COMPILED</svg>";
-		const webRes = new Response(body, {
-			status: 500,
-			headers: {
-				"content-type": "image/svg+xml",
-				"cache-control": "public, max-age=999999",
-				etag: '"stale-upstream-etag"',
+/**
+ * Mock only module resolution, leaving the real `invokePossibleRequestHandler`
+ * in place. That is what makes a two-parameter compiled handler get invoked the
+ * way production invokes it, which is the case under test below.
+ */
+function mockCompiledTrophyWithRealInvoker(
+	compiledHandler: (...args: unknown[]) => unknown,
+) {
+	let calls = 0;
+	const loaderMock = async (importOriginal: () => Promise<unknown>) => {
+		const actual = (await importOriginal()) as Record<string, unknown>;
+		return {
+			...actual,
+			resolveCompiledHandler: () => {
+				calls += 1;
+				return calls === 1
+					? "/fake/compiled-trophy.js"
+					: "/fake/local-trophy.js";
 			},
-		});
-		const res = makeRes();
-		await forwardWebResponseToVercel(res as unknown as VercelResponse, webRes);
-
-		expect(res.status).toHaveBeenCalledWith(200);
-		expect(res.send).toHaveBeenCalledTimes(1);
-		expect(res.send).toHaveBeenCalledWith(body);
-		expect(res.setHeader).toHaveBeenCalledWith(
-			"ETag",
-			`"${computeEtag(body)}"`,
-		);
-		expect(res.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
-		const setCalls = (res.setHeader as any).mock.calls as [string, unknown][];
-		expect(setCalls.some(([, v]) => String(v).includes("999999"))).toBe(false);
-		expect(
-			setCalls.some(([, v]) => String(v).includes("stale-upstream-etag")),
-		).toBe(false);
-	});
-
-	it("returns null without touching res for an empty (304-style) body", async () => {
-		const webRes = new Response(null, { status: 304 });
-		const res = makeRes();
-		const out = await forwardWebResponseToVercel(
-			res as unknown as VercelResponse,
-			webRes,
-		);
-
-		expect(out).toBeNull();
-		expect(res.send).not.toHaveBeenCalled();
-		expect(res.status).not.toHaveBeenCalled();
-		expect(res.setHeader).not.toHaveBeenCalled();
-	});
-});
+			importByPath: async (p: string) =>
+				String(p).includes("compiled")
+					? { default: compiledHandler }
+					: { renderTrophySVG: async () => "<svg>LOCAL-FALLBACK</svg>" },
+		};
+	};
+	vi.doMock("../../lib/loader/index.js", loaderMock);
+	vi.doMock("../../lib/loader/index", loaderMock);
+}
 
 describe("trophy compiled-handler path follows the embed contract", () => {
 	afterEach(() => {
@@ -140,5 +130,33 @@ describe("trophy compiled-handler path follows the embed contract", () => {
 			"ETag",
 			expect.stringMatching(/^".+"$/),
 		);
+	});
+
+	it("answers exactly once when a compiled handler is shaped like a Vercel (req, res) handler", async () => {
+		// `invokePossibleRequestHandler` prefers `(req, res)` whenever the
+		// function declares two parameters. If the route handed it the live
+		// response, such a handler would write a body directly and the route
+		// would *also* fall through to the local renderer, sending twice.
+		vi.resetModules();
+		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		mockCompiledTrophyWithRealInvoker((_req: unknown, res: unknown) => {
+			(res as { send: (body: string) => unknown }).send(
+				"<svg>WROTE-DIRECTLY</svg>",
+			);
+			return undefined;
+		});
+
+		const trophy = (await import("../../api/trophy.js")).default;
+		const req = makeReq("/api/trophy?username=testuser&theme=light");
+		const res = makeRes();
+		await trophy(
+			req as unknown as VercelRequest,
+			res as unknown as VercelResponse,
+		);
+
+		expect(res.send).toHaveBeenCalledTimes(1);
+		const sent = String((res.send as any).mock.calls[0]?.[0] ?? "");
+		expect(sent).toContain("LOCAL-FALLBACK");
+		expect(sent).not.toContain("WROTE-DIRECTLY");
 	});
 });
