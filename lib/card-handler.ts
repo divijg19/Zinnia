@@ -6,12 +6,11 @@ import {
 	sendDebugJson,
 } from "./debug.js";
 import {
-	ERR_MISSING_USERNAME,
 	type ErrorCode,
 	emptyRenderer,
 	handleRouteError,
-	missingUsername,
 	sendErrorSvg,
+	validationFailure,
 } from "./errors.js";
 import {
 	filterThemeParam,
@@ -87,15 +86,11 @@ export function createCardHandler(
 				diag = newDiag(cfg.service);
 				username = getUsername(url, ["username", "user"]);
 				if (!username) {
-					if (debug) {
-						return sendDebugJson(res, {
-							...diag,
-							stage: "validation",
-							error: ERR_MISSING_USERNAME,
-							code: "UNKNOWN",
-						});
-					}
-					return missingUsername(req, res);
+					return validationFailure(req, res, {
+						debug,
+						diag,
+						username: url.searchParams.get("username"),
+					});
 				}
 				filterThemeParam(url);
 
@@ -165,9 +160,8 @@ export function createCardHandler(
 					service: cfg.service,
 					cacheKey,
 					freshSeconds: cacheSeconds,
-					// The cache lookup above and the one inside are the same read;
-					// pass the entry through so it is not repeated.
-					preloaded: cached,
+					// Read once above, to survive a missing PAT; reused here.
+					cached,
 					produce: async () => {
 						const tFetch0 = Date.now();
 						const data = await cfg.fetchData(target, url);
@@ -182,6 +176,17 @@ export function createCardHandler(
 						timing.renderMs = Date.now() - tRender0;
 						return { svg, headers: {} };
 					},
+				}).catch((err: unknown) => {
+					// The usual cause is the render budget, which says nothing about
+					// timing. Stamp what we do know, so `?debug=1` names the cause
+					// instead of an empty `timing` and a `cache` block with no status.
+					diag.timing = { ...timing, totalMs: Date.now() - t0 };
+					diag.cache = {
+						...(diag.cache as Record<string, unknown>),
+						status: cached ? "stale" : "miss",
+						ageMs: cached ? Date.now() - cached.storedAtMs : 0,
+					};
+					throw err;
 				});
 
 				diag.timing = { ...timing, totalMs: Date.now() - t0 };

@@ -82,20 +82,37 @@ export async function FontExtension(generator: Generator): Promise<Extension> {
 	};
 }
 
+const GENERIC_FAMILIES = new Set([
+	"monospace",
+	"sans-serif",
+	"serif",
+	"cursive",
+	"fantasy",
+]);
+
+/**
+ * Build the card's font CSS.
+ *
+ * `font-family` is a fallback *list*, so a family that was never embedded is
+ * skipped and the next entry is used. The bundled shims ship an empty
+ * `base64`, so "Baloo_2" is never actually available; declaring it alone (as
+ * this used to) left the browser with no stated fallback, and which face it
+ * picked varied by platform. Terminating the list with a generic makes the
+ * result deterministic, and keeps a real font working once one is embedded.
+ */
 function css(fonts: { name: string; base64?: string | null }[]): string {
-	let css = "";
+	let face = "";
+	const families: string[] = [];
 	for (const font of fonts) {
-		if (!font.base64) {
-			continue;
+		if (font.base64) {
+			face += `@font-face {font-family:"${font.name}";src:url("${font.base64}") format("woff2")}`;
 		}
-		css += `@font-face {font-family:"${font.name}";src:url("${font.base64}") format("woff2")}`;
+		if (GENERIC_FAMILIES.has(font.name)) families.push(font.name);
+		else families.push(`"${font.name}"`);
 	}
-	css += `*{font-family:${fonts
-		.map((font) =>
-			["monospace", "sans-serif", "sans"].includes(font.name)
-				? font.name
-				: `"${font.name}"`,
-		)
-		.join(",")}}`;
-	return css;
+	if (families.length === 0) return face;
+	const last = families[families.length - 1] as string;
+	if (!GENERIC_FAMILIES.has(last.replace(/"/g, "")))
+		families.push("sans-serif");
+	return `${face}*{font-family:${families.join(",")}}`;
 }

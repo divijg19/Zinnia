@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { emptyRenderer } from "./errors.js";
 import { resolveTimeoutMs } from "./fetch-timeout.js";
 import { resolveKvCredentials } from "./kv/credentials.js";
 import { upstashCallWithin } from "./kv/upstash.js";
@@ -28,14 +29,14 @@ import { upstashCallWithin } from "./kv/upstash.js";
  * sits in front of the render, so a slow KV must never be the reason an embed
  * exceeds Camo's fetch timeout.
  */
-export const RENDER_KV_TIMEOUT_MS = 400;
+const RENDER_KV_TIMEOUT_MS = 400;
 
 /**
  * How long a render stays usable once its freshness window closes. A day is
  * long enough to ride out an upstream or token outage, short enough that a
  * recovery replaces the card on the next request rather than days later.
  */
-export const STALE_WINDOW_SECONDS = 86400;
+const STALE_WINDOW_SECONDS = 86400;
 
 /**
  * TTL advertised when serving a stale render. Short on purpose: the body is
@@ -141,10 +142,7 @@ const memory = new Map<string, MemoryEntry>();
 const memoryKey = (service: string, cacheKey: string) =>
 	`${service}:${cacheKey}`;
 
-export function readRenderFromMemory(
-	service: string,
-	cacheKey: string,
-): CachedRender | null {
+function readMemory(service: string, cacheKey: string): CachedRender | null {
 	const hit = memory.get(memoryKey(service, cacheKey));
 	if (!hit) return null;
 	if (Date.now() > hit.expiresAtMs) {
@@ -154,7 +152,7 @@ export function readRenderFromMemory(
 	return hit.entry;
 }
 
-export function writeRenderToMemory(
+function writeMemory(
 	service: string,
 	cacheKey: string,
 	entry: CachedRender,
@@ -200,7 +198,7 @@ function toCachedRender(payload: KvPayload): CachedRender | null {
 	return { svg: payload.svg, storedAtMs: ts, freshUntilMs: ts + fresh * 1000 };
 }
 
-export async function readRenderFromKv(
+async function readKv(
 	service: string,
 	cacheKey: string,
 ): Promise<CachedRender | null> {
@@ -221,7 +219,7 @@ export async function readRenderFromKv(
 	}
 }
 
-export async function writeRenderToKv(
+async function writeKv(
 	service: string,
 	cacheKey: string,
 	svg: string,
@@ -265,14 +263,14 @@ export async function getCachedRender(
 	cacheKey: string,
 ): Promise<CachedRender | null> {
 	if (!enabled()) return null;
-	const fromMemory = readRenderFromMemory(service, cacheKey);
+	const fromMemory = readMemory(service, cacheKey);
 	if (fromMemory) return fromMemory;
-	const fromKv = await readRenderFromKv(service, cacheKey);
+	const fromKv = await readKv(service, cacheKey);
 	if (!fromKv) return null;
 	// Promote, so the next request on this instance skips KV entirely.
 	const expiresAtMs = expiresAtFor(fromKv);
 	if (Date.now() <= expiresAtMs) {
-		writeRenderToMemory(service, cacheKey, fromKv, expiresAtMs);
+		writeMemory(service, cacheKey, fromKv, expiresAtMs);
 	}
 	return fromKv;
 }
@@ -290,8 +288,8 @@ export async function setCachedRender(
 		storedAtMs: now,
 		freshUntilMs: now + Math.max(0, Math.floor(freshSeconds)) * 1000,
 	};
-	writeRenderToMemory(service, cacheKey, entry, expiresAtFor(entry));
-	await writeRenderToKv(service, cacheKey, svg, freshSeconds);
+	writeMemory(service, cacheKey, entry, expiresAtFor(entry));
+	await writeKv(service, cacheKey, svg, freshSeconds);
 }
 
 /** An in-flight render attempt. Compared by identity, never by promise value. */
@@ -305,12 +303,39 @@ export function inFlightCount(): number {
 }
 
 /**
- * Wall-clock budget for one render. Sits well under both GitHub Camo's 10s
- * origin fetch timeout and Vercel's own function budget, so a slow upstream
- * turns into a stale card rather than a blank one.
+ * Wall-clock budget for a render when a cached body is available. At this point
+ * the deadline is not a hard limit but a latency choice: hitting it means a
+ * stale card can be served immediately, so there is nothing to gain by waiting.
  */
-export function defaultDeadlineMs(): number {
-	return resolveTimeoutMs(process.env.RENDER_DEADLINE_MS, 3500);
+export const RENDER_DEADLINE_MS = 3500;
+
+/**
+ * Budget when there is nothing cached, so the real card is the only good answer
+ * and an error card would be strictly worse.
+ *
+ * Chosen to sit above the longest outbound fetch budget (`resolveTimeoutMs`
+ * defaults to 8000ms) and below GitHub Camo's 10s origin fetch timeout: the
+ * ceiling therefore only ever fires after the upstream has already given up,
+ * and the response still reaches an embedder inside its window. Measured cold
+ * stats fetches run 2.7-6.3s, which a single 3500ms budget truncated - roughly
+ * a quarter of cold renders returned an error card instead.
+ */
+export const RENDER_CEILING_MS = 8500;
+
+/**
+ * Budget for one render. See the two constants for why they differ.
+ *
+ * Both are overridable per deployment (`RENDER_DEADLINE_MS`,
+ * `RENDER_CEILING_MS`); `deadlineMs` on the call overrides both, which is how
+ * tests drive the timeout deterministically.
+ */
+export function renderBudgetMs(hasCachedBody: boolean): number {
+	return resolveTimeoutMs(
+		hasCachedBody
+			? process.env.RENDER_DEADLINE_MS
+			: process.env.RENDER_CEILING_MS,
+		hasCachedBody ? RENDER_DEADLINE_MS : RENDER_CEILING_MS,
+	);
 }
 
 /**
@@ -390,21 +415,19 @@ export async function renderWithFallback(options: {
 	service: string;
 	cacheKey: string;
 	freshSeconds: number;
+	/**
+	 * The entry already read for this card. Required rather than looked up
+	 * internally: every route needs it anyway - card-handler to survive a
+	 * missing PAT, streak to answer before running its flow - and making the
+	 * caller pass it keeps the cache read visible at each call site instead of
+	 * hidden behind an optional parameter with three possible meanings.
+	 */
+	cached: CachedRender | null;
 	produce: () => Promise<RenderedSvg>;
 	deadlineMs?: number;
-	/**
-	 * An entry the caller has already read for this card. Passed in so a route
-	 * that needs the cached body before deciding whether to render at all (e.g.
-	 * to survive a missing PAT) does not pay for a second lookup.
-	 */
-	preloaded?: CachedRender | null;
 }): Promise<RenderOutcome> {
-	const { service, cacheKey, freshSeconds, produce } = options;
-	const budgetMs = options.deadlineMs ?? defaultDeadlineMs();
-	const cached =
-		options.preloaded === undefined
-			? await getCachedRender(service, cacheKey)
-			: options.preloaded;
+	const { service, cacheKey, freshSeconds, produce, cached } = options;
+	const budgetMs = options.deadlineMs ?? renderBudgetMs(Boolean(cached));
 
 	if (cached && Date.now() < cached.freshUntilMs) {
 		return {
@@ -433,7 +456,7 @@ export async function renderWithFallback(options: {
 	try {
 		const produced = await settled;
 		const svg = typeof produced === "string" ? produced : produced.svg;
-		if (!svg) throw new Error(`${service} renderer returned empty body`);
+		if (!svg) emptyRenderer(service);
 		return {
 			svg,
 			status: "miss",

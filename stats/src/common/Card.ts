@@ -197,7 +197,7 @@ export class Card {
           .header {
             font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
             fill: ${this.colors.titleColor};
-            animation: fadeInAnimation 0.8s ease-in-out forwards;
+            animation: fadeInAnimation 0.8s ease-in-out backwards;
           }
           @supports(-moz-appearance: auto) {
             /* Selector detects Firefox */

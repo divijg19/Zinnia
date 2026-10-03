@@ -7,7 +7,12 @@ import {
 	newDiag,
 	sendDebugJson,
 } from "../lib/debug.js";
-import { handleRouteError, sendErrorSvg } from "../lib/errors.js";
+import {
+	emptyRenderer,
+	handleRouteError,
+	sendErrorSvg,
+	validationFailure,
+} from "../lib/errors.js";
 import { importByPath } from "../lib/loader/index.js";
 import {
 	filterThemeParam,
@@ -16,6 +21,7 @@ import {
 	safeUrl,
 } from "../lib/params.js";
 import {
+	getCachedRender,
 	markCacheStatus,
 	renderCacheKey,
 	renderWithFallback,
@@ -38,7 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		const rawUsername = url.searchParams.get("username");
 		if (!isValidUsername(rawUsername)) {
-			return validationFailure(res, req, debug, diag, rawUsername);
+			return validationFailure(req, res, {
+				debug,
+				diag,
+				username: rawUsername,
+			});
 		}
 		username = rawUsername ?? undefined;
 
@@ -49,7 +59,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Minimal Node-safe sanitization to avoid importing worker-only code.
 		// Ensure required fields and set safe defaults. Extensions are optional.
 		if (!config.username?.trim() || !isValidUsername(config.username)) {
-			return validationFailure(res, req, debug, diag, config.username);
+			return validationFailure(req, res, {
+				debug,
+				diag,
+				username: config.username,
+			});
 		}
 		type SanitizedOptions = {
 			username: string;
@@ -172,6 +186,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		);
 		const cacheKey = renderCacheKey(url);
 		diag.cache = { key: cacheKey, ttlSeconds: cacheSeconds };
+		const cached = await getCachedRender("leetcode", cacheKey);
 
 		const tRender0 = Date.now();
 		const timing: Record<string, unknown> = {};
@@ -179,6 +194,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			service: "leetcode",
 			cacheKey,
 			freshSeconds: cacheSeconds,
+			cached,
 			produce: async () => {
 				const { Generator } = coreMod as { Generator: any };
 				const generator = new Generator(
@@ -187,7 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				);
 				generator.verbose = false;
 				const svgOut = await generator.generate(sanitized);
-				if (!svgOut) throw new Error("leetcode renderer returned empty body");
+				if (!svgOut) emptyRenderer("leetcode");
 				return { svg: svgOut, headers: {} };
 			},
 		});
@@ -220,28 +236,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			username,
 		});
 	}
-}
-
-/**
- * Missing or malformed `?username=`. Answers with JSON when `?debug=1` is set,
- * like every other card route, and with the standard error card otherwise.
- */
-function validationFailure(
-	res: VercelResponse,
-	req: VercelRequest,
-	debug: boolean,
-	diag: ReturnType<typeof newDiag>,
-	rawUsername: string | null | undefined,
-) {
-	const message = "Missing or invalid ?username=...";
-	if (debug) {
-		return sendDebugJson(res, {
-			...diag,
-			stage: "validation",
-			error: message,
-			code: "UNKNOWN",
-			params: { username: rawUsername ?? null },
-		});
-	}
-	return sendErrorSvg(req, res, message, "UNKNOWN");
 }

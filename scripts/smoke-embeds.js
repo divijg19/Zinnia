@@ -75,6 +75,22 @@ const ENDPOINTS = [
  * `width`/`height` (without them a browser falls back to 300x150 and the card
  * renders at the wrong size), a `viewBox`, and a closed root element.
  */
+/**
+ * Structural checks on the SVG body.
+ *
+ * A full XML parse is not available in Bun without adding a dependency, so this
+ * checks what actually breaks embeds: a root `<svg>` that carries intrinsic
+ * `width`/`height` (without them a browser falls back to 300x150 and the card
+ * renders at the wrong size), a `viewBox`, and a closed root element.
+ *
+ * It also enforces two invariants a malformed or fragile stylesheet breaks, both
+ * of which reached production. Every `<style>` block must have balanced braces:
+ * a stray `}` once landed directly on top of a theme's `:root` rules, so the
+ * parser discarded the palette and the card rendered as a white rectangle with
+ * most of its content invisible - correct on the machine that built it, broken
+ * on a phone. And no element may be hidden by a base `opacity: 0` that only an
+ * animation reveals, which is blank wherever animations do not run.
+ */
 function inspectSvg(body) {
 	const problems = [];
 	if (!body.includes("<svg")) problems.push("empty/non-SVG body");
@@ -95,7 +111,51 @@ function inspectSvg(body) {
 	if (!/<\/svg>\s*(?:<!--[\s\S]*?-->\s*)?$/.test(body.trim())) {
 		problems.push("root <svg> is not closed");
 	}
+
+	const blocks = styleBlocks(body);
+	for (const block of blocks) {
+		let depth = 0;
+		let wentNegative = false;
+		for (const ch of block) {
+			if (ch === "{") depth += 1;
+			else if (ch === "}") {
+				depth -= 1;
+				if (depth < 0) wentNegative = true;
+			}
+		}
+		if (wentNegative) problems.push("unbalanced } in a <style> block");
+		if (depth > 0) problems.push("unterminated rule in a <style> block");
+	}
+	const hidden = hiddenByAnimation(body);
+	if (hidden.length) {
+		problems.push(
+			`${hidden.length} element(s) hidden until an animation runs (${hidden[0]})`,
+		);
+	}
 	return problems;
+}
+
+function styleBlocks(body) {
+	return [...body.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(
+		(m) => m[1],
+	);
+}
+
+/** Selectors whose base state is `opacity: 0`, outside any keyframes. */
+function hiddenByAnimation(body) {
+	const found = [];
+	for (const block of styleBlocks(body)) {
+		const withoutKeyframes = block.replace(
+			/@keyframes[^{]*\{(?:[^{}]*\{[^{}]*\}\s*)*[^{}]*\}/g,
+			"",
+		);
+		for (const m of withoutKeyframes.matchAll(
+			/([^{}]*)\{opacity:\s*0\s*[;}]/g,
+		)) {
+			found.push(m[1].trim());
+		}
+	}
+	return found;
 }
 
 async function diagnose(base, path) {

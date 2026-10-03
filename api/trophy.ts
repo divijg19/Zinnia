@@ -7,7 +7,11 @@ import {
 	newDiag,
 	sendDebugJson,
 } from "../lib/debug.js";
-import { handleRouteError, sendErrorSvg } from "../lib/errors.js";
+import {
+	emptyRenderer,
+	handleRouteError,
+	validationFailure,
+} from "../lib/errors.js";
 import {
 	importByPath,
 	invokePossibleRequestHandler,
@@ -16,6 +20,7 @@ import {
 } from "../lib/loader/index.js";
 import { filterThemeParam, getUsername, safeUrl } from "../lib/params.js";
 import {
+	getCachedRender,
 	markCacheStatus,
 	renderCacheKey,
 	renderWithFallback,
@@ -239,7 +244,7 @@ async function renderLocally(options: {
 	});
 	// Never send or persist an empty body: route to the error path so embedders
 	// always receive a renderable SVG.
-	if (!svgOut) throw new Error("trophy renderer returned empty body");
+	if (!svgOut) emptyRenderer("trophy");
 	return svgOut;
 }
 
@@ -253,20 +258,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const t0 = Date.now();
 		username = getUsername(url, ["username", "user"]) ?? undefined;
 		if (!username) {
-			if (debug) {
-				return sendDebugJson(res, {
-					...diag,
-					stage: "validation",
-					error: "Missing or invalid ?username=...",
-					code: "UNKNOWN",
-				});
-			}
-			return sendErrorSvg(
-				req,
-				res,
-				"Missing or invalid ?username=...",
-				"UNKNOWN",
-			);
+			return validationFailure(req, res, {
+				debug,
+				diag,
+				username: url.searchParams.get("username"),
+			});
 		}
 
 		// upstream proxying removed — always use local TypeScript renderer.
@@ -309,6 +305,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		);
 		const cacheKey = renderCacheKey(url);
 		diag.cache = { key: cacheKey, ttlSeconds: cacheSeconds };
+		const cached = await getCachedRender("trophy", cacheKey);
 
 		const tRender0 = Date.now();
 		const timing: Record<string, unknown> = {};
@@ -316,6 +313,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			service: "trophy",
 			cacheKey,
 			freshSeconds: cacheSeconds,
+			cached,
 			produce: async () => {
 				const compiled = await renderWithCompiledHandler(req, url);
 				if (compiled) return compiled;

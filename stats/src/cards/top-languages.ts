@@ -633,9 +633,9 @@ export function renderTopLanguages(
 		@supports(-moz-appearance: auto){ .stat{ font-size:12px; } }
 		.bold { font-weight:700 }
 		.lang-name { font: 400 11px "Segoe UI", Ubuntu, Sans-Serif; fill: ${colors.textColor}; }
-		.stagger { opacity:0; animation: fadeInAnimation 0.3s ease-in-out forwards; }
-		#rect-mask rect { animation: slideInAnimation 1s ease-in-out forwards; }
-		.lang-progress { animation: growWidthAnimation 0.6s ease-in-out forwards; }
+		.stagger { animation: fadeInAnimation 0.3s ease-in-out backwards; }
+		#rect-mask rect { animation: slideInAnimation 1s ease-in-out backwards; }
+		.lang-progress { animation: growWidthAnimation 0.6s ease-in-out backwards; }
 	`);
 
 	if (layout === "pie" || layout === "donut-vertical")
