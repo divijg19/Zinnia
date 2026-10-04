@@ -1,7 +1,7 @@
 import { Card } from "../common/Card.js";
 import { CustomError } from "../common/error.js";
 import { I18n } from "../common/I18n.js";
-import { icons, rankIcon } from "../common/icons.js";
+import { icons, RANK_RING_CENTER, rankIcon } from "../common/icons.js";
 import {
 	clampValue,
 	flexLayout,
@@ -135,7 +135,7 @@ const getStyles = ({
         .bold { font-weight: 700 }
         .icon { fill: ${iconColor}; display: ${show_icons ? "block" : "none"}; }
         .rank-circle-rim { stroke: ${ringColor}; fill: none; stroke-width: 6; opacity: 0.2; }
-        .rank-circle { stroke: ${ringColor}; stroke-dasharray: 250; stroke-dashoffset: ${calculateCircleProgress(progress)}; fill: none; stroke-width: 6; stroke-linecap: round; opacity: 0.8; transform-origin: -10px 8px; transform: rotate(-90deg); animation: rankAnimation 1s backwards ease-in-out; }
+        .rank-circle { stroke: ${ringColor}; stroke-dasharray: 250; stroke-dashoffset: ${calculateCircleProgress(progress)}; fill: none; stroke-width: 6; stroke-linecap: round; opacity: 0.8; transform-origin: ${RANK_RING_CENTER.x}px ${RANK_RING_CENTER.y}px; transform: rotate(-90deg); animation: rankAnimation 1s backwards ease-in-out; }
         ${process.env.NODE_ENV === "test" ? "" : getProgressAnimation({ progress })}
     `;
 };
@@ -433,8 +433,8 @@ export function renderStatsCard(
 	const rankCircle = hide_rank
 		? ""
 		: `<g data-testid="rank-circle" transform="translate(${calculateRankXTranslation()}, ${height / 2 - 50})">
-                        <circle class="rank-circle-rim" cx="-10" cy="8" r="40" />
-                        <circle class="rank-circle" cx="-10" cy="8" r="40" />
+                        <circle class="rank-circle-rim" cx="${RANK_RING_CENTER.x}" cy="${RANK_RING_CENTER.y}" r="40" />
+                        <circle class="rank-circle" cx="${RANK_RING_CENTER.x}" cy="${RANK_RING_CENTER.y}" r="40" />
                         <g class="rank-text">
                             ${rankIcon(rankIconName, rank?.level, rank?.percentile)}
                         </g>

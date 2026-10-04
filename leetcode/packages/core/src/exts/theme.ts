@@ -14,9 +14,11 @@ function themeExtension(
 	body: Record<string, () => unknown>,
 	key: string,
 ): boolean {
-	const defs = THEME_EXTENDS[name];
-	if (defs) {
-		body[key] = () => defs;
+	const makeDefs = THEME_EXTENDS[name];
+	if (makeDefs) {
+		// `THEME_EXTENDS` holds factories so each render gets its own `Item` tree;
+		// see the note in `theme/defs.ts` about cached auto-ids.
+		body[key] = () => makeDefs();
 		return true;
 	}
 	return false;

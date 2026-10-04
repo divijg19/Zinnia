@@ -90,36 +90,55 @@ const LANGS = {
 	css: { name: "css", color: "#563d7c", size: 100 },
 };
 
+/**
+ * Render a LeetCode card against a stubbed GraphQL response.
+ *
+ * The stub has to match what `Query.us` actually reads: `data.user.profile`,
+ * `data.user.submits.ac` and `data.problems`. It previously used an older
+ * response shape and the card still rendered, because a fetch that failed to
+ * map fell through to the fabricated-data fallback - so this fixture was never
+ * really exercised. `tests/leetcode/fetch_failure.test.ts` covers that path.
+ */
 async function renderLeetcodeCard(): Promise<string> {
 	const original = globalThis.fetch;
 	globalThis.fetch = (async () => ({
 		ok: true,
 		json: async () => ({
 			data: {
-				matchedUser: {
-					username: "alice",
-					profile: {
-						ranking: 1,
-						reputation: 1,
-						solutions: {
-							numSolved: 3,
-							easySolved: 1,
-							mediumSolved: 1,
-							hardSolved: 1,
-						},
-					},
-				},
+				problems: [
+					{ difficulty: "Easy", count: 700 },
+					{ difficulty: "Medium", count: 500 },
+					{ difficulty: "Hard", count: 200 },
+				],
 				user: {
 					username: "alice",
-					submitStats: {
-						acSubmissionNum: [
-							{ difficulty: "All", count: 3, submissions: 3 },
-							{ difficulty: "Easy", count: 1, submissions: 1 },
-							{ difficulty: "Medium", count: 1, submissions: 1 },
-							{ difficulty: "Hard", count: 1, submissions: 1 },
+					profile: {
+						realname: "Alice",
+						about: "",
+						avatar: "",
+						skills: [],
+						country: "",
+						ranking: 12345,
+					},
+					submits: {
+						ac: [
+							{ difficulty: "Easy", count: 300 },
+							{ difficulty: "Medium", count: 200 },
+							{ difficulty: "Hard", count: 50 },
 						],
 					},
 				},
+				submissions: [
+					{
+						id: "1",
+						title: "Two Sum",
+						slug: "two-sum",
+						time: "1700000000",
+						status: "Accepted",
+						lang: "TypeScript",
+					},
+				],
+				contest: null,
 			},
 		}),
 	})) as unknown as typeof fetch;

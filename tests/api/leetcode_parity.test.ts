@@ -38,7 +38,7 @@ describe("leetcode theme/cache parity", () => {
 		seenOptions = null;
 	});
 
-	it("filters unsupported single themes to the default", async () => {
+	it("falls back to the default theme when the name is unsupported", async () => {
 		vi.resetModules();
 		mockLeetcodeCore();
 		const leetcode = (await import("../../api/leetcode.js")).default;
@@ -51,8 +51,12 @@ describe("leetcode theme/cache parity", () => {
 		);
 
 		expect(res.send).toHaveBeenCalledWith("<svg>LC</svg>");
-		// Filtered out: preset dual default applies, unsupported name dropped.
-		expect(seenOptions.theme).toEqual({ light: "light", dark: "dark" });
+		// The unsupported name is dropped, so the route's own default applies.
+		// That default used to be the dual pair `{ light: "light", dark: "dark" }`,
+		// which meant a typo silently produced a light/dark card rather than the
+		// theme that was asked for - and which also takes the dual-theme code path
+		// where a theme's gradient defs are involved. It is a single theme now.
+		expect(seenOptions.theme).toBe("default");
 	});
 
 	it("passes supported themes through", async () => {
