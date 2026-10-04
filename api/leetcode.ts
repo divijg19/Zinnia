@@ -28,6 +28,7 @@ import {
 	ttlForOutcome,
 } from "../lib/render-cache.js";
 import {
+	asWebCache,
 	getCacheAdapterForService,
 	pickForwardedHeaders,
 	sendSuccessSvg,
@@ -216,7 +217,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				// a fabricated card. `leetcode/api/index.ts` accepted the caller's
 				// headers as a parameter for this reason.
 				const generator = new Generator(
-					getCacheAdapterForService("leetcode") as unknown as Cache,
+					asWebCache(getCacheAdapterForService("leetcode")) as unknown as Cache,
 					pickForwardedHeaders(req.headers),
 				);
 				generator.verbose = false;

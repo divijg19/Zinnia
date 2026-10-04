@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	ALLOWED_THEMES,
-	filterThemeParam,
-} from "../../lib/canonical/http_cache";
+import { ALLOWED_THEMES, filterThemeParam } from "../../lib/params";
 import { themes } from "../../lib/themes/registry";
 
 /**
