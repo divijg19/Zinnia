@@ -27,7 +27,11 @@ import {
 	renderWithFallback,
 	ttlForOutcome,
 } from "../lib/render-cache.js";
-import { sendSuccessSvg } from "./_utils.js";
+import {
+	getCacheAdapterForService,
+	pickForwardedHeaders,
+	sendSuccessSvg,
+} from "./_utils.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	let debug = false;
@@ -90,7 +94,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				config.animation !== undefined
 					? !/^false|0|no$/i.test((config.animation || "").trim())
 					: true,
-			theme: { light: "light", dark: "dark" },
+			// A single default theme, not a light/dark pair. The pair meant an
+			// unrecognised `theme` value resolved to light/dark rather than to the
+			// theme that was asked for, and light/dark takes the dual-theme path
+			// where the theme's gradient defs are not emitted.
+			theme: "default",
 			cache: 60,
 		};
 
@@ -165,16 +173,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Parse theme= param (supports "name" or "light,dark"); filter unsupported single names
 		if (config.theme?.trim()) {
 			filterThemeParam(url);
-			// Re-read after filtering: unsupported singles are deleted above.
+			// Re-read after filtering: names the registry does not know are
+			// dropped above. When every name is rejected the param is deleted and
+			// the card keeps the `default` theme set above, which is a real theme
+			// rather than the unstyled base palette.
 			const themeValue = (url.searchParams.get("theme") || "").trim();
 			const themes = themeValue ? themeValue.split(",") : [];
 			if (themes.length > 0) {
 				sanitized.theme =
 					themes.length === 1 || themes[1] === ""
-						? themes[0]?.trim() || "light"
+						? themes[0]?.trim() || "default"
 						: {
-								light: themes[0]?.trim() || "light",
-								dark: themes[1]?.trim() || "dark",
+								light: themes[0]?.trim() || "default",
+								dark: themes[1]?.trim() || "default",
 							};
 			}
 		}
@@ -197,9 +208,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			cached,
 			produce: async () => {
 				const { Generator } = coreMod as { Generator: any };
+				// Both arguments used to be placeholders: `null` disabled the
+				// Generator's own KV data cache, so every embed view re-queried
+				// LeetCode's GraphQL endpoint, and `{}` sent that request with no
+				// headers at all - which is how an anonymous-looking request from a
+				// shared egress address draws a rate limit. A rate limit then became
+				// a fabricated card. `leetcode/api/index.ts` accepted the caller's
+				// headers as a parameter for this reason.
 				const generator = new Generator(
-					null as unknown as Cache,
-					{} as Record<string, string>,
+					getCacheAdapterForService("leetcode") as unknown as Cache,
+					pickForwardedHeaders(req.headers),
 				);
 				generator.verbose = false;
 				const svgOut = await generator.generate(sanitized);

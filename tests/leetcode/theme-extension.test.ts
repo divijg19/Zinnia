@@ -79,7 +79,7 @@ describe("leetcode ThemeExtension", () => {
 			if (referenced.size === 0) continue;
 			const extended = THEME_EXTENDS[name];
 			expect(extended, `THEME_EXTENDS covers '${name}'`).toBeDefined();
-			const defs = (extended as Item).stringify();
+			const defs = (extended as () => Item)().stringify();
 			for (const id of referenced) {
 				expect(defs, `'${name}' defs include '${id}'`).toContain(`id="${id}"`);
 			}

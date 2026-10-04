@@ -7,9 +7,26 @@ import {
 	TotalSolved,
 	Username,
 } from "./elements.js";
-import { Item } from "./item.js";
+import { Item, resetItemCounter } from "./item.js";
 import query from "./query.js";
 import type { Config, Extension, FetchedData } from "./types.js";
+
+/**
+ * Raised when LeetCode data cannot be fetched.
+ *
+ * A dedicated type so a caller can tell "upstream is unhappy" apart from a
+ * programming error, and so the failure is reported as an error card instead of
+ * being rendered as though it were data.
+ */
+export class LeetCodeFetchError extends Error {
+	public readonly cause: unknown;
+
+	constructor(message: string, options?: { cause?: unknown }) {
+		super(message);
+		this.name = "LeetCodeFetchError";
+		this.cause = options?.cause;
+	}
+}
 
 export class Generator {
 	public verbose = false;
@@ -32,6 +49,17 @@ export class Generator {
 
 	async generate(config: Config): Promise<string> {
 		const start_time = Date.now();
+		// `Item` assigns `id="_1"`, `id="_d"`, ... from a module-global counter
+		// for every element that does not declare its own id. Nothing reset it on
+		// the server, so consecutive renders of identical input differed in those
+		// auto-ids and no card was ever byte-stable - the ETag changed on every
+		// request and conditional fetches could never match. Reset per render.
+		//
+		// Safe under concurrency: `++counter` is globally monotonic, so ids stay
+		// unique within a document even when two renders interleave. Overlapping
+		// renders may draw non-contiguous numbers from the shared counter, which is
+		// cosmetic.
+		resetItemCounter();
 		this.log("generating card for", config.username);
 
 		this.config = config;
@@ -72,11 +100,18 @@ export class Generator {
 		if (cache_key in this.fetches) {
 			return this.fetches[cache_key];
 		}
-		this.fetches[cache_key] = this._fetch(username, headers, cache_key);
-		this.fetches[cache_key].finally(() => {
+		const pending = this._fetch(username, headers, cache_key);
+		this.fetches[cache_key] = pending;
+		// `.finally()` returns a *second* promise that adopts the same rejection,
+		// and nothing handled that one, so a failed fetch surfaced twice: once to
+		// the caller and once as an unhandled rejection, which on a serverless
+		// runtime can take the instance down. Passing both handlers to `then`
+		// settles the bookkeeping either way without minting a second promise.
+		const release = () => {
 			delete this.fetches[cache_key];
-		});
-		return this.fetches[cache_key];
+		};
+		pending.then(release, release);
+		return pending;
 	}
 
 	protected async _fetch(
@@ -105,43 +140,22 @@ export class Generator {
 				.catch(console.error);
 			return data;
 		} catch (err) {
-			console.error(err);
-			const message = (err as Error).message;
-			return {
-				profile: {
-					username: message.slice(0, 32),
-					realname: "",
-					about: "",
-					avatar: "",
-					skills: [],
-					country: "",
-				},
-				problem: {
-					easy: {
-						solved: Math.round(Math.random() * 500),
-						total: 500 + Math.round(Math.random() * 500),
-					},
-					medium: {
-						solved: Math.round(Math.random() * 500),
-						total: 500 + Math.round(Math.random() * 500),
-					},
-					hard: {
-						solved: Math.round(Math.random() * 500),
-						total: 500 + Math.round(Math.random() * 500),
-					},
-					ranking: 0,
-				},
-				submissions: [
-					{
-						title: "",
-						time: 0,
-						status: "System Error",
-						lang: "JavaScript",
-						slug: "",
-						id: "",
-					},
-				],
-			};
+			// This used to return a fabricated card: solved/total counts drawn
+			// from `Math.random()`, the error message as the username, ranking 0.
+			// It rendered as a plausible card rather than as an error, the route
+			// reported `ok: true`, and the render cache kept it for 24 hours - so
+			// a single rate-limited request pinned invented numbers onto the embed
+			// for a day, with nothing in the response, the logs or `?debug=1` to
+			// distinguish it from real data.
+			//
+			// Throw instead. The route's always-200 handler renders the standard
+			// error card, `renderWithFallback` only persists successful produces,
+			// and a still-fresh cached body is served in preference to an error.
+			console.error(`leetcode fetch failed for ${username}`, err);
+			throw new LeetCodeFetchError(
+				`LeetCode data unavailable: ${(err as Error).message}`,
+				{ cause: err },
+			);
 		}
 	}
 
@@ -190,22 +204,47 @@ export class Generator {
 		}
 
 		// CRITICAL: Insert theme <defs> BEFORE background rect for gradient references
-		// SVG requires definitions to appear before elements that use them
-		if (body["theme-ext"]) {
-			const defsIndex = root.children.findIndex(
-				(child) => child.attr?.id === "default-colors",
-			);
-			if (defsIndex !== -1) {
-				// Insert after <style> but before <rect id="background">
-				root.children.splice(defsIndex + 1, 0, body["theme-ext"]());
+		// SVG requires definitions to appear before elements that use them.
+		//
+		// Every theme variant contributes defs, including the light and dark
+		// halves of a dual theme. Those two used to be deleted here, on the
+		// grounds that "media query themes are not yet supported in defs" - but
+		// the CSS those same extensions emit is still pushed into the
+		// stylesheet, so every `url(#...)` a dual theme referenced pointed at a
+		// definition that no longer existed and the gradient background rendered
+		// flat. `<defs>` is inert markup and does not belong inside the media
+		// query anyway, so emitting them unconditionally is both correct and
+		// sufficient.
+		//
+		// When both halves name the same theme - `theme=unicorn,unicorn` - the
+		// two entries are the same registry def, so emitting both would duplicate
+		// every gradient id. Deduplicate on the ids a defs block contributes,
+		// which holds whether the registry hands back a shared instance or builds
+		// a fresh one.
+		const defsIndex = root.children.findIndex(
+			(child) => child.attr?.id === "default-colors",
+		);
+		const seenIds = new Set<string>();
+		const defs: Item[] = [];
+		for (const key of ["theme-ext", "theme-ext-light", "theme-ext-dark"]) {
+			const factory = body[key];
+			if (!factory) {
+				continue;
 			}
-			delete body["theme-ext"];
+			const item = factory();
+			delete body[key];
+			const ids = collectIds(item);
+			if (ids.length > 0 && ids.every((id) => seenIds.has(id))) {
+				continue;
+			}
+			for (const id of ids) {
+				seenIds.add(id);
+			}
+			defs.push(item);
 		}
-		if (body["theme-ext-light"]) {
-			delete body["theme-ext-light"]; // Media query themes not yet supported in defs
-		}
-		if (body["theme-ext-dark"]) {
-			delete body["theme-ext-dark"]; // Media query themes not yet supported in defs
+		if (defsIndex !== -1) {
+			// Insert after <style> but before <rect id="background">
+			root.children.splice(defsIndex + 1, 0, ...defs);
 		}
 
 		root.children.push(body.icon());
@@ -250,4 +289,19 @@ export class Generator {
 			console.log(...args);
 		}
 	}
+}
+
+/** Every `id` in an item tree, used to deduplicate theme defs blocks. */
+function collectIds(item: Item): string[] {
+	const ids: string[] = [];
+	const walk = (node: Item) => {
+		if (node.attr?.id) {
+			ids.push(String(node.attr.id));
+		}
+		for (const child of node.children ?? []) {
+			walk(child);
+		}
+	};
+	walk(item);
+	return ids;
 }

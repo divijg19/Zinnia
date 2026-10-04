@@ -78,10 +78,20 @@ function safeRatio(solved: number, total: number): number {
 	return solved / total;
 }
 
+/**
+ * Ring fill animation.
+ *
+ * The keyframe name used to end in `Math.floor(Math.random() * 1000)`, so every
+ * render of identical input emitted a different `@keyframes circle_814` and
+ * `circle_27`. Two consequences: the card could never be byte-stable, which
+ * defeats the render cache and the ETag entirely, and the random identifier was
+ * visible in the served SVG. The selector is already unique per animated ring,
+ * so deriving the name from it is both stable and more readable.
+ */
 function circle(selector: string, len = 0, delay = 0) {
-	const R = Math.floor(Math.random() * 1000);
+	const name = `circle_${selector.replace(/^#/, "")}`;
 	const dasharray = Number.isFinite(len) ? len : 0;
-	const animation = `@keyframes circle_${R}{0%{opacity:0;stroke-dasharray:0 1000}50%{opacity:1}100%{opacity:1;stroke-dasharray:${dasharray} 10000}}`;
-	const style = `${selector}{animation:circle_${R} 1.2s ease ${delay}s 1 backwards}`;
+	const animation = `@keyframes ${name}{0%{opacity:0;stroke-dasharray:0 1000}50%{opacity:1}100%{opacity:1;stroke-dasharray:${dasharray} 10000}}`;
+	const style = `${selector}{animation:${name} 1.2s ease ${delay}s 1 backwards}`;
 	return animation + style;
 }
