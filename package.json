@@ -29,11 +29,11 @@
 		"jsdom": "^30.1.2",
 		"tsup": "^8.5.1",
 		"typescript": "^7.0.2",
-		"vercel": "^62.2.0",
+		"vercel": "^62.4.0",
 		"vitest": "^5.0.3"
 	},
 	"dependencies": {
-		"@vercel/node": "^20.0.0",
+		"@vercel/node": "^21.0.0",
 		"dotenv": "^18.0.5",
 		"emoji-name-map": "^2.0.3",
 		"sharp": "^0.35.5"
