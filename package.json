@@ -27,14 +27,14 @@
 		"@biomejs/biome": "^2.5.15",
 		"@vitest/coverage-v8": "^5.0.4",
 		"jsdom": "^30.1.2",
-		"tsup": "^8.5.1",
+		"tsup": "^9.0.0",
 		"typescript": "^7.0.2",
-		"vercel": "^63.1.2",
+		"vercel": "^64.0.2",
 		"vitest": "^5.0.4"
 	},
 	"dependencies": {
-		"@vercel/node": "^23.0.1",
-		"dotenv": "^18.0.7",
+		"@vercel/node": "^24.0.0",
+		"dotenv": "^18.0.8",
 		"emoji-name-map": "^2.0.3",
 		"sharp": "^0.35.5"
 	},
