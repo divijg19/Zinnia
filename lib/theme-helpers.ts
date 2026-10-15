@@ -56,9 +56,6 @@ export function normalizeThemeKeys(
 		bg_color: "background",
 		border_color: "border",
 		stroke_color: "stroke",
-		title_color: "title_color",
-		text_color: "text_color",
-		icon_color: "icon_color",
 		ring_color: "ring",
 	};
 	const out: Record<string, string | undefined> = {};

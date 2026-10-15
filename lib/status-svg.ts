@@ -14,7 +14,7 @@
  * containing markup (e.g. a LeetCode sanitize error surfaced verbatim) used
  * to emit broken or injected SVG.
  */
-function escapeXml(value: string): string {
+export function escapeXml(value: string): string {
 	return value
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
