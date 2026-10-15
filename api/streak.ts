@@ -1,5 +1,3 @@
-//
-
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getDebugFlag, newDiag, sendDebugJson } from "../lib/debug.js";
 import {

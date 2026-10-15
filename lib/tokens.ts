@@ -106,7 +106,7 @@ export async function getGithubPATAsync(): Promise<string | undefined> {
 		if (keys.length === 0) return undefined;
 
 		// If the store is the in-memory fallback, prefer the fast synchronous path
-		if (!store || store === undefined) return getGithubPAT();
+		if (!store) return getGithubPAT();
 
 		const n = await store.incrCounter("pat_rr_counter");
 		const start = Number(n) % keys.length;
@@ -303,8 +303,6 @@ export async function withPatEnv<T>(fn: () => Promise<T>): Promise<T> {
 		} catch {}
 	}
 }
-
-export { STATIC_PAT_KEYS as PAT_KEYS };
 
 /**
  * Hard-coded mapping of service names to preferred PAT keys (PAT_n).

@@ -135,7 +135,7 @@ jobs:
           name: build-output
 
       # NOTE: vitest is invoked directly, not via `bun run test`, because the
-      # `pretest` hook would rebuild all 5 tsup shards a second time. The
+      # `pretest` hook would rebuild all 5 bun build shards a second time. The
       # build job already produced them (see the artifact above).
       - name: Tests
         env:

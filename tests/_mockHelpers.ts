@@ -80,14 +80,18 @@ export function mockApiUtilsFactory({
 					// ignore
 				}
 			},
-			setShortCacheHeaders: (res: any, seconds = 60) => {
+			setShortCacheHeaders: (
+				res: any,
+				seconds = 60,
+				cacheStatus = "transient",
+			) => {
 				try {
 					const s = Math.max(0, Math.min(seconds, 3600));
 					res.setHeader(
 						"Cache-Control",
 						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
 					);
-					res.setHeader("X-Cache-Status", "transient");
+					res.setHeader("X-Cache-Status", cacheStatus);
 				} catch (_e) {
 					// ignore
 				}
@@ -127,7 +131,12 @@ export function mockApiUtilsFactory({
 				}
 				return res.send(body);
 			},
-			sendShortSvg: (res: any, body: string, seconds = 60) => {
+			sendShortSvg: (
+				res: any,
+				body: string,
+				seconds = 60,
+				cacheStatus = "transient",
+			) => {
 				try {
 					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 					const s = Math.max(0, Math.min(seconds, 3600));
@@ -135,7 +144,7 @@ export function mockApiUtilsFactory({
 						"Cache-Control",
 						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
 					);
-					res.setHeader("X-Cache-Status", "transient");
+					res.setHeader("X-Cache-Status", cacheStatus);
 					res.setHeader("ETag", `"${computeEtag(body)}"`);
 					res.status(200);
 				} catch (_e) {

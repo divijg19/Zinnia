@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 // Resolve a compiled handler by testing common candidate filenames and extensions.
 // Returns the first existing absolute path or undefined.
@@ -8,119 +8,42 @@ export function resolveCompiledHandler(
 	metaUrl: string,
 	...segments: string[]
 ): string | undefined {
-	const base = path.resolve(path.dirname(new URL(metaUrl).pathname));
+	// `fileURLToPath` is the correct inverse of `pathToFileURL`: it decodes
+	// percent-escapes and returns a native path (drive letter included) on every
+	// platform. `new URL(metaUrl).pathname` left a leading slash before a Windows
+	// drive (`/C:/...`) and kept URI encoding, which the loader then had to undo
+	// with a pile of string surgery.
+	const base = path.dirname(fileURLToPath(metaUrl));
+
 	const candidates: string[] = [];
-	const failed: Array<{ spec: string; err: string }> = [];
+	// Resolve from the caller module first, then from the repository root, to
+	// cover environments where `import.meta.url` paths differ (vercel dev,
+	// bundlers).
+	for (const root of [base, process.cwd()]) {
+		const target = path.resolve(root, ...segments);
+		candidates.push(
+			target,
+			target.replace(/\.js$/i, ".mjs"),
+			target.replace(/\.js$/i, ".cjs"),
+			path.join(target, "index.js"),
+			path.join(target, "index.mjs"),
+		);
+	}
 
-	// primary target relative to the caller module
-	const target = path.resolve(base, ...segments);
-	candidates.push(target);
-	candidates.push(target.replace(/\.js$/i, ".mjs"));
-	candidates.push(target.replace(/\.js$/i, ".cjs"));
-	candidates.push(path.join(target, "index.js"));
-	candidates.push(path.join(target, "index.mjs"));
-
-	// also try resolving from repository root (process.cwd()) to account for
-	// environments where import.meta.url paths differ (vercel dev, bundlers)
-	try {
-		const rootTarget = path.resolve(process.cwd(), ...segments);
-		candidates.push(rootTarget);
-		candidates.push(rootTarget.replace(/\.js$/i, ".mjs"));
-		candidates.push(rootTarget.replace(/\.js$/i, ".cjs"));
-		candidates.push(path.join(rootTarget, "index.js"));
-		candidates.push(path.join(rootTarget, "index.mjs"));
-	} catch {}
-
-	for (const c of candidates) {
+	for (const candidate of candidates) {
 		try {
-			// build a small set of alternative candidate paths to handle
-			// common Windows drive-letter leading slash issues and
-			// non-absolute candidates that should be resolved from CWD.
-			const toTry: string[] = [c];
-			// If candidate looks like an absolute path with a leading
-			// slash followed by a drive letter ("/C:/..."), try the
-			// same path without the leading slash.
-			if (/^\/[A-Za-z]:\\|^\/[A-Za-z]:\//.test(c)) {
-				toTry.push(c.slice(1));
+			if (fs.existsSync(candidate)) {
+				if (process.env.LOADER_DEBUG === "1")
+					console.debug("loader: selected renderer spec =>", candidate);
+				return candidate;
 			}
-			// If candidate is not absolute, also try resolving from process.cwd()
-			if (!path.isAbsolute(c)) {
-				try {
-					toTry.push(path.resolve(process.cwd(), c));
-				} catch {}
-			}
-
-			const found = false;
-			for (const trial of toTry) {
-				try {
-					// Normalize the trial path for the current platform
-					const normalized = path.normalize(trial);
-
-					// Try the normalized path first
-					if (fs.existsSync(normalized)) {
-						if (process.env.LOADER_DEBUG === "1")
-							console.debug("loader: selected renderer spec =>", normalized);
-						return normalized;
-					}
-
-					// If path starts with a leading slash before a drive letter, strip it
-					const leadingSlashDrive = normalized.replace(
-						/^[/\\]([A-Za-z]:[/\\].*)$/,
-						"$1",
-					);
-					if (
-						leadingSlashDrive !== normalized &&
-						fs.existsSync(leadingSlashDrive)
-					) {
-						if (process.env.LOADER_DEBUG === "1")
-							console.debug(
-								"loader: selected renderer spec =>",
-								leadingSlashDrive,
-							);
-						return leadingSlashDrive;
-					}
-
-					// Try swapping slash directions as a last resort
-					const swapSlashes = normalized.includes("\\")
-						? normalized.replace(/\\/g, "/")
-						: normalized.replace(/\//g, "\\");
-					if (fs.existsSync(swapSlashes)) {
-						if (process.env.LOADER_DEBUG === "1")
-							console.debug("loader: selected renderer spec =>", swapSlashes);
-						return swapSlashes;
-					}
-
-					// Try converting to a file URL and back (handles some URI encodings)
-					try {
-						const p = pathToFileURL(normalized).pathname;
-						if (fs.existsSync(p)) {
-							if (process.env.LOADER_DEBUG === "1")
-								console.debug("loader: selected renderer spec =>", p);
-							return p;
-						}
-						const pNoLeading = p.replace(/^\/+/, "");
-						if (pNoLeading !== p && fs.existsSync(pNoLeading)) {
-							if (process.env.LOADER_DEBUG === "1")
-								console.debug("loader: selected renderer spec =>", pNoLeading);
-							return pNoLeading;
-						}
-					} catch {
-						// ignore file URL conversion errors
-					}
-				} catch (err) {
-					failed.push({ spec: trial, err: String(err) });
-				}
-			}
-			if (!found) failed.push({ spec: c, err: `not found` });
-		} catch (err) {
-			failed.push({ spec: c, err: String(err) });
+		} catch {
+			// An unreadable candidate is just a miss; try the next one.
 		}
 	}
 
-	if (process.env.LOADER_DEBUG === "1") {
-		console.debug("loader: found candidates =>", candidates);
-		console.debug("loader: failed candidates =>", failed);
-	}
+	if (process.env.LOADER_DEBUG === "1")
+		console.debug("loader: no candidate matched =>", candidates);
 	return undefined;
 }
 

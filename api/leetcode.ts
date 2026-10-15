@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
 	describeCacheOutcome,
@@ -117,7 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Add extensions based on ext/extension parameter
 		// Construct the expected compiled path directly to avoid a
 		// multi-argument helper call that causes TS confusion in some setups.
-		const metaDir = path.dirname(new URL(import.meta.url).pathname);
+		const metaDir = path.dirname(fileURLToPath(import.meta.url));
 		let found = path.resolve(
 			metaDir,
 			"..",

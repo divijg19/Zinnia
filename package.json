@@ -12,35 +12,33 @@
 		"demo:build": "bun scripts/generate-demo-assets.js && mkdir -p public/demo && cp -r demo/* public/demo/",
 		"demo:dev": "bun scripts/generate-demo-assets.js && bunx serve demo",
 		"vercel:deploy": "vercel --prod --token $VERCEL_TOKEN --yes",
-		"lint": "biome check --error-on-warnings . && tsc --noEmit",
+		"lint": "biome check --error-on-warnings && tsc --noEmit",
 		"format": "biome format . --write",
 		"type-check": "tsc --noEmit",
-		"test:stats": "vitest --run --config ./vitest.config.ts tests/stats",
-		"test:api": "vitest --run --config ./vitest.config.ts tests/api",
+		"test:stats": "vitest --run tests/stats",
+		"test:api": "vitest --run tests/api",
 		"test:demo": "bun run demo:build && bun tests/demo-assets.smoke.js",
-		"test:leetcode": "vitest --run --config ./vitest.config.ts leetcode/test",
+		"test:leetcode": "vitest --run leetcode/test",
 		"test": "vitest --run",
 		"embed:smoke": "bun scripts/smoke-embeds.js",
 		"e2e:local": "bun run build && bun run demo:build && (bunx vercel dev --listen 3000 & sleep 3) && bash scripts/e2e_smoke.sh http://localhost:3000"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.15",
+		"@types/node": "^24.0.0",
+		"@vercel/node": "^24.0.1",
 		"@vitest/coverage-v8": "^5.0.4",
 		"jsdom": "^30.1.2",
-		"tsup": "^9.0.0",
 		"typescript": "^7.0.2",
-		"vercel": "^64.0.2",
+		"vercel": "^64.2.0",
 		"vitest": "^5.0.4"
 	},
 	"dependencies": {
-		"@vercel/node": "^24.0.0",
 		"dotenv": "^18.0.8",
 		"emoji-name-map": "^2.0.3",
 		"sharp": "^0.35.5"
 	},
 	"overrides": {
-		"basic-ftp": "^5.2.0",
-		"tar": "^7.5.7",
-		"rollup": "^4.59.0"
+		"tar": "^7.5.7"
 	}
 }
