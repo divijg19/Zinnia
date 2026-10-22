@@ -22,13 +22,13 @@ Then open `http://localhost:3000/api/stats?username=divijg19`. For the theme gal
 
 `bun run build` runs five `bun build` shards concurrently via `scripts/build-shards.sh`. Every shard emits ESM for Node with `--minify`, external source maps, code splitting, and package dependencies kept external (`--packages=external`), so runtime deps such as `sharp` and `dotenv` resolve from `node_modules` instead of being inlined:
 
-| Entry point | Output |
-| ----------- | ------ |
+| Entry point                           | Output                        |
+| ------------------------------------- | ----------------------------- |
 | `leetcode/packages/core/src/index.ts` | `leetcode/packages/core/dist` |
-| `trophy/src/renderer.ts` | `api/_build/trophy` |
-| `streak/src/index.ts` | `streak/dist` |
-| `streak/src/index.ts` | `api/_build/streak` |
-| `stats/src/index.ts` | `stats/api` |
+| `trophy/src/renderer.ts`              | `api/_build/trophy`           |
+| `streak/src/index.ts`                 | `streak/dist`                 |
+| `streak/src/index.ts`                 | `api/_build/streak`           |
+| `stats/src/index.ts`                  | `stats/api`                   |
 
 `streak` is built to two locations because the renderer loaders probe both; the two bundles are byte-identical.
 
@@ -40,12 +40,12 @@ Vercel runs `bun run build && bun run demo:build` and ships the bundles through 
 
 `vitest.config.ts` collects `tests/**` and `leetcode/test/**`:
 
-| Path | Contents |
-| ---- | -------- |
-| `tests/api` | route contracts, cache and ETag behaviour |
-| `tests/stats`, `tests/streak`, `tests/trophy` | units plus parity against the legacy fixtures |
-| `tests/lib` | shared library, including exact theme-adapter parity |
-| `tests/demo`, `tests/smoke` | demo asset smoke test and offline handler smoke test |
+| Path                                          | Contents                                             |
+| --------------------------------------------- | ---------------------------------------------------- |
+| `tests/api`                                   | route contracts, cache and ETag behaviour            |
+| `tests/stats`, `tests/streak`, `tests/trophy` | units plus parity against the legacy fixtures        |
+| `tests/lib`                                   | shared library, including exact theme-adapter parity |
+| `tests/demo`, `tests/smoke`                   | demo asset smoke test and offline handler smoke test |
 
 Shared test doubles live in `tests/_testShim.ts`: request and response shims, PAT env save and restore, fetch mocks, and the loader and retryer mock factories. Extend it instead of writing local mocks.
 
