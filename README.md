@@ -37,6 +37,7 @@ There are two health endpoints. `/api/health` returns an SVG card, so it can be 
 ## Response contract
 
 Every card route follows the same contract. It is implemented in `lib/canonical/http_cache.js` and covered by `tests/api/etag_contract.test.ts`.
+
 - Responses are always HTTP 200 with a renderable SVG body. A bare 304 or an empty body is never sent. When an upstream call fails, the response is still a 200 carrying the last good render, or an error card when there is nothing cached.
 - No card depends on a CSS animation to become visible. Every property an animation touches already holds its final value in the element's own style, and the animation only fills `backwards`. Otherwise a reader with reduced motion, an embedder that suppresses motion, or a renderer that drops the style block gets a blank card. The same rule requires every emitted `<style>` block to be brace-balanced: a stray `}` once landed on top of a theme's `:root` rules, so the parser discarded the palette and the card rendered as a white rectangle. `tests/api/card_css_invariants.test.ts` and `embed:smoke` both enforce this.
 - Every response sets an `ETag`, plus `Content-Type: image/svg+xml`, `X-Content-Type-Options: nosniff`, and `Vary: Accept-Encoding`.
@@ -72,6 +73,7 @@ Two render budgets, because they answer different questions:
 | `RENDER_CEILING_MS`  | 8500ms  | nothing is cached           | the real card is the only good answer, so an error card would be strictly worse |
 
 The ceiling sits above the longest outbound fetch (8000ms by default), so it only fires after the upstream has already given up, and below Camo's 10s limit. A single shared budget got this wrong: at 3500ms roughly a quarter of cold stats renders - measured 2.7-6.3s - returned an error card instead of a card.
+
 - `?debug=` and `?cache=` are excluded from the cache key, along with `_`-prefixed params: they select a response mode or a TTL rather than a different card. Underscore params also let `embed:smoke --cold` probe a CDN miss without evicting the card.
 - Concurrent requests for the same card share one render. Five cards on one README page share a TTL, so they expire together; without coalescing that is five simultaneous GitHub API calls.
 - The render is kept for a further `STALE_WINDOW_SECONDS` (24h) past its freshness window, so an upstream outage degrades to an out-of-date card rather than a broken one.
@@ -129,12 +131,14 @@ Exhausted tokens are skipped. A rate-limited key is set aside for 60s and an aut
 - [.env.example](.env.example) - every environment variable, grouped and annotated
 
 Per package:
+
 - [stats/README.md](stats/README.md) - `/api/stats`, `/api/top-langs`
 - [streak/README.md](streak/README.md) - `/api/streak`
 - [trophy/README.md](trophy/README.md) - `/api/trophy`
 - [leetcode/README.md](leetcode/README.md) - `/api/leetcode`
 
 Provenance, for anyone re-syncing a vendored upstream:
+
 - [stats/UPSTREAM.md](stats/UPSTREAM.md)
 - [streak/UPSTREAM.md](streak/UPSTREAM.md)
 - [trophy/UPSTREAM.md](trophy/UPSTREAM.md)
