@@ -30,11 +30,11 @@
 		"@vitest/coverage-v8": "^5.1.0",
 		"jsdom": "^31.0.0",
 		"typescript": "^7.0.2",
-		"vercel": "^65.12.1",
+		"vercel": "^65.14.0",
 		"vitest": "^5.1.0"
 	},
 	"dependencies": {
-		"dotenv": "^18.0.9",
+		"dotenv": "^18.0.10",
 		"emoji-name-map": "^2.0.3",
 		"sharp": "^0.35.5"
 	},
