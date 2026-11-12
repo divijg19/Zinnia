@@ -24,7 +24,7 @@
 		"e2e:local": "bun run build && bun run demo:build && (bunx vercel dev --listen 3000 & sleep 3) && bash scripts/e2e_smoke.sh http://localhost:3000"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.6.6",
+		"@biomejs/biome": "^2.6.7",
 		"@types/node": "^26.6.6",
 		"@vercel/node": "^30.0.0",
 		"@vitest/coverage-v8": "^5.1.0",
