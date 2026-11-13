@@ -182,7 +182,8 @@ describe("lib/themes/adapters/leetcode", () => {
 	});
 
 	it("falls back per entry for gradient tokens", () => {
-		const adapted = toLeetCodeTheme(required(themes.ambient_gradient));
+		const name = "ambient_gradient";
+		const adapted = toLeetCodeTheme(required(themes[name]));
 		// Gradient background cannot fill flat vars; historical defaults win.
 		expect(adapted.palette.bg).toEqual([
 			"#fff",

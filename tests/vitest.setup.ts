@@ -11,21 +11,6 @@ process.env.VITEST = "1";
 // that cover caching opt back in and drive it explicitly.
 process.env.RENDER_CACHE = "0";
 
-// Register snapshot serializer for SVG normalization
-try {
-	const { expect } = require("vitest");
-	const serializer = require("./snapshot-serializers/svg-serializer").default;
-	if (
-		expect &&
-		serializer &&
-		typeof expect.addSnapshotSerializer === "function"
-	) {
-		expect.addSnapshotSerializer(serializer);
-	}
-} catch {
-	// ignore; setup runs in various environments
-}
-
 // Ensure any test-injected renderer fallback is cleared before tests run
 try {
 	delete (globalThis as any).__STREAK_TEST_RENDERER;

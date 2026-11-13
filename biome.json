@@ -14,7 +14,6 @@
 			"!**/*.min.js",
 			"!**/dist",
 			"!**/stats/coverage",
-			"!streak/tests/expected",
 			"!tests/api/tmp",
 			"!**/leetcode/packages/**/dist",
 			"!**/streak/src/demo",
