@@ -36,10 +36,6 @@
 		"trophy/api/**/*.ts",
 		"streak/src/**/*.ts",
 		"streak/api/**/*.ts",
-		// Widget-local test dirs, which sit outside the top-level `tests/` tree
-		// and were therefore still unchecked. None of them import build
-		// artifacts, so this stays safe in the lint job that runs before a build.
-		"streak/tests/**/*.ts",
 		"leetcode/api/**/*.ts",
 		"leetcode/test/**/*.ts",
 		"leetcode/packages/*/src/_test/**/*.ts",

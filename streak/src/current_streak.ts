@@ -1,24 +1,20 @@
 // Shared "current date / trailing edge" helpers for the streak engines.
 //
-// Both the UTC daily engine (stats.ts) and the timezone-aware engine
-// (stats_tz.ts) must answer "what is today / where does an ongoing run end?"
-// from the *clock* rather than from the last element of the contribution
-// array, so that trailing or future cells (e.g. GitHub returning zero-count
-// day cells beyond today, or a 72h-stale contributing cache) can never corrupt
-// the reported current streak. Keeping this logic in one place prevents the
-// daily, weekly and timezone engines from diverging on "today".
+// The daily (stats.ts) and weekly engines must answer "what is today / where
+// does an ongoing run end?" from the *clock* rather than from the last element
+// of the contribution array, so that trailing or future cells (e.g. GitHub
+// returning zero-count day cells beyond today, or a 72h-stale contributing
+// cache) can never corrupt the reported current streak. Keeping this logic in
+// one place prevents the daily and weekly engines from diverging on "today".
+//
+// Every key here is built from `Date#toISOString`, i.e. plain UTC calendar
+// arithmetic. Locale-formatted output (`Intl.DateTimeFormat#format`) must
+// never be parsed as a date: its shape is CLDR data, not an API contract, and
+// a runtime with small-ICU data resolves every locale to `en-US`.
 
 /** YYYY-MM-DD day key derived from a Date in UTC. */
 export function utcDateKey(d: Date): string {
 	return d.toISOString().slice(0, 10);
-}
-
-/** Shift a YYYY-MM-DD key by whole days using UTC calendar arithmetic.
- *  Round-tripping through the string key in UTC (never the target timezone)
- *  keeps west-of-UTC zones from double-shifting a local day. */
-export function shiftDateKey(key: string, deltaDays: number): string {
-	const ms = Date.parse(`${key}T00:00:00Z`);
-	return new Date(ms + deltaDays * 86400_000).toISOString().slice(0, 10);
 }
 
 /**
