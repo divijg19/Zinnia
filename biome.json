@@ -1,41 +1,13 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.6.7/schema.json",
 	"vcs": {
-		"enabled": false,
+		"enabled": true,
 		"clientKind": "git",
-		"useIgnoreFile": false
+		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false,
-		"includes": [
-			"**",
-			"!**/coverage",
-			"!**/node_modules",
-			"!**/*.min.js",
-			"!**/dist",
-			"!**/stats/coverage",
-			"!tests/api/tmp",
-			"!**/leetcode/packages/**/dist",
-			"!**/streak/src/demo",
-			"!**/leetcode/packages/**/src/demo",
-			"!**/leetcode/packages/**/src/**/demo",
-			"!**/.vercel",
-			"!bun.lock",
-			"!package.json",
-			"!api/_build",
-			"!cache",
-			"!streak/dist",
-			"!stats/api",
-			"!.git/",
-			"!node_modules/",
-			"!dist/",
-			"!*.map",
-			"!demo/assets",
-			"!demo/theme-registry.json",
-			"!demo/mock-data.json",
-			"!public/demo",
-			"!tmp"
-		],
+		"ignoreUnknown": true,
+		"includes": ["**", "!**/*.min.js"],
 		"maxSize": 1048576
 	},
 	"formatter": {
