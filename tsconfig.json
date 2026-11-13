@@ -45,6 +45,9 @@
 		// rather than `tests/**/*.ts` so the .js test files are covered too
 		// (allowJs is already on).
 		"tests/**/*",
+		// The embed tooling is TypeScript and is checked with the rest of the
+		// tree: a broken contract check would otherwise only fail in CI.
+		"scripts/**/*.ts",
 		"types/**/*.d.ts"
 	]
 }

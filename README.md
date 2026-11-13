@@ -12,6 +12,7 @@ bun run build                   # bundles, see CONTRIBUTING.md
 bun run demo:build              # prerender demo assets for all 96 themes
 bun run test                    # rebuilds, then runs vitest
 bun run lint                    # biome + tsc
+bun run warm                    # refresh the cached embeds (see "Keeping the embeds warm")
 ```
 
 Targeted suites: `bun run test:api`, `test:stats`, `test:demo`, `test:leetcode`. Type-check only: `bun run type-check`. Format: `bun run format`.
@@ -84,6 +85,16 @@ The ceiling sits above the longest outbound fetch (8000ms by default), so it onl
 `bun run embed:smoke --base <origin> --cold --budget <ms>` renders all five cards with a unique query string, checks status, media type, `ETag`, a cacheable `Cache-Control`, and a structurally renderable `<svg>` with intrinsic `width`/`height`/`viewBox`, a brace-balanced stylesheet and no element hidden behind an animation. It fails when any response exceeds the budget. The budget matters on its own: an endpoint that answers 200 in 9s is still a blank embed in a README, because Camo stops waiting at 10s.
 
 Note that GitHub Camo caches each card for its `max-age`, so a newly deployed fix will not reach a browser that already holds the old copy. Purge Camo or add a cache-busting param to the embed URL when verifying.
+
+### Keeping the embeds warm
+
+`config/embeds.json` is the manifest of the card URLs that are embedded in the GitHub profile README. Both scripts read it, so the card that is checked is the card that is embedded.
+
+`bun run warm --base <origin>` re-requests every card with a cache-busting parameter. That forces the origin to render it again while leaving the cached entry in place, which is what keeps the render cache inside its freshness window: a card that is refreshed every few hours never expires, so a visitor never pays the cold path.
+
+The difference is visible. Measured against the live deployment, the same card answers in **7.7s cold and 0.6s warm**. The cold number is what a visitor sees when the cache has expired, and GitHub Camo gives up after 10s - so a cold render that runs long is not a slow card, it is a broken image on the profile page.
+
+The warmer asserts the same contract as the smoke check and exits non-zero when a card breaks it, so it doubles as a health check. It retries a failing card once, because the first request after an idle period pays the platform's cold start rather than exposing a slow card.
 
 ## Env vars
 
