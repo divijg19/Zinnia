@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The shared utils parse SVG through the DOM.
+ */
 import { describe, expect, it } from "vitest";
 import {
 	encodeHTML,

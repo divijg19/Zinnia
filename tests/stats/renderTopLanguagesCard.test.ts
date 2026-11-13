@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The top-languages renderer creates SVG elements.
+ */
 import { describe, expect, it } from "vitest";
 import {
 	calculateCompactLayoutHeight,

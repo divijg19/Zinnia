@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The gist card renderer creates SVG elements.
+ */
 import { describe, expect, it } from "vitest";
 import { renderGistCard } from "../../stats/src/cards/gist";
 import { themes } from "../../stats/themes/index.js";

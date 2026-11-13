@@ -49,6 +49,8 @@ Vercel runs `bun run build && bun run demo:build` and ships the bundles through 
 
 Shared test doubles live in `tests/_testShim.ts`: request and response shims, PAT env save and restore, fetch mocks, and the loader and retryer mock factories. Extend it instead of writing local mocks.
 
+Vitest runs in the `node` environment by default. The nine suites that touch the DOM carry a `// @vitest-environment jsdom` docblock; add the same docblock to a new file that needs `document` or `window`. Building a DOM for every file cost the suite roughly 35s of worker startup, so the DOM is built only where it is used.
+
 `bun run test` builds first (the `pretest` hook) and then runs vitest. A few tests reach the live network, such as the leetcode generator test; those can fail in a sandbox, so re-run one in isolation before believing it.
 
 ## House rules

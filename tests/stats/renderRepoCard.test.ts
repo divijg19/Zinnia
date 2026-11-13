@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The repo card renderer creates SVG elements.
+ */
 import { describe, expect, it } from "vitest";
 import { renderRepoCard } from "../../stats/src/cards/repo";
 import { required } from "../_testShim";

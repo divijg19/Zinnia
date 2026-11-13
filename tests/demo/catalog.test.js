@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The demo catalog renders into the page DOM.
+ */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Catalog } from "../../demo/Catalog.js";
 

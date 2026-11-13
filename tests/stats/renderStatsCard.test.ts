@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The stats card renderer creates SVG elements.
+ */
 import { describe, expect, it } from "vitest";
 import { renderStatsCard } from "../../stats/src/cards/stats";
 import { CustomError } from "../../stats/src/common/error";
