@@ -14,7 +14,8 @@ permissions:
   contents: read
 
 # Shared setup, repeated per job (each job gets a fresh runner):
-# - Bun is pinned to package.json packageManager (1.3.14), never `latest`.
+# - Bun floats to the current release: the dependency graph is pinned by
+#   bun.lock, not by the toolchain, so a Bun upgrade needs no workflow edit.
 # - setup-node stays (cheap insurance for tsc/vercel compat) but without
 #   check-latest, so day-to-day runs are reproducible.
 # - Bun's install cache is restored per bun.lock hash; cold installs only
@@ -28,20 +29,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          # Floating: CI tracks the current Bun release, so a toolchain
+          # change is picked up without editing a workflow. Reproducibility
+          # comes from bun.lock, which pins the dependency graph.
+          bun-version: latest
 
       - name: Restore Bun install cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
@@ -62,20 +66,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          # Floating: CI tracks the current Bun release, so a toolchain
+          # change is picked up without editing a workflow. Reproducibility
+          # comes from bun.lock, which pins the dependency graph.
+          bun-version: latest
 
       - name: Restore Bun install cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
@@ -89,7 +96,7 @@ jobs:
         run: bun run build
 
       - name: Upload build outputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           path: |
@@ -106,20 +113,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          # Floating: CI tracks the current Bun release, so a toolchain
+          # change is picked up without editing a workflow. Reproducibility
+          # comes from bun.lock, which pins the dependency graph.
+          bun-version: latest
 
       - name: Restore Bun install cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
@@ -130,7 +140,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Download build outputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-output
 
@@ -150,20 +160,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.3.14"
+          # Floating: CI tracks the current Bun release, so a toolchain
+          # change is picked up without editing a workflow. Reproducibility
+          # comes from bun.lock, which pins the dependency graph.
+          bun-version: latest
 
       - name: Restore Bun install cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}

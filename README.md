@@ -96,6 +96,10 @@ The difference is visible. Measured against the live deployment, the same card a
 
 The warmer asserts the same contract as the smoke check and exits non-zero when a card breaks it, so it doubles as a health check. It retries a failing card once, because the first request after an idle period pays the platform's cold start rather than exposing a slow card.
 
+`bun run embed:check` compares the manifest with the README of the profile repository and fails when they drift: a card that is embedded but not in the manifest is never warmed, and a card in the manifest that nobody embeds means the manifest no longer describes reality.
+
+`.github/workflows/embeds.yml` runs all three every six hours against the production origin: the manifest check, the warmer, and the smoke check. A card that breaks the contract therefore fails a workflow instead of a profile page.
+
 ## Env vars
 
 Full matrix with defaults lives in `.env.example`. The short version:
