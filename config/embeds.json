@@ -1,0 +1,26 @@
+{
+	"$comment": "The card URLs embedded in the GitHub profile README. Keep this file in sync with the README: the warmer refreshes exactly these cards, and the smoke check asserts the contract on exactly these cards. `scripts/warm-embeds.ts` and `scripts/smoke-embeds.ts` both read it.",
+	"baseUrl": "https://zinnia-rho.vercel.app",
+	"embeds": [
+		{
+			"name": "stats",
+			"path": "/api/stats?username=divijg19&show_icons=true&theme=watchdog&hide_border=true"
+		},
+		{
+			"name": "top-langs",
+			"path": "/api/top-langs?username=divijg19&layout=compact&hide_border=true&theme=watchdog"
+		},
+		{
+			"name": "streak",
+			"path": "/api/streak?user=divijg19&hide_border=true&theme=watchdog"
+		},
+		{
+			"name": "trophy",
+			"path": "/api/trophy?username=divijg19&theme=watchdog&title=-Followers,-Experience&margin-w=5&column=-1&no-frame=true&hide_border=true"
+		},
+		{
+			"name": "leetcode",
+			"path": "/api/leetcode?username=divijg19&theme=watchdog"
+		}
+	]
+}

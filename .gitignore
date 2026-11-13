@@ -70,7 +70,9 @@ _vendor_backup/
 scripts/*
 !scripts/build-shards.sh
 !scripts/generate-demo-assets.js
-!scripts/smoke-embeds.js
+!scripts/smoke-embeds.ts
+!scripts/warm-embeds.ts
+!scripts/lib/
 cache/
 
 # --- Consolidated package ignores ---
