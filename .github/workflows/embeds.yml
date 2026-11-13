@@ -1,0 +1,68 @@
+name: Embeds
+
+# Keeps the cards embedded in the GitHub profile README fresh and healthy.
+#
+# Why this is scheduled: the render cache serves a card for a day and can
+# serve the previous render for another day. Nothing else refreshed it, so
+# the first visitor after that window paid the cold path - measured at 7.7s
+# for the stats card, against a ten second limit in GitHub's image proxy.
+# Refreshing every few hours keeps a card inside its freshness window, so a
+# visitor never pays the cold path at all.
+#
+# The three steps are the whole contract:
+# 1. the manifest still describes what the profile README embeds
+# 2. every embedded card answers inside the budget
+# 3. every embedded card renders
+on:
+  schedule:
+    # Every six hours, off the hour so it does not pile onto the busiest slot.
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Origin to check"
+        required: false
+        default: "https://zinnia-rho.vercel.app"
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: embeds
+  cancel-in-progress: true
+
+jobs:
+  embeds:
+    name: Warm and verify the profile embeds
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          # Floating: CI tracks the current Bun release, so a toolchain
+          # change is picked up without editing a workflow. Reproducibility
+          # comes from bun.lock, which pins the dependency graph.
+          bun-version: latest
+
+      # The scripts only use bun built-ins and fetch, so there is nothing to
+      # install: no `bun install` step, no lockfile, no cache.
+      - name: Check the manifest against the profile README
+        env:
+          BASE: ${{ inputs.base || 'https://zinnia-rho.vercel.app' }}
+        run: bun scripts/check-profile-embeds.ts
+
+      - name: Warm the cards
+        env:
+          BASE: ${{ inputs.base || 'https://zinnia-rho.vercel.app' }}
+        run: bun scripts/warm-embeds.ts --base "$BASE"
+
+      - name: Smoke the cards
+        env:
+          BASE: ${{ inputs.base || 'https://zinnia-rho.vercel.app' }}
+        run: bun scripts/smoke-embeds.ts --base "$BASE" --cold
