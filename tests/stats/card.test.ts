@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The card renderer measures and creates SVG elements.
+ */
 import { describe, expect, it } from "vitest";
 import { Card } from "../../stats/src/common/Card";
 import { icons } from "../../stats/src/common/icons";

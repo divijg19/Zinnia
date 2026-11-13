@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * The theme selector builds DOM nodes.
+ */
 import { describe, expect, it, vi } from "vitest";
 import { ThemeSelector } from "../../demo/utils/theme-selector.js";
 

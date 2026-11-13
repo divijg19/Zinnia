@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ *
+ * Page theme handling reads and writes the DOM.
+ */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	applyTheme,
