@@ -11,12 +11,13 @@
 		// Bundler mode
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
-		"verbatimModuleSyntax": false,
+		"verbatimModuleSyntax": true,
 		"noEmit": true,
+		// Keep the incremental build cache out of the repository root.
+		"tsBuildInfoFile": "./node_modules/.cache/tsconfig.tsbuildinfo",
 		"paths": {
 			"@lib/*": ["./lib/*"]
 		},
-		"typeRoots": ["./types", "./node_modules/@types"],
 		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
@@ -45,12 +46,5 @@
 		// (allowJs is already on).
 		"tests/**/*",
 		"types/**/*.d.ts"
-	],
-	"exclude": [
-		// Quarantine Deno-specific files and folders (not part of Node/Vercel build)
-		"trophy/main.ts",
-		"trophy/deps.ts",
-		"trophy/src/StaticRenderRegeneration/**",
-		"trophy/src/Types/deno.d.ts"
 	]
 }
