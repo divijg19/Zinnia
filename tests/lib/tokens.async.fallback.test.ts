@@ -14,8 +14,9 @@ describe("tokens async fallback behavior", () => {
 		// lib/env.ts loads .env unless NODE_ENV=production; that can re-seed PAT_4+
 		// and make token selection non-deterministic.
 		process.env.NODE_ENV = "production";
-		// Ensure determinism: other tests (or dotenv) may have already seeded PAT_4+
-		// and token selection is round-robin/randomized across all PAT_* keys.
+		// Ensure determinism: other tests (or the env loader) may have already
+		// seeded PAT_4+ and token selection is round-robin/randomized across all
+		// PAT_* keys.
 		for (const k of Object.keys(process.env)) {
 			if (/^PAT_\d+$/.test(k)) delete process.env[k];
 		}

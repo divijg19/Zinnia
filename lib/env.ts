@@ -2,19 +2,23 @@
 // - loads `.env` in non-production when available
 // - exposes simple getters used across the codebase
 
-export async function loadDotenv(): Promise<void> {
+/**
+ * Read a local `.env` file into `process.env`.
+ *
+ * Node has done this natively since 20.6, so there is no dependency for it.
+ * Variables that are already set are left alone, and a missing file throws -
+ * which is the normal case in production and in CI, where the platform
+ * injects the variables instead.
+ */
+export async function loadEnvFile(): Promise<void> {
 	if (process.env.NODE_ENV === "production") return;
 	try {
-		// dynamic import so production builds without dotenv don't fail
-		const mod = await import("dotenv");
-		try {
-			mod.config();
-		} catch {}
+		process.loadEnvFile();
 	} catch {}
 }
 
-// trigger best-effort dotenv load for developer convenience
-void loadDotenv();
+// trigger best-effort .env load for developer convenience
+void loadEnvFile();
 
 // Normalize common GitHub token env vars into PAT_1 for compatibility.
 // This keeps deployments flexible (GITHUB_TOKEN, GH_TOKEN, etc.) while
@@ -58,4 +62,4 @@ export function allEnv(): NodeJS.ProcessEnv {
 	return process.env;
 }
 
-export default { loadDotenv, getEnv, requireEnv, allEnv };
+export default { loadEnvFile, getEnv, requireEnv, allEnv };

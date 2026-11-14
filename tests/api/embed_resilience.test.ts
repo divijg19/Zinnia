@@ -6,8 +6,6 @@ import { headerValue, makeReq, makeRes, type TestResponse } from "../_testShim";
 // default (see tests/vitest.setup.ts).
 process.env.RENDER_CACHE = "1";
 
-vi.mock("dotenv", () => ({ config: () => ({}) }));
-
 const fetchStats = vi.hoisted(() => vi.fn());
 vi.mock("../../stats/src/fetchers/stats", () => ({ fetchStats }));
 

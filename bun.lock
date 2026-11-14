@@ -5,7 +5,6 @@
     "": {
       "name": "zinnia",
       "dependencies": {
-        "dotenv": "^18.0.10",
         "emoji-name-map": "^2.0.3",
         "sharp": "^0.35.5",
       },
@@ -586,8 +585,6 @@
     "depd": ["depd@1.1.2", "", {}, "sha512-7emPTl6Dpo6JRXOXjLRxck+FlLRX5847cLKEn00PLAgc3g2hTZZgr+e4c2v6QpSmLeFP3n5yUo7ft6avBK/5jQ=="],
 
     "detect-libc": ["detect-libc@2.1.2", "", {}, "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="],
-
-    "dotenv": ["dotenv@18.0.10", "", { "bin": { "dotenv": "dist/cli.cjs" } }, "sha512-89FAA1xchzK2mxVWdr5F/0rldwiueXs6zJM86rO66EzekR1iBdiXRthyG+m5GvkJaFH3C2LESzamTkgndmLT2A=="],
 
     "edge-runtime": ["edge-runtime@2.5.9", "", { "dependencies": { "@edge-runtime/format": "2.2.1", "@edge-runtime/ponyfill": "2.4.2", "@edge-runtime/vm": "3.2.0", "async-listen": "3.0.1", "mri": "1.2.0", "picocolors": "1.0.0", "pretty-ms": "7.0.1", "signal-exit": "4.0.2", "time-span": "4.0.0" }, "bin": { "edge-runtime": "dist/cli/index.js" } }, "sha512-pk+k0oK0PVXdlT4oRp4lwh+unuKB7Ng4iZ2HB+EZ7QCEQizX360Rp/F4aRpgpRgdP2ufB35N+1KppHmYjqIGSg=="],
 
