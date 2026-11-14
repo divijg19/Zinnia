@@ -2,9 +2,35 @@
 
 ## Environment
 
-- Node.js 24.x (`package.json` engines) and Bun 1.3.14 (`packageManager`)
+- Node.js 26.x (`.node-version`, and `engines.node` in `package.json`)
+- Bun, the current release - it installs the dependencies, builds the shards and runs the scripts
 - [Vercel](https://vercel.com/) for local dev and deploy
 - GitHub API, with per-service PAT rotation across `PAT_1` through `PAT_5`
+
+### Runtimes
+
+Two runtimes, with a line between them:
+
+|           | Runtime     | What it runs                                                                  |
+| --------- | ----------- | ----------------------------------------------------------------------------- |
+| Toolchain | **Bun**     | `bun install`, `bun build` (the five shards), the scripts, the demo generator |
+| Runtime   | **Node 26** | the deployed Vercel functions, and the process vitest runs in                 |
+
+`bunx vitest` still runs the tests on Node, because vitest does. Running them
+under Bun (`bun --bun`) is not an option: it fails a float-equality assertion
+(`224.99999999999997` against `225`) that Node computes exactly.
+
+**Node is pinned; Bun floats.** `engines.node` is `26.x`, which is what Vercel
+deploys with, and every CI job runs the same major - the CI workflow defines
+it once as `NODE_VERSION` and a guard step fails the build if the runtime
+under test is not the one in `engines.node`. A Node major is a deployment
+contract, so it does not float. Bun does float: CI installs the current
+release, and `bun.lock` is what pins the dependency graph.
+
+One platform limit worth knowing: Vercel's Node runtime is **small-ICU**, so
+every `Intl` call there resolves to `en-US`. Nothing parses locale output as
+data any more, but a non-English `?locale=` renders English labels in
+production.
 
 ## Local run
 
