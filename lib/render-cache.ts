@@ -378,8 +378,12 @@ function releaseInFlight(coalesceKey: string, slot: InFlightSlot): void {
 /**
  * A deadline that rejects with `RenderDeadlineError`. Always disposed by the
  * caller so a cache deadline can never hold the event loop open.
+ *
+ * Exported for routes that run their own render flow rather than the shared
+ * one - the streak route does - so every card route answers inside the same
+ * budget instead of only the ones that happen to use `renderWithFallback`.
  */
-function withDeadline<T>(promise: Promise<T>, budgetMs: number) {
+export function withDeadline<T>(promise: Promise<T>, budgetMs: number) {
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const guard =
 		budgetMs > 0
