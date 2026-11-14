@@ -8,11 +8,6 @@ import {
 	snapshotPatEnv,
 } from "../_testShim";
 
-// Prevent dotenv.config() from repopulating PAT_* vars when modules are
-// re-evaluated after vi.resetModules(); env reads still work, and each
-// test below snapshots/restores the ambient environment explicitly.
-vi.mock("dotenv", () => ({ config: () => ({}) }));
-
 vi.mock("../../stats/src/fetchers/stats", () => {
 	return {
 		fetchStats: vi.fn(async () => {

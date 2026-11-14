@@ -5,6 +5,12 @@ import { afterAll, beforeAll } from "vitest";
 // Make test-mode detection deterministic for loader and helpers
 process.env.VITEST = "1";
 
+// Never load a developer's `.env` into the suite. Token counts and rotation
+// budgets have to be deterministic, and the file is read by `lib/env.ts` and
+// by the stats fetcher through the Node builtin. (Bun loads `.env` on its
+// own at startup; Node only when it is told to, which is what this stops.)
+process.loadEnvFile = () => {};
+
 // The render cache (lib/render-cache.ts) keeps renders in process memory and KV,
 // which would make a route test serve an earlier case's SVG instead of exercising
 // the fetch it means to assert on. Off by default across the suite; the tests

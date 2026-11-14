@@ -7,10 +7,6 @@ import {
 } from "../../stats/src/common/retryer";
 import { logger } from "../../stats/src/common/utils";
 
-// Never load ambient credentials: rotation budgets must be deterministic
-// (phantom slots) regardless of the developer's .env.
-vi.mock("dotenv", () => ({ config: () => ({}) }));
-
 vi.mock("../../lib/tokens", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../../lib/tokens")>();
 	return { ...actual, markPatExhaustedAsync: vi.fn() };

@@ -10,8 +10,6 @@ import { makeReq, makeRes } from "../_testShim";
  */
 process.env.RENDER_CACHE = "1";
 
-vi.mock("dotenv", () => ({ config: () => ({}) }));
-
 type Handler = (req: VercelRequest, res: VercelResponse) => Promise<unknown>;
 
 // Static specifiers: Vite cannot resolve a template-literal dynamic import.

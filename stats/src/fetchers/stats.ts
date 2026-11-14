@@ -1,4 +1,3 @@
-import * as dotenv from "dotenv";
 import {
 	fetchWithTimeout,
 	resolveTimeoutMs,
@@ -55,7 +54,12 @@ type GraphQLAxiosResponse = {
 	statusText?: string;
 };
 
-dotenv.config();
+// Read a local `.env` for development. Node does this natively since 20.6,
+// and the platform injects the variables in production, where the file does
+// not exist and the read throws.
+try {
+	process.loadEnvFile();
+} catch {}
 
 const GRAPHQL_REPOS_FIELD = `
   repositories(first: 100, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}, after: $after) {
