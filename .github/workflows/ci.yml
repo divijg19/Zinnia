@@ -18,8 +18,13 @@ permissions:
 #   bun.lock, not by the toolchain, so a Bun upgrade needs no workflow edit.
 # - setup-node stays (cheap insurance for tsc/vercel compat) but without
 #   check-latest, so day-to-day runs are reproducible.
-# - Bun's install cache is restored per bun.lock hash; cold installs only
-#   happen when the lockfile changes.
+# - There is deliberately no package cache. Restoring `~/.bun/install/cache`
+#   through actions/cache cost over a minute per job and moved ~3.2GB per
+#   run, because each job downloads the entry and re-uploads it whenever the
+#   lockfile hash changes. A cold `bun install --frozen-lockfile` of the same
+#   graph measures 24.9s (an empty node_modules against a warm cache is
+#   21ms), and it is faster than the round trip it replaced. setup-bun still
+#   caches the bun binary itself, which is the part worth caching.
 
 jobs:
   lint:
@@ -43,14 +48,6 @@ jobs:
           # change is picked up without editing a workflow. Reproducibility
           # comes from bun.lock, which pins the dependency graph.
           bun-version: latest
-
-      - name: Restore Bun install cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -80,14 +77,6 @@ jobs:
           # change is picked up without editing a workflow. Reproducibility
           # comes from bun.lock, which pins the dependency graph.
           bun-version: latest
-
-      - name: Restore Bun install cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -128,14 +117,6 @@ jobs:
           # comes from bun.lock, which pins the dependency graph.
           bun-version: latest
 
-      - name: Restore Bun install cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -174,14 +155,6 @@ jobs:
           # change is picked up without editing a workflow. Reproducibility
           # comes from bun.lock, which pins the dependency graph.
           bun-version: latest
-
-      - name: Restore Bun install cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
