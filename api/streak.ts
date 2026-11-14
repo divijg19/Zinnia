@@ -16,9 +16,11 @@ import { getUsername, safeUrl } from "../lib/params.js";
 import {
 	getCachedRender,
 	markCacheStatus,
+	renderBudgetMs,
 	renderCacheKey,
 	STALE_SERVE_SECONDS,
 	setCachedRender,
+	withDeadline,
 } from "../lib/render-cache.js";
 
 // renderer will be loaded from an API-local build folder at runtime; fall back to
@@ -656,7 +658,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 
 		const recorder = createRecorder();
-		await produceStreak(req, recorder.res, url, user);
+		// Bound the render like every other card route. This flow can scrape
+		// every contribution year, each request with its own timeout, so an
+		// unbounded render can run past the point where an embedder stops
+		// waiting for the response.
+		const deadline = withDeadline(
+			produceStreak(req, recorder.res, url, user),
+			renderBudgetMs(Boolean(cached)),
+		);
+		let produced = false;
+		try {
+			await deadline.settled;
+			produced = true;
+		} catch {
+			// The producer failed or the deadline fired. Either way the previous
+			// render is worth more than waiting, and the branches below serve it
+			// when there is one.
+		} finally {
+			deadline.dispose();
+		}
 		const captured = recorder.captured();
 		diag.timing = { totalMs: Date.now() - t0 };
 
@@ -671,7 +691,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// Only `transient` means "do not trust this body". A `fallback` body is a
 		// perfectly good earlier render, so it is served as-is and promoted into
 		// the render cache rather than being treated as a failure and replaced.
-		const isErrorPayload = headerOf(captured, "x-cache-status") === "transient";
+		// A render that never finished is equally untrustworthy: there is no
+		// body to serve at all.
+		const isErrorPayload =
+			!produced || headerOf(captured, "x-cache-status") === "transient";
 
 		// A fresh error card is precisely when the previous render is worth more
 		// than the new one: keep the card visible and let upstream recover.
@@ -680,6 +703,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				...(diag.cache as Record<string, unknown>),
 				status: "stale",
 				ageMs: Date.now() - cached.storedAtMs,
+				deadlineExceeded: !produced,
 			};
 			if (debug) {
 				return sendDebugJson(res, {
@@ -704,6 +728,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			...(diag.cache as Record<string, unknown>),
 			status: freshCard ? "miss" : "fallback",
 		};
+
+		// Nothing rendered and no previous render to fall back on: the standard
+		// error card, so an embedder still receives a renderable SVG instead of
+		// the empty body the recorder would otherwise hold.
+		if (!produced) {
+			return handleRouteError(
+				req,
+				res,
+				new Error("streak render did not finish inside its budget"),
+				{
+					service: "streak",
+					code: "STREAK_INTERNAL",
+					debug,
+					diag,
+					username: user,
+				},
+			);
+		}
 
 		if (debug) {
 			return sendDebugJson(res, {
