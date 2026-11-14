@@ -54,15 +54,8 @@ export async function generateOutput(
 
 	if (requestedType === "png") {
 		try {
-			const sharpMod = await import("sharp");
-			type SharpFactory = (input?: Buffer | Uint8Array | string) => {
-				png: () => { toBuffer: () => Promise<Buffer> };
-			};
-			const candidate =
-				(sharpMod as unknown as { default?: unknown })?.default ??
-				(sharpMod as unknown);
-			const sharpFn = candidate as SharpFactory;
-			const png = await sharpFn(Buffer.from(outSvg)).png().toBuffer();
+			const { default: sharp } = await import("sharp");
+			const png = await sharp(Buffer.from(outSvg)).png().toBuffer();
 			return { contentType: "image/png", body: png };
 		} catch (e) {
 			// If PNG conversion fails (sharp missing or runtime error), fall back to serving

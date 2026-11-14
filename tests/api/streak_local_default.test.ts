@@ -27,7 +27,6 @@ describe("api/streak defaults to the canonical local renderer", () => {
 	it("never contacts the legacy upstream without explicit opt-in", async () => {
 		vi.resetModules();
 		process.env.VERCEL_ENV = "production";
-		delete process.env.STREAK_PREFER_UPSTREAM;
 		delete process.env.UPSTASH_KV_REST_API_URL;
 		delete process.env.UPSTASH_KV_REST_API_TOKEN;
 

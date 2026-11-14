@@ -1,6 +1,12 @@
-// Canonical cache/response implementation. Vercel bundles api/**/*.ts with
-// no TS transpile for this path, so the runtime copy is plain JS; it is the
-// source of truth (all importers resolve this file).
+// Canonical cache/response implementation.
+//
+// This module is the source of truth: every importer - the card routes, the
+// shared library, the LeetCode API and the tests - resolves this file. The
+// response helpers below are deliberately small and structural, so that
+// Vercel's `VercelResponse` and the test shims both satisfy them without
+// either one importing the other.
+
+import * as cache from "../../api/cache.js";
 
 // How long a shared cache may serve a fresh body past its TTL while it
 // refreshes behind the request. A day absorbs a slow origin refresh without
@@ -16,9 +22,45 @@ const STALE_IF_ERROR_SECONDS = 86400;
 // `setFallbackCacheHeaders`.
 const FALLBACK_MAX_SECONDS = 3600;
 
-export function resolveCacheSeconds(url, envKeys, fallback) {
+/** The response surface the header helpers need. */
+export type HeaderWriter = {
+	setHeader(name: string, value: unknown): unknown;
+};
+
+/** The response surface the send helpers need. */
+export type ResponseWriter = HeaderWriter & {
+	status(code: number): unknown;
+	send(body: string): unknown;
+};
+
+/** The request surface `safeUrl` needs. A subset of `VercelRequest`. */
+export type RequestLike = {
+	headers: Record<string, string | string[] | undefined>;
+	url?: string;
+};
+
+/** Inbound headers, as Vercel hands them over. */
+export type HeaderBag = Record<string, string | string[] | undefined>;
+
+/** The `{ get, set }` service adapter shape used across the codebase. */
+export type CacheAdapter = {
+	get(key: string): Promise<unknown>;
+	set(key: string, value: string, ttlSeconds?: number): Promise<void>;
+};
+
+/** The Web `Cache` surface the LeetCode core expects. */
+export type WebCacheLike = {
+	match(key: string): Promise<Response | undefined>;
+	put(key: string, response: Response): Promise<void>;
+};
+
+export function resolveCacheSeconds(
+	url: URL,
+	envKeys: string[],
+	fallback: number,
+): number {
 	const requested = url.searchParams.get("cache");
-	let envDefault;
+	let envDefault: number | undefined;
 	for (const key of envKeys) {
 		const raw = process.env[key];
 		if (raw && !Number.isNaN(parseInt(raw, 10))) {
@@ -42,14 +84,14 @@ export function resolveCacheSeconds(url, envKeys, fallback) {
  * an expiry is served instantly from the cached body while the origin refreshes
  * behind it. `stale-if-error` covers the same case when that refresh fails.
  */
-export function setCacheHeaders(res, seconds) {
+export function setCacheHeaders(res: HeaderWriter, seconds: number): void {
 	res.setHeader(
 		"Cache-Control",
 		`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=${STALE_WHILE_REVALIDATE_SECONDS}, stale-if-error=${STALE_IF_ERROR_SECONDS}`,
 	);
 }
 
-export function setSvgHeaders(res) {
+export function setSvgHeaders(res: HeaderWriter): void {
 	res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
 	res.setHeader("X-Content-Type-Options", "nosniff");
 	res.setHeader("Vary", "Accept-Encoding");
@@ -57,10 +99,10 @@ export function setSvgHeaders(res) {
 }
 
 export function setShortCacheHeaders(
-	res,
+	res: HeaderWriter,
 	seconds = 60,
 	cacheStatus = "transient",
-) {
+): void {
 	const s = Math.max(0, Math.min(seconds, 3600));
 	res.setHeader(
 		"Cache-Control",
@@ -76,7 +118,10 @@ export function setShortCacheHeaders(
  * a week would pin an out-of-date card in every reader's browser for a week
  * with no way to recover short of purging Camo by hand.
  */
-export function setFallbackCacheHeaders(res, seconds) {
+export function setFallbackCacheHeaders(
+	res: HeaderWriter,
+	seconds: number,
+): void {
 	const s = Math.max(60, Math.min(seconds, FALLBACK_MAX_SECONDS));
 	const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
 	res.setHeader(
@@ -86,13 +131,13 @@ export function setFallbackCacheHeaders(res, seconds) {
 	res.setHeader("X-Cache-Status", "fallback");
 }
 
-export function isValidUsername(username) {
+export function isValidUsername(username: string | null | undefined): boolean {
 	if (!username) return false;
 	return /^[A-Za-z0-9-]{1,39}$/.test(username);
 }
 
 // Request shape needed for URL parsing (subset of VercelRequest).
-export function safeUrl(req, fallbackPath) {
+export function safeUrl(req: RequestLike, fallbackPath: string): URL {
 	const host = String(req.headers.host ?? req.headers.Host ?? "localhost");
 	const proto = String(
 		req.headers["x-forwarded-proto"] ??
@@ -108,7 +153,10 @@ export function safeUrl(req, fallbackPath) {
 	}
 }
 
-export function getUsername(url, keys = ["username", "user"]) {
+export function getUsername(
+	url: URL,
+	keys: string[] = ["username", "user"],
+): string | null {
 	for (const k of keys) {
 		const v = url.searchParams.get(k);
 		if (isValidUsername(v)) return v;
@@ -144,11 +192,8 @@ const FORWARDABLE_REQUEST_HEADERS = ["referer", "user-agent"];
  * expiry when the stored `ttl` is a finite number, so a write without one would
  * produce an entry that never expires. The core encodes its own intent in the
  * response's `cache-control: max-age`, so that is the value to propagate.
- *
- * @param {{ get: (key: string) => Promise<unknown>, set: (key: string, value: string, ttlSeconds?: number) => Promise<void> }} adapter
- * @returns {{ match: (key: string) => Promise<Response | undefined>, put: (key: string, response: Response) => Promise<void> }}
  */
-export function asWebCache(adapter) {
+export function asWebCache(adapter: CacheAdapter): WebCacheLike {
 	return {
 		async match(key) {
 			const body = await adapter.get(key);
@@ -174,16 +219,12 @@ export function asWebCache(adapter) {
  * anonymous-looking requests, and the card route was passing `{}` - so every
  * embed view went out headerless. `leetcode/api/index.ts` took the caller's
  * headers as a parameter for exactly this reason.
- *
- * @param {Record<string, string | string[] | undefined> | undefined | null} headers inbound headers
- * @param {string[]} [allowed] header names to forward
- * @returns {Record<string, string>} forwardable headers
  */
 export function pickForwardedHeaders(
-	headers,
-	allowed = FORWARDABLE_REQUEST_HEADERS,
-) {
-	const out = {};
+	headers: HeaderBag | undefined | null,
+	allowed: string[] = FORWARDABLE_REQUEST_HEADERS,
+): Record<string, string> {
+	const out: Record<string, string> = {};
 	if (!headers || typeof headers !== "object") return out;
 	for (const name of allowed) {
 		const value = headers[name];
@@ -194,19 +235,18 @@ export function pickForwardedHeaders(
 	return out;
 }
 
-import * as cache from "../../api/cache.js";
 // Cache operations and the etag hash both live in api/cache (the
 // filesystem layer); re-export rather than reimplement so the digest
 // algorithm has exactly one definition.
 
 export const computeEtag = cache.computeEtag;
 
-export function getCacheAdapterForService(service) {
+export function getCacheAdapterForService(service: string): CacheAdapter {
 	return {
 		// Reads honor the TTL embedded in the entry's meta file: `writeCacheWithMeta`
 		// persists `ttlSeconds` and `ts`, and an expired entry is treated as a miss
 		// so a stale rendered SVG cannot be served forever.
-		get: async (key) => {
+		get: async (key: string) => {
 			try {
 				const entry = await cache.readCacheWithMeta(service, String(key));
 				if (!entry) return null;
@@ -221,7 +261,7 @@ export function getCacheAdapterForService(service) {
 				return null;
 			}
 		},
-		set: async (key, value, ttlSeconds) => {
+		set: async (key: string, value: string, ttlSeconds?: number) => {
 			try {
 				const etag = computeEtag(String(value));
 				await cache.writeCacheWithMeta(
@@ -238,13 +278,17 @@ export function getCacheAdapterForService(service) {
 	};
 }
 
-export function getCacheAdapter(service) {
+export function getCacheAdapter(service: string): CacheAdapter {
 	return getCacheAdapterForService(service);
 }
 
 // Response send helpers. Always 200 + full body with ETag set;
 // never 304-empty (embedders treat empty 304 as an error).
-export function sendSuccessSvg(res, body, cacheSeconds) {
+export function sendSuccessSvg(
+	res: ResponseWriter,
+	body: string,
+	cacheSeconds: number,
+): unknown {
 	setSvgHeaders(res);
 	setCacheHeaders(res, cacheSeconds);
 	setEtagAndAlwaysSend200(res, body);
@@ -253,11 +297,11 @@ export function sendSuccessSvg(res, body, cacheSeconds) {
 }
 
 export function sendShortSvg(
-	res,
-	body,
+	res: ResponseWriter,
+	body: string,
 	seconds = 60,
 	cacheStatus = "transient",
-) {
+): unknown {
 	setSvgHeaders(res);
 	setShortCacheHeaders(res, seconds, cacheStatus);
 	setEtagAndAlwaysSend200(res, body);
@@ -265,14 +309,19 @@ export function sendShortSvg(
 	return res.send(body);
 }
 
-export function sendFallbackSvg(res, body, seconds) {
+export function sendFallbackSvg(
+	res: ResponseWriter,
+	body: string,
+	seconds: number,
+): unknown {
 	setSvgHeaders(res);
 	setFallbackCacheHeaders(res, seconds);
 	setEtagAndAlwaysSend200(res, body);
 	res.status(200);
 	return res.send(body);
 }
-export function setEtagAndAlwaysSend200(res, body) {
+
+export function setEtagAndAlwaysSend200(res: HeaderWriter, body: string): void {
 	res.setHeader("ETag", `"${computeEtag(body)}"`);
 }
 

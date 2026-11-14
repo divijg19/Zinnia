@@ -5,7 +5,6 @@ import {
 	sendErrorSvg,
 	validationFailure,
 } from "../lib/errors.js";
-import { fetchWithTimeout } from "../lib/fetch-timeout.js";
 import {
 	importByPath,
 	invokePossibleRequestHandler,
@@ -56,7 +55,12 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 			if (compiled) {
 				const mod = (await importByPath(compiled)) as any;
 				try {
-					console.debug("streak: imported compiled keys ->", Object.keys(mod));
+					if (process.env.STREAK_DEBUG === "1") {
+						console.debug(
+							"streak: imported compiled keys ->",
+							Object.keys(mod),
+						);
+					}
 				} catch {}
 				const picked = pickHandlerFromModule(mod, [
 					"default",
@@ -111,7 +115,9 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 			}
 		} catch (e) {
 			try {
-				console.debug("streak: compiled handler probe failed", String(e));
+				if (process.env.STREAK_DEBUG === "1") {
+					console.debug("streak: compiled handler probe failed", String(e));
+				}
 			} catch {}
 		}
 		// Prefer compiled renderer in streak/dist or api/_build/streak
@@ -134,7 +140,9 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 		if (found) {
 			const mod = (await importByPath(found)) as any;
 			try {
-				console.debug("streak: imported module keys ->", Object.keys(mod));
+				if (process.env.STREAK_DEBUG === "1") {
+					console.debug("streak: imported module keys ->", Object.keys(mod));
+				}
 			} catch {}
 			// prefer named export renderForUser, then default function, then render
 			let fn: any =
@@ -251,81 +259,6 @@ async function produceStreak(
 	url: URL,
 	user: string,
 ): Promise<unknown> {
-	// Serve the canonical local renderer by default on every environment.
-	// The legacy upstream (zinnia-rho) derives its calendar from a rolling
-	// one-year window, clipping current streaks longer than ~a year, and
-	// re-enters this same deployment in production. Upstream is therefore
-	// opt-in only: STREAK_PREFER_UPSTREAM=1 or ?prefer_upstream=1.
-	let upstreamFailed = false;
-	const preferUpstream =
-		process.env.STREAK_PREFER_UPSTREAM === "1" ||
-		url.searchParams.get("prefer_upstream") === "1";
-	if (preferUpstream) {
-		try {
-			const upstream = new URL("https://zinnia-rho.vercel.app/");
-			for (const [k, v] of url.searchParams) upstream.searchParams.set(k, v);
-			upstream.searchParams.set("user", user as string);
-			// Bounded like the sibling proxy in streak/api (10s there; 8s
-			// here keeps Hobby headroom). Abort lands in catch below and
-			// falls through to the local renderer.
-			const resp = await fetchWithTimeout(upstream.toString(), undefined, 8000);
-			const ct = resp?.headers?.get
-				? resp.headers.get("content-type")
-				: undefined;
-			if (
-				resp &&
-				resp.status >= 200 &&
-				resp.status < 300 &&
-				ct?.includes("svg")
-			) {
-				const body = await resp.text();
-				// Always 200 + full body with ETag set (never 304-empty, which
-				// breaks embedders). Revalidation is handled client-side.
-				try {
-					res.setHeader("X-Streak-Renderer", "upstream");
-				} catch {}
-				res.setHeader("X-Upstream-Status", String(resp.status));
-				return sendSuccessSvg(
-					res,
-					String(body),
-					resolveCacheSeconds(
-						url,
-						["STREAK_CACHE_SECONDS", "CACHE_SECONDS"],
-						86400,
-					),
-				);
-			}
-			// If upstream returned a successful but non-SVG payload, treat as an error
-			// and fall back to the local renderer/cached fallback.
-			if (
-				resp &&
-				resp.status >= 200 &&
-				resp.status < 300 &&
-				!ct?.includes("svg")
-			) {
-				// fall through to local renderer; upstream may be returning HTML due to
-				// bot protection or other transient issues even with a 2xx status.
-			}
-			// If upstream returned a non-OK but SVG we still forward with transient cache
-			if (resp && resp.status >= 400 && ct?.includes("svg")) {
-				const body = await resp.text();
-				// Same embed contract as the 2xx branch: always 200 + full
-				// body with ETag set (never 304-empty). The upstream status
-				// is exposed via X-Upstream-Status for diagnostics.
-				try {
-					res.setHeader("X-Streak-Renderer", "cache");
-				} catch {}
-				res.setHeader("X-Upstream-Status", String(resp.status));
-				return sendShortSvg(res, String(body), 60);
-			}
-			// otherwise, fall through to local renderer below
-		} catch {
-			// upstream failed — we'll prefer a cached fallback or return
-			// a standardized error SVG rather than invoking the heavy local
-			// renderer which can be slow/heavy in tests.
-			upstreamFailed = true;
-		}
-	}
 	try {
 		const cacheLocal = getCacheAdapterForService("streak");
 		const paramsObj = Object.fromEntries(url.searchParams);
@@ -347,18 +280,6 @@ async function produceStreak(
 			}
 		} catch {
 			// ignore cache read errors
-		}
-
-		// If upstream permanently failed and we have no cached payload,
-		// return a standardized error SVG quickly instead of importing
-		// the local renderer which can be slow/heavy in tests.
-		if (upstreamFailed) {
-			return sendErrorSvg(
-				req as VercelRequest,
-				res,
-				"Upstream streak fetch failed",
-				"STREAK_UPSTREAM_FETCH",
-			);
 		}
 
 		const renderer = await loadStreakRenderer();
@@ -426,62 +347,14 @@ async function produceStreak(
 		if (typeof renderer !== "function") {
 			throw new Error("streak renderer not available");
 		}
-		// Try multiple invocation shapes to support different bundle APIs:
-		// 1) renderer(user, params)
-		// 2) renderer({ user, ...params })
-		// 3) renderer({ username: user, ...params })
-		// 4) renderer({ name: user, ...params })
-		async function invokeWithCompatibility(fn: any) {
-			const shapes: Array<() => Promise<any>> = [
-				() => fn(user as string, paramsObj as Record<string, string>),
-				() => fn({ user: user as string, ...paramsObj } as any),
-				() => fn({ username: user as string, ...paramsObj } as any),
-				() => fn({ name: user as string, ...paramsObj } as any),
-			];
-
-			try {
-				console.debug(
-					"api/streak: renderer spec =>",
-					(globalThis as any).__STREAK_RENDERER_SPEC || "unknown",
-				);
-			} catch {}
-
-			for (let i = 0; i < shapes.length; i++) {
-				const s = shapes[i];
-				if (!s) {
-					continue;
-				}
-				try {
-					const candidate = await s();
-					const bodyStr =
-						typeof (candidate && (candidate.body ?? candidate)) === "string"
-							? (candidate.body ?? candidate)
-							: "";
-					if (
-						bodyStr &&
-						/Expected\s+NAME|Expected\s+\w+,\s+actual/i.test(bodyStr)
-					) {
-						try {
-							console.debug("api/streak: renderer rejected shape", i);
-						} catch {}
-						continue;
-					}
-					try {
-						console.debug("api/streak: renderer accepted shape", i);
-					} catch {}
-					return candidate;
-				} catch (err) {
-					try {
-						console.debug("api/streak: renderer shape error", i, String(err));
-					} catch {}
-					// try next
-				}
-			}
-			// final attempt (let error bubble)
-			return fn(user as string, paramsObj as Record<string, string>);
-		}
-
-		const out = await invokeWithCompatibility(renderer);
+		// The compiled renderer takes `(username, params)`. The loader
+		// normalizes the module shapes around it, so the call has one form.
+		// A renderer that answers with a parser error is caught by the
+		// defensive check below, which falls back to the canonical card.
+		const out = await renderer(
+			user as string,
+			paramsObj as Record<string, string>,
+		);
 
 		// Defensive: some renderer bundles may embed textual error SVGs
 		// when an internal parser fails (example: "Expected NAME...").
@@ -570,10 +443,12 @@ async function produceStreak(
 			}
 		} catch (err) {
 			try {
-				console.debug(
-					"api/streak: invalid contentType from renderer",
-					String(err),
-				);
+				if (process.env.STREAK_DEBUG === "1") {
+					console.debug(
+						"api/streak: invalid contentType from renderer",
+						String(err),
+					);
+				}
 			} catch {}
 		}
 		if (out.contentType === "image/png") {

@@ -1,3 +1,4 @@
+import { normalizeThemeName } from "../../theme-helpers.js";
 import type { ThemeColors, ThemeDefinition } from "../registry.js";
 import { themes } from "../registry.js";
 import { normalizeColor, resolveWithFallback } from "../tokens.js";
@@ -70,4 +71,25 @@ export function toStreakTheme(
 		excludeDaysLabel:
 			getVal("excludeDaysLabel", ["dates", "text"]) ?? "#464646",
 	};
+}
+
+/**
+ * Every registry theme, adapted for the streak card.
+ *
+ * Streak resolves theme names case-insensitively and treats `_` as `-`, so
+ * two registry names can normalize to the same one (the trophy
+ * `catppuccin_mocha` and the leetcode `catppuccin-mocha`). The first entry
+ * in registry order claims the name, matching the legacy streak behaviour.
+ */
+export function streakThemes(): Record<string, StreakThemeProperties> {
+	const adapted: Record<string, StreakThemeProperties> = {};
+	const seen = new Set<string>();
+	for (const name of Object.keys(themes)) {
+		const normalized = normalizeThemeName(name);
+		if (seen.has(normalized)) continue;
+		seen.add(normalized);
+		const def = themes[name];
+		if (def) adapted[name] = toStreakTheme(def);
+	}
+	return adapted;
 }

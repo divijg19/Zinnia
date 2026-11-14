@@ -23,10 +23,9 @@ export const sendSuccessSvg = _sendSuccessSvg;
  * The registry is the single source of truth and README already states there is
  * no static theme table to keep in sync, so derive it rather than duplicate it.
  *
- * It lives here rather than in `canonical/http_cache.js` because this is the
- * TypeScript layer: the canonical module is otherwise `.js` importing only
- * `.js`, and a `.js` file reaching into a `.ts` module is a resolution the
- * bundler is not asked to handle anywhere else in the repo.
+ * It lives here rather than in `canonical/http_cache.ts` because this module
+ * is the library-facing surface: it pairs the cache helpers with the theme
+ * registry, which the cache helpers have no business knowing about.
  */
 export const ALLOWED_THEMES = new Set(Object.keys(themes));
 

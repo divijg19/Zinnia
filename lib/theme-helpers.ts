@@ -1,4 +1,16 @@
-/* Shared theme helpers: parseBackgroundToken and normalizeThemeKeys */
+/* Shared theme helpers: parseBackgroundToken, normalizeThemeKeys and
+   normalizeThemeName */
+
+/**
+ * Normalize a theme name to the spelling the runtime looks up.
+ *
+ * Lookups are case-insensitive and `_` is treated as `-`, so the trophy
+ * `catppuccin_mocha` and the leetcode `catppuccin-mocha` resolve to the same
+ * name. The first registry entry to claim a normalized name wins.
+ */
+export function normalizeThemeName(theme: string): string {
+	return theme.toLowerCase().replace(/_/g, "-");
+}
 
 export function parseBackgroundToken(
 	bgRaw?: string | null,

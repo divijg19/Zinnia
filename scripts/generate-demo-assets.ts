@@ -6,7 +6,7 @@ import { renderStats } from "../demo/adapters/stats.js";
 import { renderStreak } from "../demo/adapters/streak.js";
 import { renderTopLangs } from "../demo/adapters/toplangs.js";
 import { renderTrophy } from "../demo/adapters/trophy.js";
-import { themes } from "../lib/themes/registry.ts";
+import { type ThemeDefinition, themes } from "../lib/themes/registry.ts";
 import { normalizeThemeName } from "../streak/src/card_helpers.ts";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,16 +15,44 @@ const rootDir = resolve(__dirname, "..");
 const demoDir = resolve(rootDir, "demo");
 const svgDir = resolve(demoDir, "assets");
 
-function extractPreviewColors(def) {
+/** The widgets the demo renders for every theme. */
+const WIDGET_KINDS = [
+	"stats",
+	"topLangs",
+	"streak",
+	"trophy",
+	"leetcode",
+] as const;
+
+type WidgetKind = (typeof WIDGET_KINDS)[number];
+
+/** Where a rendered card lives, and how big it is. */
+type WidgetAsset = {
+	src: string;
+	width: number;
+	height: number;
+};
+
+/** A theme alias: two registry names that resolve to the same theme. */
+type ThemeAlias = {
+	theme: string;
+	normalized: string;
+	note: string;
+};
+
+function extractPreviewColors(def: ThemeDefinition): [string, string, string] {
 	const colors = def.colors || {};
 
 	const primary =
 		colors.title?.hex || colors.icon?.hex || colors.primary?.hex || "2f80ed";
-	const bg = colors.background?.hex || "fffefe";
+	const bg =
+		(colors.background && "hex" in colors.background
+			? colors.background.hex
+			: undefined) || "fffefe";
 	const accent =
 		colors.icon?.hex || colors.primary?.hex || colors.title?.hex || "4c71f2";
 
-	const fmt = (c) => (c.startsWith("#") ? c : `#${c}`);
+	const fmt = (c: string) => (c.startsWith("#") ? c : `#${c}`);
 
 	return [fmt(primary), fmt(bg), fmt(accent)];
 }
@@ -108,7 +136,13 @@ const TOPLANGS_FIXTURE = {
 	Shell: { name: "Shell", color: "#89e051", size: 1000 },
 };
 
-const RENDERERS = {
+const RENDERERS: Record<
+	WidgetKind,
+	(
+		def: ThemeDefinition,
+		data: unknown,
+	) => string | Buffer | Promise<string | Buffer>
+> = {
 	stats: renderStats,
 	topLangs: renderTopLangs,
 	streak: renderStreak,
@@ -116,7 +150,11 @@ const RENDERERS = {
 	leetcode: renderLeetCode,
 };
 
-function assertValidSvg(svg, kind, name) {
+function assertValidSvg(
+	svg: unknown,
+	kind: string,
+	name: string,
+): asserts svg is string {
 	if (typeof svg !== "string" || !svg.includes("<svg")) {
 		throw new Error(`${kind} render for ${name} produced no SVG`);
 	}
@@ -125,7 +163,7 @@ function assertValidSvg(svg, kind, name) {
 	}
 }
 
-const mockData = {
+const mockData: Record<WidgetKind, unknown> = {
 	stats: STATS_FIXTURE,
 	topLangs: TOPLANGS_FIXTURE,
 	streak: STREAK_FIXTURE,
@@ -138,13 +176,13 @@ globalThis.fetch = () => {
 	throw new Error("Network access is forbidden during demo asset generation");
 };
 
-const themeRegistry = [];
-const assets = {};
-const aliases = [];
+const themeRegistry: Record<string, unknown>[] = [];
+const assets: Record<string, Partial<Record<WidgetKind, WidgetAsset>>> = {};
+const aliases: ThemeAlias[] = [];
 
 // Detect streak name collisions in registry order with the same
 // normalization the runtime uses, so the recorded winner always matches
-// runtime first-wins resolution (streak/src/themes.ts).
+// runtime first-wins resolution (lib/themes/adapters/streak.ts).
 {
 	const seenStreak = new Set();
 	for (const name of Object.keys(themes)) {
@@ -168,15 +206,16 @@ try {
 	const entries = Object.entries(themes).sort(([a], [b]) => a.localeCompare(b));
 
 	for (const [name, def] of entries) {
-		assets[name] = {};
-		for (const [kind, render] of Object.entries(RENDERERS)) {
-			const svg = await render(def, mockData[kind]);
+		const widgets: Partial<Record<WidgetKind, WidgetAsset>> = {};
+		assets[name] = widgets;
+		for (const kind of WIDGET_KINDS) {
+			const svg = await RENDERERS[kind](def, mockData[kind]);
 			assertValidSvg(svg, kind, name);
 			const file = `${name}-${kind}.svg`;
 			writeFileSync(join(svgDir, file), svg);
 			const widthMatch = svg.match(/<svg[^>]*\bwidth="(\d+)"/);
 			const heightMatch = svg.match(/<svg[^>]*\bheight="(\d+)"/);
-			assets[name][kind] = {
+			widgets[kind] = {
 				src: `./assets/${file}`,
 				width: Number(widthMatch?.[1] ?? 495),
 				height: Number(heightMatch?.[1] ?? 195),
@@ -191,7 +230,7 @@ try {
 			...(def.streak && { streak: def.streak }),
 			...(def.trophy && { trophy: def.trophy }),
 			...(def.leetcode && { leetcode: def.leetcode }),
-			widgets: assets[name],
+			widgets,
 		});
 	}
 
@@ -204,9 +243,8 @@ try {
 
 	// Completeness gate: every theme must render every widget kind, so a
 	// silently missing card can never reach the demo tabs.
-	const expectedKinds = Object.keys(RENDERERS);
 	for (const [name] of entries) {
-		for (const kind of expectedKinds) {
+		for (const kind of WIDGET_KINDS) {
 			const asset = assets[name]?.[kind];
 			if (!asset?.src) {
 				throw new Error(`missing ${kind} asset for theme '${name}'`);

@@ -28,24 +28,28 @@ export async function fetchWithTimeout(
 	init: RequestInit | undefined,
 	timeoutMs: number,
 ): Promise<Response> {
-	const controller = new AbortController();
-	const timer =
-		timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+	const timeoutSignal =
+		timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
+	// A caller-supplied signal is kept and combined with the timeout, so an
+	// upstream abort still cancels the request.
+	const signal =
+		init?.signal && timeoutSignal
+			? AbortSignal.any([init.signal, timeoutSignal])
+			: (init?.signal ?? timeoutSignal);
 	try {
-		return await fetch(url, { ...init, signal: controller.signal });
+		return await fetch(url, { ...init, signal });
 	} catch (err: unknown) {
-		// DOMException (abort) is not instanceof Error — match on name.
-		if (
-			(err instanceof Error && err.name === "AbortError") ||
-			(typeof err === "object" &&
-				err !== null &&
-				"name" in err &&
-				(err as { name?: unknown }).name === "AbortError")
-		) {
+		// A DOMException is not an `Error` instance - match on the name. The
+		// built-in timeout aborts with "TimeoutError"; a caller's signal
+		// aborts with "AbortError". Both are timeouts from the caller's point
+		// of view, and both become `Error("fetch-timeout")`.
+		const name =
+			typeof err === "object" && err !== null && "name" in err
+				? (err as { name?: unknown }).name
+				: undefined;
+		if (name === "TimeoutError" || name === "AbortError") {
 			throw new Error("fetch-timeout");
 		}
 		throw err;
-	} finally {
-		if (timer !== null) clearTimeout(timer);
 	}
 }

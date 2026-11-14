@@ -1,26 +1,20 @@
 // Returns themes and available locales for the demo UI
+
+import { normalizeThemeKeys } from "../../lib/theme-helpers.js";
+import { streakThemes } from "../../lib/themes/adapters/streak.js";
 import type { RequestLike, ResponseLike } from "../src/server_types";
+import { TRANSLATIONS } from "../src/translations.ts";
 
 export default async function handler(_req: RequestLike, res: ResponseLike) {
 	try {
-		const tryImport = async (base: string) => {
-			try {
-				return await import(`${base}.js`);
-			} catch (_e) {
-				return await import(`${base}.ts`);
-			}
-		};
-
-		const themesMod = await tryImport("../src/themes");
-		const translationsMod = await tryImport("../src/translations");
-
-		const rawThemes = themesMod.THEMES ?? themesMod.default ?? themesMod;
+		// The theme map comes from the canonical registry through the shared
+		// adapter, so the demo and the card agree on every theme.
+		const rawThemes = streakThemes();
 		const THEMES: Record<string, Record<string, string>> = {};
 		try {
-			const { normalizeThemeKeys } = require("../../lib/theme-helpers.ts");
 			for (const [k, v] of Object.entries(rawThemes || {})) {
 				if (v && typeof v === "object") {
-					const raw = v as Record<string, string | undefined>;
+					const raw = v as unknown as Record<string, string | undefined>;
 					const norm = normalizeThemeKeys(raw);
 					// ensure string values for JSON output
 					const out: Record<string, string> = {};
@@ -33,10 +27,6 @@ export default async function handler(_req: RequestLike, res: ResponseLike) {
 			// fallback: expose rawThemes if normalization fails
 			Object.assign(THEMES, rawThemes || {});
 		}
-		const TRANSLATIONS =
-			translationsMod.TRANSLATIONS ??
-			translationsMod.default ??
-			translationsMod;
 
 		const locales = Object.keys(TRANSLATIONS).filter(
 			(k) => typeof TRANSLATIONS[k] === "object",

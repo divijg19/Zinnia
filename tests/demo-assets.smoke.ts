@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 
 const dom = new JSDOM(
@@ -14,16 +15,17 @@ const { WidgetFactory } = await import("../demo/widgets/factory.js");
 const { Dashboard } = await import("../demo/Dashboard.js");
 
 const registryFile = JSON.parse(
-	await Bun.file(
+	await readFile(
 		new URL("../demo/theme-registry.json", import.meta.url),
-	).text(),
+		"utf8",
+	),
 );
 console.log("themes in registry:", registryFile.themes.length);
 if (registryFile.themes.length === 0) {
 	throw new Error("smoke: theme registry is empty");
 }
 
-const wf = new WidgetFactory(registryFile);
+const wf = new WidgetFactory();
 const dash = new Dashboard(
 	window.document.getElementById("widget-grid"),
 	wf,

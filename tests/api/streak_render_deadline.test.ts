@@ -50,7 +50,6 @@ describe("api/streak render deadline", () => {
 		delete process.env.UPSTASH_REST_TOKEN;
 		delete process.env.UPSTASH_KV_REST_API_URL;
 		delete process.env.UPSTASH_KV_REST_API_TOKEN;
-		delete process.env.STREAK_PREFER_UPSTREAM;
 		process.env.VERCEL_ENV = "production";
 		// The render cache is off across the suite; these cases need it on.
 		process.env.RENDER_CACHE = "1";

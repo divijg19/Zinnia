@@ -1,13 +1,14 @@
 import { describe, expect, test } from "vitest";
+import { streakThemes } from "../../lib/themes/adapters/streak";
 import {
 	formatDate,
 	getRequestedTheme,
 	normalizeThemeName,
 } from "../../streak/src/card.js";
-import { THEMES } from "../../streak/src/themes.js";
 import type { Params, Theme } from "../../streak/src/types_public.js";
 
 describe("options and themes", () => {
+	const THEMES = streakThemes();
 	test("themes return expected colors and gradients generate backgroundGradient", () => {
 		const themes = THEMES as unknown as Record<string, Theme>;
 		for (const themeName of Object.keys(themes)) {

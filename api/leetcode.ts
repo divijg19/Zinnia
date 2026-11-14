@@ -139,7 +139,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			);
 			if (fs.existsSync(alt)) {
 				if (process.env.LOADER_DEBUG === "1")
-					console.debug("leetcode: using cwd fallback ->", alt);
+					if (process.env.LEETCODE_DEBUG === "1") {
+						console.debug("leetcode: using cwd fallback ->", alt);
+					}
 				found = alt;
 			}
 		}
