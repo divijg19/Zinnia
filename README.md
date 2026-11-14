@@ -2,7 +2,7 @@
 
 Unified, self-hosted GitHub profile cards: stats, top languages, contribution streak, trophies, and LeetCode. One TypeScript monorepo, one deploy surface.
 
-> **Runtime:** Node.js 24 LTS (`package.json` engines) + Bun 1.3.14 (`packageManager`). Live at `zinnia-rho.vercel.app`.
+> **Runtime:** Node.js 26 (`engines.node`) runs the deployed functions and the test process; Bun installs, builds and runs the scripts. Live at `zinnia-rho.vercel.app`.
 
 ## Getting started
 
@@ -137,6 +137,8 @@ Exhausted tokens are skipped. A rate-limited key is set aside for 60s and an aut
 **Streak doesn't match my contribution graph?** Stats are computed in UTC and cached, so allow a few hours after pushing. Enable _Private contributions_ in your GitHub profile settings to include private repos.
 
 **Something renders wrong?** Add `?debug=1` to any card URL for a JSON diagnostic covering validation, PAT presence, and timings.
+
+**A non-English `?locale=` still shows English labels?** The deployment runs on Vercel's Node runtime, which ships small-ICU data, so every locale resolves to `en-US` there. The card is correct; the platform cannot do better.
 
 ## Documentation
 
