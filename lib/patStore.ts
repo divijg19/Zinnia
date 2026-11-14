@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 /**
  * Adapter supporting Upstash (REST) and managed Redis (ioredis), with
  * an in-memory fallback for local development and tests.
@@ -7,6 +9,8 @@
  * - REDIS_URL (or REDIS_PROVIDER=redis) -> try to use ioredis client if installed
  * - otherwise fall back to in-memory store
  */
+
+const require = createRequire(import.meta.url);
 
 type PatStore = {
 	incrCounter: (key: string) => Promise<number>;
@@ -99,7 +103,8 @@ async function createManagedRedisStore(): Promise<PatStore | null> {
 	const redisUrl = process.env.REDIS_URL;
 	if (!redisUrl) return null;
 	try {
-		// dynamic import to avoid requiring ioredis in environments that don't need it
+		// ioredis is optional: it is only installed where the operator asked
+		// for the Redis path, and the require is ESM-safe.
 		const IORedis = require("ioredis");
 		const client = new IORedis(redisUrl);
 		return {

@@ -1,4 +1,21 @@
-export const themes = {
+// The legacy stats theme table.
+//
+// The stats cards read their colours from here by name, so this table is the
+// parity reference for the palettes those cards are expected to produce. The
+// canonical theme registry (lib/themes/registry.ts) is the single source of
+// truth for the rest of the codebase; this table stays because the stats
+// cards are matched against it.
+
+/** The colour tokens a legacy stats theme carries. */
+export type StatsTheme = {
+	title_color: string;
+	icon_color: string;
+	text_color: string;
+	bg_color: string;
+	border_color?: string;
+};
+
+export const themes: Record<string, StatsTheme> = {
 	default: {
 		title_color: "2f80ed",
 		icon_color: "4c71f2",

@@ -2,6 +2,7 @@
 // Restores robust theme loading, deterministic gradient defs, and the
 // exports tests expect: `formatDate`, `getRequestedTheme`, `normalizeThemeName`.
 
+import { streakThemes } from "../../lib/themes/adapters/streak.js";
 import {
 	getExcludingDaysText,
 	getTranslations,
@@ -9,7 +10,6 @@ import {
 	parseBackgroundToken,
 } from "./card_helpers.js";
 import { escapeXml } from "./svg_builder.ts";
-import { THEMES as IMPORTED_THEMES } from "./themes.ts";
 import type { Params, Stats, Theme } from "./types_public.ts";
 
 let THEMES: Record<string, Theme> = {};
@@ -62,77 +62,16 @@ const DATE_FORMATTER_CACHE = new SimpleLRU<Intl.DateTimeFormat>(128);
 const NUMBER_FORMATTER_CACHE = new SimpleLRU<Intl.NumberFormat>(128);
 function loadThemesSync(): Record<string, Theme> {
 	if (_themesLoaded) return THEMES;
-	// Prefer the static import (Vitest/ESM). Fall back to require and normalize
+	// The theme map is built from the canonical registry by the shared
+	// adapter, so there is one definition of a theme's colours and one
+	// definition of which registry name wins a normalized lookup.
 	try {
-		if (
-			IMPORTED_THEMES &&
-			typeof IMPORTED_THEMES === "object" &&
-			Object.keys(IMPORTED_THEMES).length > 0
-		) {
-			THEMES = IMPORTED_THEMES as Record<string, Theme>;
-			_themesLoaded = true;
-			return THEMES;
-		}
-	} catch {}
-
-	try {
-		const mod = require("./themes.js");
-		let candidate: unknown =
-			mod && (mod.THEMES || mod.default)
-				? mod.THEMES || mod.default
-				: mod || {};
-
-		// If candidate looks like a single theme, try to recover a mapping by scanning
-		if (candidate && typeof candidate === "object") {
-			const keys = Object.keys(candidate);
-			const looksLikeSingleTheme =
-				keys.includes("background") ||
-				keys.includes("border") ||
-				keys.includes("stroke");
-			if (looksLikeSingleTheme) {
-				// attempt alternate resolution
-				try {
-					const alt = require("./themes");
-					const altCandidate = alt && (alt.THEMES || alt.default || alt);
-					if (altCandidate && typeof altCandidate === "object") {
-						const altKeys = Object.keys(altCandidate);
-						if (!altKeys.includes("background") && altKeys.length > 0)
-							candidate = altCandidate;
-					}
-				} catch {}
-
-				const recovered: Record<string, Theme> = {};
-				for (const k of Object.keys(mod || {})) {
-					const v = (mod as unknown as Record<string, Theme>)[k];
-					if (v && typeof v === "object") {
-						const raw = v as Record<string, string | undefined>;
-						// normalize legacy snake_case keys to canonical names
-						// use shared helper to keep behavior consistent across modules
-						const {
-							normalizeThemeKeys,
-						} = require("../../lib/theme-helpers.ts");
-						const normalized = normalizeThemeKeys(raw);
-						const vk = Object.keys(normalized);
-						if (
-							vk.includes("background") ||
-							vk.includes("border") ||
-							vk.includes("stroke")
-						) {
-							recovered[k] = normalized as Theme;
-						}
-					}
-				}
-				if (Object.keys(recovered).length > 0) candidate = recovered;
-				else candidate = { default: candidate };
-			}
-		}
-
-		THEMES = candidate as Record<string, Theme>;
+		THEMES = streakThemes() as Record<string, Theme>;
 	} catch (e) {
 		THEMES = {};
 		if (process.env.DEBUG_THEMES) {
 			try {
-				console.debug("loadThemesSync require failed", String(e));
+				console.debug("loadThemesSync failed", String(e));
 			} catch {}
 		}
 	}

@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { themes } from "../../../lib/themes";
-import { toStreakTheme } from "../../../lib/themes/adapters/streak";
-import { THEMES as legacyStreakThemes } from "../../../streak/src/themes.js";
+import {
+	streakThemes,
+	toStreakTheme,
+} from "../../../lib/themes/adapters/streak";
 import { required } from "../../_testShim";
 
 describe("lib/themes/adapters/streak", () => {
 	it("exposes every streak theme in the canonical registry with exact parity", () => {
-		for (const [name, legacyTheme] of Object.entries(legacyStreakThemes)) {
+		for (const [name, legacyTheme] of Object.entries(streakThemes())) {
 			const registryTheme = themes[name];
 			expect(
 				registryTheme,

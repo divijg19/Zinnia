@@ -84,7 +84,7 @@ export function createCardHandler(
 				debug = getDebugFlag(url);
 				const t0 = Date.now();
 				diag = newDiag(cfg.service);
-				username = getUsername(url, ["username", "user"]);
+				username = getUsername(url, ["username", "user"]) ?? undefined;
 				if (!username) {
 					return validationFailure(req, res, {
 						debug,

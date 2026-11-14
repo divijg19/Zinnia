@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { themes } from "../../lib/themes";
+import { streakThemes } from "../../lib/themes/adapters/streak";
 import { getRequestedTheme } from "../../streak/src/card.js";
 import { normalizeThemeName } from "../../streak/src/card_helpers.js";
-import { THEMES } from "../../streak/src/themes.js";
 import { required } from "../_testShim";
 
 describe("streak normalized alias resolution", () => {
+	const THEMES = streakThemes();
 	it("exposes exactly one entry per normalized theme name", () => {
 		const seen = new Map<string, string>();
 		for (const name of Object.keys(THEMES)) {

@@ -11,3 +11,8 @@ export type Themes = Record<string, Theme>;
 
 export type LocaleTranslations = Record<string, string | boolean> | string;
 export type Translations = Record<string, LocaleTranslations>;
+
+/**
+ * The translation table: a locale code maps to its content map, or to
+ * the code of another locale it aliases.
+ */

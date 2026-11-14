@@ -1,6 +1,10 @@
-import { vi } from "vitest";
+import { type Mock, vi } from "vitest";
 
-export type MockFn = ReturnType<typeof vi.fn>;
+// `ReturnType<typeof vi.fn>` would resolve the generic to its *constraint*
+// (`Procedure | Constructable`), which is not assignable to a plain function
+// type. Spell the mock signature out instead, so a mock can stand in for a
+// response object.
+export type MockFn = Mock<(...args: any[]) => any>;
 
 export interface TestRequest {
 	headers: Record<string, string | undefined>;

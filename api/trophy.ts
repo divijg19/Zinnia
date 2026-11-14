@@ -154,7 +154,9 @@ async function renderWithCompiledHandler(
 		return await readSvgFromWebResponse(result as Response);
 	} catch (e) {
 		try {
-			console.debug("trophy: compiled handler invocation failed", String(e));
+			if (process.env.TROPHY_DEBUG === "1") {
+				console.debug("trophy: compiled handler invocation failed", String(e));
+			}
 		} catch {}
 		return null;
 	}
@@ -185,15 +187,24 @@ async function renderLocally(options: {
 			try {
 				if (!p) {
 					// log missing candidate
-					console.debug("trophy: candidate missing", cand.join("/"));
+					if (process.env.TROPHY_DEBUG === "1") {
+						console.debug("trophy: candidate missing", cand.join("/"));
+					}
 					continue;
 				}
-				console.debug("trophy: trying import", p);
+				if (process.env.TROPHY_DEBUG === "1") {
+					console.debug("trophy: trying import", p);
+				}
 				const mod = (await importByPath(p)) as any;
 				// if import succeeded but we couldn't find an export, log keys
 				if (mod && !renderer) {
 					try {
-						console.debug("trophy: imported module keys ->", Object.keys(mod));
+						if (process.env.TROPHY_DEBUG === "1") {
+							console.debug(
+								"trophy: imported module keys ->",
+								Object.keys(mod),
+							);
+						}
 					} catch {}
 				}
 				if (typeof mod === "function") {
@@ -223,7 +234,9 @@ async function renderLocally(options: {
 				}
 				if (renderer) {
 					loaded = true;
-					console.debug("trophy: renderer loaded from", p);
+					if (process.env.TROPHY_DEBUG === "1") {
+						console.debug("trophy: renderer loaded from", p);
+					}
 					break;
 				}
 			} catch (e) {

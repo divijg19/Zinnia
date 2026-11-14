@@ -56,3 +56,9 @@ export interface Translations {
 	Present?: string;
 	[key: string]: string | boolean | undefined;
 }
+
+/**
+ * The translation table: a locale code maps to its content map, or to the
+ * code of another locale it aliases.
+ */
+export type TranslationTable = Record<string, Translations | string>;

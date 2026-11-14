@@ -1,15 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { computeEtag, setEtagAndAlwaysSend200 } from "../../api/_utils";
-
-function makeRes() {
-	return {
-		setHeader: vi.fn(),
-		status: vi.fn().mockReturnThis(),
-	} as unknown as {
-		setHeader: ReturnType<typeof vi.fn>;
-		status: ReturnType<typeof vi.fn>;
-	};
-}
+import { makeRes } from "../_testShim";
 
 describe("setEtagAndAlwaysSend200 (always-200 + ETag contract)", () => {
 	it("sets an ETag header derived from the body", () => {

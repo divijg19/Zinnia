@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { renderStreak } from "../demo/adapters/streak.js";
 import { toStreakTheme } from "../lib/themes/adapters/streak.ts";
 import { themes } from "../lib/themes/registry.ts";
+import { required } from "./_testShim";
 
 const streak = {
 	mode: "daily",
@@ -16,9 +17,10 @@ test("Streak preserves both exact Catppuccin registry definitions", async () => 
 	for (const [name, color] of [
 		["catppuccin_mocha", "#94e2d5"],
 		["catppuccin-mocha", "#151515"],
-	]) {
-		expect(toStreakTheme(themes[name]).currStreakNum).toBe(color);
-		const svg = await renderStreak(themes[name], streak);
+	] as const) {
+		const theme = required(themes[name], name);
+		expect(toStreakTheme(theme).currStreakNum).toBe(color);
+		const svg = await renderStreak(theme, streak);
 		expect(svg).toContain(`fill='${color}'`);
 		expect(svg).not.toContain(
 			name === "catppuccin-mocha" ? "#94e2d5" : "#151515",

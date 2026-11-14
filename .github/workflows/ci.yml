@@ -166,4 +166,4 @@ jobs:
           bun run demo:build
           find demo/assets -type f | sort | xargs sha256sum > /tmp/demo-assets-b.txt
           diff /tmp/demo-assets-a.txt /tmp/demo-assets-b.txt
-          bun tests/demo-assets.smoke.js
+          bun tests/demo-assets.smoke.ts

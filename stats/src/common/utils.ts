@@ -419,6 +419,9 @@ const wrapLine = (line: string, width: number): string[] => {
 export const parseEmojis = (str: string) => {
 	if (!str) throw new Error("[parseEmoji]: str argument not provided");
 	if (!emojiMap) {
+		// Loaded lazily: the map is only needed when a description actually
+		// contains an `:emoji:` token. `createRequire` is the ESM-safe way to
+		// reach a CommonJS package.
 		emojiMap = require("emoji-name-map") as {
 			get(key: string): string | undefined;
 		};

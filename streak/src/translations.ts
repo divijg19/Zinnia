@@ -1,5 +1,5 @@
 // Auto-generated and normalized
-export const TRANSLATIONS: import("./types.ts").Translations = {
+export const TRANSLATIONS: import("./types_public.ts").TranslationTable = {
 	en: {
 		"Total Contributions": "Total Contributions",
 		"Current Streak": "Current Streak",

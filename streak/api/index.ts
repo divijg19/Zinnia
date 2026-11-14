@@ -1,6 +1,7 @@
 // Streak proxy: fetch SVG from upstream service so we stay Node-only in this monorepo
 // and keep embeds compatible. Supports both ?user= and ?username=.
 
+import { createRequire } from "node:module";
 import {
 	computeEtag,
 	getCacheAdapter,
@@ -11,10 +12,14 @@ import {
 import { statusCardSvg } from "../../lib/status-svg.js";
 import type { RequestLike, ResponseLike } from "../src/server_types";
 
+// The local card renderer is a CommonJS-shaped module inside an ESM
+// package, so it is reached through `createRequire`.
+const require = createRequire(import.meta.url);
+
 function sendSvgError(res: ResponseLike, message: string, cacheSeconds = 60) {
 	// Attempt to render a themed error card using local renderer if available
 	try {
-		const cardMod = require("../src/card");
+		const cardMod = require("../src/card.js");
 		if (cardMod && typeof cardMod.generateErrorCard === "function") {
 			const body = cardMod.generateErrorCard(message, {});
 			setSvgHeaders(res);
@@ -141,7 +146,8 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					console.debug("streak/api: localCache.get returned", typeof cached);
 				} catch {}
 				if (cached) {
-					const etag = computeEtag(cached);
+					const body = String(cached);
+					const etag = computeEtag(body);
 					res.setHeader("ETag", `"${etag}"`);
 					const inm = (
 						req.headers["if-none-match"] ||
@@ -151,13 +157,13 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
 					const inmNorm = inm.replace(/^W\//i, "").replace(/^"|"$/g, "");
 					if (inm && inmNorm === etag) {
 						res.status(200);
-						return res.send(cached);
+						return res.send(body);
 					}
 					setSvgHeaders(res);
 					setShortCacheHeaders(res, 60);
 					res.setHeader("X-Cache-Status", "hit");
 					res.status(200);
-					return res.send(cached);
+					return res.send(body);
 				}
 
 				// Guard renderer invocation in test environments to avoid

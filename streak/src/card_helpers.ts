@@ -1,52 +1,17 @@
-import type { Translations } from "./types_public.ts";
+import { TRANSLATIONS } from "./translations.ts";
+import type { Translations, TranslationTable } from "./types_public.ts";
 
-let _TRANSLATIONS: Record<string, Translations> = {};
-let _translationsLoaded = false;
+const _TRANSLATIONS: TranslationTable = TRANSLATIONS;
 
-function loadTranslationsSync(): Record<string, Translations> {
-	if (_translationsLoaded) return _TRANSLATIONS;
-	try {
-		// Prefer a named export `TRANSLATIONS`, fall back to module default.
-		// Resolve the translations module deterministically for Node-like
-		// runtimes. In ESM-only/edge runtimes `require` may be unavailable;
-		// in that case we leave the map empty and rely on build-time wiring.
-		let mod: unknown = {};
-		try {
-			if (typeof require === "function") {
-				try {
-					mod = require("./translations");
-				} catch {
-					try {
-						mod = require("./translations.js");
-					} catch {
-						try {
-							mod = require("./translations.ts");
-						} catch {
-							mod = {};
-						}
-					}
-				}
-			} else {
-				mod = {};
-			}
-		} catch {
-			mod = {};
-		}
-		const m = (mod as unknown as Record<string, Translations>) || {};
-		const t1 = m.TRANSLATIONS as unknown as
-			| Record<string, Translations>
-			| undefined;
-		const t2 = m.default as unknown as Record<string, Translations> | undefined;
-		_TRANSLATIONS = (t1 ||
-			t2 ||
-			(m as unknown as Record<string, Translations>)) as Record<
-			string,
-			Translations
-		>;
-	} catch {
-		_TRANSLATIONS = {};
-	}
-	_translationsLoaded = true;
+/**
+ * The translation table.
+ *
+ * The module is a plain object in the same package, so it is imported
+ * statically. The previous loader reached for it through `require`, with a
+ * chain of fallbacks, and left the table empty on runtimes where `require` was
+ * unavailable - which silently rendered every card in English.
+ */
+function loadTranslationsSync(): TranslationTable {
 	return _TRANSLATIONS;
 }
 
@@ -66,18 +31,17 @@ export function normalizeLocaleCode(localeCode: string): string {
 
 export function getTranslations(localeCode: string): Translations {
 	const normalized = normalizeLocaleCode(localeCode);
-	const translations = loadTranslationsSync();
-	const tmap = translations as Record<string, Translations>;
-	let entry: unknown = tmap[normalized];
+	const tmap = loadTranslationsSync();
+	let entry: Translations | string | undefined = tmap[normalized];
 	if (!entry) {
 		const langOnly = normalized.split("_")[0] ?? "en";
 		entry = tmap[langOnly];
 	}
 	if (typeof entry === "string") {
-		entry = tmap[String(entry)];
+		entry = tmap[entry];
 	}
-	const en = tmap.en || {};
-	const fallback = (entry as Record<string, string>) || {};
+	const en = (typeof tmap.en === "object" ? tmap.en : {}) as Translations;
+	const fallback = (typeof entry === "object" ? entry : {}) as Translations;
 	// fill missing keys from English
 	return Object.assign({}, en, fallback) as Translations;
 }
@@ -118,9 +82,7 @@ export function getExcludingDaysText(
 	return template.replace("{days}", daysCommaSeparated);
 }
 
-export function normalizeThemeName(theme: string): string {
-	return theme.toLowerCase().replace(/_/g, "-");
-}
+export { normalizeThemeName } from "../../lib/theme-helpers.ts";
 
 export function convertHexColor(hex: string): {
 	color: string;

@@ -38,9 +38,8 @@ function tsFiles(dir: string): string[] {
 function resolvable(fromFile: string, spec: string): boolean {
 	const base = resolve(dirname(fromFile), spec);
 	// A specifier with an extension may point at a real file of that name
-	// (plain-JS runtime modules, e.g. lib/canonical/*.js) or at a `.ts`
-	// source in-repo (the dominant convention). Accept either, plus the
-	// extensionless and directory-index forms.
+	// or at a `.ts` source in-repo (the dominant convention). Accept either,
+	// plus the extensionless and directory-index forms.
 	const asTs = base.replace(/\.js$/, ".ts");
 	const candidates = [
 		base,

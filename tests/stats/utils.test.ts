@@ -53,8 +53,8 @@ describe("Test utils.js", () => {
 		const msgEl = document.querySelector('[data-testid="message"]');
 		expect(msgEl).toBeTruthy();
 		const children = msgEl?.children ?? [];
-		expect(children[0].textContent).toMatch(/Something went wrong/i);
-		expect(children[1].textContent).toBe("");
+		expect(children[0]?.textContent).toMatch(/Something went wrong/i);
+		expect(children[1]?.textContent).toBe("");
 
 		// Secondary message
 		document.body.innerHTML = renderError({
@@ -63,7 +63,7 @@ describe("Test utils.js", () => {
 		});
 		const msgEl2 = document.querySelector('[data-testid="message"]');
 		const children2 = msgEl2?.children ?? [];
-		expect(children2[1].textContent).toMatch(/Secondary Message/i);
+		expect(children2[1]?.textContent).toMatch(/Secondary Message/i);
 	});
 
 	it("getCardColors: should return expected values", () => {
@@ -212,6 +212,6 @@ describe("wrapTextMultiline", () => {
 			"专门为刚开始刷题的同学准备的算法基地，没有最细只有更细，立志用动画将晦涩难懂的算法说的通俗易懂！",
 		);
 		expect(multiLineText.length).toEqual(3);
-		expect(multiLineText[0].length).toEqual(18 * 8); // &#xxxxx; x 8
+		expect(multiLineText[0]?.length).toEqual(18 * 8); // &#xxxxx; x 8
 	});
 });
