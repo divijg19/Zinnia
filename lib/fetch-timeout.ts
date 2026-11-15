@@ -5,10 +5,10 @@
 // cycles. On timeout the fetch rejects with `Error("fetch-timeout")` so
 // callers can distinguish an abort from other network failures.
 //
-// NOTE: timeouts fail fast by design. On Hobby-tier functions (~10s
-// budget) rotating through N tokens × timeout would exceed the platform
-// limit, so callers must surface the error response immediately instead
-// of retrying other tokens.
+// NOTE: timeouts fail fast by design. Rotating through N tokens × timeout
+// would exceed the budget a response has to answer in - ten seconds, the
+// limit GitHub's image proxy waits for an origin image - so callers surface
+// the error response immediately instead of retrying other tokens.
 
 /**
  * The default budget for one outbound request.

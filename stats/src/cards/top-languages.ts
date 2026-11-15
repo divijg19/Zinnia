@@ -1,5 +1,5 @@
 // Canonical TypeScript implementation of the Top Languages card.
-// Tests previously imported the JS version; a thin JS shim now re-exports this file.
+// The tests import this file directly.
 // This file contains the full logic including all layouts (normal, compact, donut, donut-vertical, pie).
 import { Card } from "../common/Card.js";
 import { createProgressNode } from "../common/createProgressNode.js";

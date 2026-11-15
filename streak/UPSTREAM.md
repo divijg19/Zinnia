@@ -5,7 +5,8 @@ Notes:
 
 - Ported from PHP to TypeScript in this monorepo (`streak/CHANGELOG.md`).
 - Original project renders server-side via PHP; our renderer is TS (`src/card.ts`, `src/index.ts`) with PNG conversion via `sharp` and an SVG fallback.
-- Local changes: `api/streak.ts` route, Upstash/file response cache, always-200 + ETag contract, canonical theme registry (`lib/themes/registry.ts`).
+- Local changes: `api/streak.ts` route (which now owns the renderer loader), Upstash/file response cache, always-200 + ETag contract, canonical theme registry (`lib/themes/registry.ts`).
+- `src/loader.ts` was not ported: the renderer loader moved into the route, and the fallback card it carried is `lib/canonical/fallback-card.ts`.
 
 Sync strategy:
 
