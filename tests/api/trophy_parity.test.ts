@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
+import { mockCardModuleFactory, restoreMocks } from "../_mockHelpers";
 import { makeReq, makeRes } from "../_testShim";
 
 /** Local renderer behind the loader mock (skips the compiled path). */
@@ -28,7 +28,7 @@ describe("trophy username + empty-body parity", () => {
 
 	it("accepts ?user= like the other routes", async () => {
 		vi.resetModules();
-		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		vi.doMock("../../lib/canonical/http_cache.js", mockCardModuleFactory());
 		mockLocalRenderer(async () => "<svg>OK</svg>");
 
 		const trophy = (await import("../../api/trophy.js")).default;
@@ -45,7 +45,7 @@ describe("trophy username + empty-body parity", () => {
 
 	it("sends an error SVG instead of an empty body", async () => {
 		vi.resetModules();
-		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		vi.doMock("../../lib/canonical/http_cache.js", mockCardModuleFactory());
 		mockLocalRenderer(async () => "");
 
 		const trophy = (await import("../../api/trophy.js")).default;

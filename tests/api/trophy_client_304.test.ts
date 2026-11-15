@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
+import { mockCardModuleFactory, restoreMocks } from "../_mockHelpers";
 import {
 	makeFetchResolved,
 	makeReq,
@@ -18,8 +18,8 @@ describe("Trophy handler always-200 + ETag on If-None-Match", () => {
 		const etag = cachedBody.slice(0, 16);
 		vi.resetModules();
 		vi.doMock(
-			"../../api/_utils",
-			mockApiUtilsFactory({ readMeta: { body: cachedBody, etag } }),
+			"../../lib/canonical/http_cache.js",
+			mockCardModuleFactory({ readMeta: { body: cachedBody, etag } }),
 		);
 		// upstream returns 304 Not Modified
 		setGlobalFetchMock(

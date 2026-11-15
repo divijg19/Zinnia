@@ -1,12 +1,64 @@
 import { describe, expect, it } from "vitest";
 import { themes } from "../../../lib/themes";
 import { toLeetCodeTheme } from "../../../lib/themes/adapters/leetcode";
+import { toStatsTheme } from "../../../lib/themes/adapters/stats";
+import {
+	streakThemes,
+	toStreakTheme,
+} from "../../../lib/themes/adapters/streak";
+import { toTrophyTheme } from "../../../lib/themes/adapters/trophy";
+import { themes as legacyStatsThemes } from "../../../stats/themes/index.js";
+import { COLORS as legacyTrophyThemes } from "../../../trophy/src/theme";
 import { required } from "../../_testShim";
 
-// Historical palettes captured verbatim from the removed legacy fixture
-// modules (leetcode/packages/core/src/theme/*.ts completed by _theme.ts).
-// The dump was cross-checked against the fixtures before deletion, so these
-// literals are the parity proof, not a snapshot of current behavior.
+/**
+ * The theme adapters, and the legacy tables they have to reproduce.
+ *
+ * The adapters are the single place a canonical theme becomes a card's
+ * options, so the parity with the historical tables is the contract: a
+ * change that moves a colour is a change to every card.
+ */
+
+/**
+ * The adapters that have a whole legacy table to reproduce, and how each one
+ * is compared with it.
+ */
+const LEGACY_PARITY = [
+	{
+		name: "trophy",
+		adapt: (theme: (typeof themes)[string]) => toTrophyTheme(theme),
+		legacy: legacyTrophyThemes as Record<string, unknown>,
+	},
+];
+
+describe("the theme adapters reproduce their legacy tables", () => {
+	for (const adapter of LEGACY_PARITY) {
+		it(`${adapter.name}: every legacy theme, exactly`, () => {
+			for (const [name, legacyTheme] of Object.entries(adapter.legacy)) {
+				const registryTheme = themes[name];
+				expect(
+					registryTheme,
+					`theme '${name}' present in the canonical registry`,
+				).toBeDefined();
+				const adapted = adapter.adapt(required(registryTheme, `theme ${name}`));
+				expect(adapted, name).toEqual(legacyTheme);
+			}
+		});
+	}
+
+	it("streak: every streak theme in the canonical registry, exactly", () => {
+		for (const [name, legacyTheme] of Object.entries(streakThemes())) {
+			const registryTheme = themes[name];
+			expect(
+				registryTheme,
+				`theme '${name}' present in registry`,
+			).toBeDefined();
+			const adapted = toStreakTheme(required(registryTheme, `theme ${name}`));
+			expect(adapted).toEqual(legacyTheme);
+		}
+	});
+});
+
 const expectedThemes: Record<
 	string,
 	{ palette: { bg: string[]; text: string[]; color: string[] }; css: string }
@@ -212,5 +264,138 @@ describe("lib/themes/adapters/leetcode", () => {
 				);
 			}
 		}
+	});
+});
+
+describe("lib/themes/adapters/stats", () => {
+	it("exposes every stats theme in the canonical registry", () => {
+		expect(Object.keys(themes).length).toBeGreaterThanOrEqual(76);
+	});
+
+	it("maps `default` fully (all present properties)", () => {
+		expect(toStatsTheme(required(themes.default))).toEqual({
+			title_color: "2f80ed",
+			icon_color: "4c71f2",
+			text_color: "434d58",
+			bg_color: "fffefe",
+			border_color: "e4e2e2",
+			ring_color: undefined,
+		});
+	});
+
+	it("maps `dark` with border falling back to `default`", () => {
+		expect(toStatsTheme(required(themes.dark))).toEqual({
+			title_color: "fff",
+			icon_color: "79ff97",
+			text_color: "9f9f9f",
+			bg_color: "151515",
+			border_color: "e4e2e2",
+			ring_color: undefined,
+		});
+	});
+
+	it("maps `transparent` preserving the alpha/transparent bg", () => {
+		expect(toStatsTheme(required(themes.transparent))).toEqual({
+			title_color: "006AFF",
+			icon_color: "0579C3",
+			text_color: "417E87",
+			bg_color: "ffffff00",
+			border_color: "e4e2e2",
+			ring_color: undefined,
+		});
+	});
+
+	it("maps `watchdog` preserving the gradient bg token", () => {
+		expect(toStatsTheme(required(themes.watchdog))).toEqual({
+			title_color: "fe428e",
+			icon_color: "f8d847",
+			text_color: "a9fef7",
+			bg_color: "45,520806,021D4A",
+			border_color: "e4e2e2",
+			ring_color: undefined,
+		});
+	});
+
+	it("maps `gruvbox` with border falling back to `default`", () => {
+		expect(toStatsTheme(required(themes.gruvbox))).toEqual({
+			title_color: "fabd2f",
+			icon_color: "fe8019",
+			text_color: "8ec07c",
+			bg_color: "282828",
+			border_color: "e4e2e2",
+			ring_color: undefined,
+		});
+	});
+
+	it("supports an explicit custom fallback theme", () => {
+		const darkThemed = themes.dark;
+		expect(
+			toStatsTheme(required(themes.gruvbox), darkThemed).border_color,
+		).toBe(undefined);
+	});
+
+	it("reproduces every legacy stats theme exactly", () => {
+		// Token by token: the adapter derives a border colour the legacy table
+		// does not carry, so the two are not the same object.
+		const keyToToken: Record<
+			string,
+			keyof (typeof themes)["default"]["colors"]
+		> = {
+			title_color: "title",
+			icon_color: "icon",
+			text_color: "text",
+			bg_color: "background",
+			border_color: "border",
+			ring_color: "ring",
+		};
+		const rawHex = (
+			colors: (typeof themes)["default"]["colors"],
+			token: keyof (typeof themes)["default"]["colors"],
+		) => {
+			const v = colors[token];
+			if (!v || typeof v === "string") {
+				return undefined;
+			}
+			return "hex" in v ? v.hex : undefined;
+		};
+		for (const name of Object.keys(legacyStatsThemes)) {
+			const registry = themes[name];
+			if (!registry) continue;
+			for (const [key, token] of Object.entries(keyToToken)) {
+				expect(rawHex(registry.colors, token), `${name}.${key}`).toBe(
+					(
+						legacyStatsThemes as Record<
+							string,
+							Record<string, string | undefined>
+						>
+					)[name]?.[key] ?? undefined,
+				);
+			}
+		}
+	});
+
+	it("returns normalized hex values without prefixes (renderer normalizes)", () => {
+		const grad = toStatsTheme(required(themes.watchdog));
+		expect(grad.bg_color).toMatch(/,/);
+		expect(grad.bg_color).not.toMatch(/^#/);
+	});
+});
+
+describe("lib/themes/adapters/streak", () => {
+	it("derives valid streak properties for non-streak canonical themes (e.g. gruvbox)", () => {
+		const adapted = toStreakTheme(required(themes.gruvbox));
+		expect(adapted.background).toBe("#282828");
+		expect(adapted.ring).toBe("#fabd2f");
+		expect(adapted.currStreakNum).toBe("#fabd2f");
+	});
+});
+
+describe("lib/themes/adapters/trophy", () => {
+	it("derives valid trophy properties for non-trophy canonical themes (e.g. merko)", () => {
+		const adapted = toTrophyTheme(required(themes.merko));
+		expect(adapted.BACKGROUND).toBe("#0a0f0b");
+		expect(adapted.TITLE).toBe("#abd200");
+		expect(adapted.ICON_CIRCLE).toBe("#b7d364");
+		expect(adapted.TEXT).toBe("#68b587");
 	});
 });
