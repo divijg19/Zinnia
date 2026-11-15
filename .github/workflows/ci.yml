@@ -75,6 +75,28 @@ jobs:
       - name: Lint / typecheck
         run: bun run lint
 
+  embeds:
+    name: Embed manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # The manifest of the cards in the profile README has to match the
+      # README itself. A card that is embedded but not in the manifest is
+      # never warmed, so it falls back to the cold path - and the cold path
+      # is the one that can outlast an embedder. The script needs no
+      # dependencies, so there is nothing to install.
+      - name: Check the manifest against the profile README
+        run: bun scripts/check-profile-embeds.ts
+
   build:
     name: Build shards
     runs-on: ubuntu-latest
