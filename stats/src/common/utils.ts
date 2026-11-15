@@ -1,8 +1,10 @@
 // NOTE: relative imports use explicit file specifiers — Vercel runs
 // compiled output as plain Node ESM, which rejects bare directory
 // imports (ERR_UNSUPPORTED_DIR_IMPORT).
+
 import { createRequire } from "node:module";
 import {
+	DEFAULT_FETCH_TIMEOUT_MS,
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../../lib/fetch-timeout.js";
@@ -157,7 +159,7 @@ export const request = (
 	headers: Record<string, string>,
 	timeoutMs: number = resolveTimeoutMs(
 		process.env.STATS_GRAPHQL_TIMEOUT_MS,
-		8000,
+		DEFAULT_FETCH_TIMEOUT_MS,
 	),
 ) => {
 	// Bounded so a hung socket fails fast into the retryer/error path

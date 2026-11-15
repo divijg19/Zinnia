@@ -1,4 +1,5 @@
 import {
+	DEFAULT_FETCH_TIMEOUT_MS,
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../../lib/fetch-timeout.js";
@@ -31,7 +32,10 @@ export async function requestGithubData<T = unknown>(
 				headers,
 				body: JSON.stringify({ query, variables }),
 			},
-			resolveTimeoutMs(process.env.TROPHY_GRAPHQL_TIMEOUT_MS, 8000),
+			resolveTimeoutMs(
+				process.env.TROPHY_GRAPHQL_TIMEOUT_MS,
+				DEFAULT_FETCH_TIMEOUT_MS,
+			),
 		);
 	} catch (err: any) {
 		// Network / DNS / Abort (including fetch-timeout)

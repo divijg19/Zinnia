@@ -1,4 +1,5 @@
 import {
+	DEFAULT_FETCH_TIMEOUT_MS,
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../../../../lib/fetch-timeout.js";
@@ -23,7 +24,10 @@ export class LeetCode {
 				},
 				body: JSON.stringify({ query, variables }),
 			},
-			resolveTimeoutMs(process.env.LEETCODE_GRAPHQL_TIMEOUT_MS, 8000),
+			resolveTimeoutMs(
+				process.env.LEETCODE_GRAPHQL_TIMEOUT_MS,
+				DEFAULT_FETCH_TIMEOUT_MS,
+			),
 		);
 		if (!res.ok) {
 			throw new Error(`LeetCode GraphQL failed: ${res.status}`);

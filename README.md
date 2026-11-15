@@ -71,9 +71,33 @@ Two render budgets, because they answer different questions:
 | Budget               | Default | Applies when                | Why                                                                             |
 | -------------------- | ------- | --------------------------- | ------------------------------------------------------------------------------- |
 | `RENDER_DEADLINE_MS` | 3500ms  | a previous render is cached | latency choice: at the budget a stale card can be served immediately            |
-| `RENDER_CEILING_MS`  | 8500ms  | nothing is cached           | the real card is the only good answer, so an error card would be strictly worse |
+| `RENDER_CEILING_MS`  | 7000ms  | nothing is cached           | the real card is the only good answer, so an error card would be strictly worse |
 
-The ceiling sits above the longest outbound fetch (8000ms by default), so it only fires after the upstream has already given up, and below Camo's 10s limit. A single shared budget got this wrong: at 3500ms roughly a quarter of cold stats renders - measured 2.7-6.3s - returned an error card instead of a card.
+The budget is a contract with the embedder about the **whole response**, not just
+the render: the time already spent - the render cache lookup, the PAT bootstrap
+
+- is subtracted from it, and the platform's own overhead sits in front of all of
+  it. The arithmetic, measured against the live deployment:
+
+| Part                                                | Measured   |
+| --------------------------------------------------- | ---------- |
+| Camo's origin fetch timeout (`CAMO_SOCKET_TIMEOUT`) | 10s        |
+| platform overhead (cold start, routing)             | 0.4-1.4s   |
+| our budget (`RENDER_CEILING_MS`)                    | 7.0s       |
+| a cold stats render, end to end                     | 5.5-6.6s   |
+| a cache hit, end to end                             | 0.44-0.54s |
+
+7.0s of budget plus the platform's 1.4s worst case puts the response at 8.4s,
+inside Camo's window with room for its own fetch. The previous 8500ms ceiling
+could reach 9.9s - past the limit, where the answer is a 404 and a broken
+image rather than a card.
+
+The ceiling also sits above the outbound fetch budget (`DEFAULT_FETCH_TIMEOUT_MS`,
+6000ms), so a hung upstream gives up inside the ceiling and produces the error
+card at a known time, rather than the deadline firing on a producer that was
+still waiting on a socket. A single shared budget got this wrong: at 3500ms
+roughly a quarter of cold stats renders returned an error card instead of a
+card.
 
 - `?debug=` and `?cache=` are excluded from the cache key, along with `_`-prefixed params: they select a response mode or a TTL rather than a different card. Underscore params also let `embed:smoke --cold` probe a CDN miss without evicting the card.
 - Concurrent requests for the same card share one render. Five cards on one README page share a TTL, so they expire together; without coalescing that is five simultaneous GitHub API calls.
@@ -108,9 +132,9 @@ Full matrix with defaults lives in `.env.example`. The short version:
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tokens       | `PAT_1` through `PAT_5`, or a single `GITHUB_TOKEN` seed                                                                                                                        |
 | KV           | `UPSTASH_REST_URL` + `UPSTASH_REST_TOKEN` (or `UPSTASH_PREFIX` variants), `PAT_STORE_NAMESPACE`, `REDIS_URL` — also backs the render cache                                      |
-| Render cache | `RENDER_CACHE` (`0` disables), `RENDER_DEADLINE_MS` (default 3500)                                                                                                              |
+| Render cache | `RENDER_CACHE` (`0` disables), `RENDER_DEADLINE_MS` (default 3500), `RENDER_CEILING_MS` (default 7000)                                                                          |
 | Cache TTLs   | `CACHE_SECONDS` + 6 service overrides (see above)                                                                                                                               |
-| Timeouts     | `STATS_GRAPHQL_TIMEOUT_MS`, `STATS_REST_TIMEOUT_MS`, `STREAK_FETCH_TIMEOUT_MS`, `TROPHY_GRAPHQL_TIMEOUT_MS`, `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 8000ms; KV fixed at 5000ms) |
+| Timeouts     | `STATS_GRAPHQL_TIMEOUT_MS`, `STATS_REST_TIMEOUT_MS`, `STREAK_FETCH_TIMEOUT_MS`, `TROPHY_GRAPHQL_TIMEOUT_MS`, `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 6000ms; KV fixed at 5000ms) |
 | File cache   | `CACHE_DIR`, `TROPHY_CACHE_DIR`, `STREAK_CACHE_DIR` (best-effort, off unless set)                                                                                               |
 
 ## Auth / PAT rotation

@@ -10,7 +10,17 @@
 // limit, so callers must surface the error response immediately instead
 // of retrying other tokens.
 
-export const DEFAULT_FETCH_TIMEOUT_MS = 8000;
+/**
+ * The default budget for one outbound request.
+ *
+ * It sits below the render ceiling (`RENDER_CEILING_MS`) on purpose: a
+ * producer that is still waiting on a socket when the ceiling fires has
+ * already lost the race, and the error it produces is what the embedder sees.
+ * Failing here instead turns a hung upstream into an error card at a known
+ * time, rather than a response that arrives after the embedder stopped
+ * waiting.
+ */
+export const DEFAULT_FETCH_TIMEOUT_MS = 6000;
 
 /** Parse an env-provided timeout; fall back on missing/invalid values. */
 export function resolveTimeoutMs(

@@ -1,4 +1,5 @@
 import {
+	DEFAULT_FETCH_TIMEOUT_MS,
 	fetchWithTimeout,
 	resolveTimeoutMs,
 } from "../../../lib/fetch-timeout.js";
@@ -231,7 +232,10 @@ const totalCommitsFetcher = async (username: string): Promise<number> => {
 				method: "get",
 				headers,
 			},
-			resolveTimeoutMs(process.env.STATS_REST_TIMEOUT_MS, 8000),
+			resolveTimeoutMs(
+				process.env.STATS_REST_TIMEOUT_MS,
+				DEFAULT_FETCH_TIMEOUT_MS,
+			),
 		).then((res) =>
 			res.json().then((responseData) => ({
 				data: responseData,

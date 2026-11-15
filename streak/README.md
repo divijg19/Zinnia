@@ -8,7 +8,7 @@ Ported from [DenverCoder1/github-readme-streak-stats](https://github.com/DenverC
 
 `/api/streak?username=…` serves `api/streak.ts`, which calls `fetchContributions` and `generateOutput` from `src/index.ts`. `?user=` is accepted as an alias for `?username=`.
 
-Data comes from the GitHub GraphQL API when a `PAT_*` is configured, with a public-contributions scrape as the fallback. `STREAK_FETCH_TIMEOUT_MS` bounds both (default 8000ms). Responses are cached under `STREAK_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
+Data comes from the GitHub GraphQL API when a `PAT_*` is configured, with a public-contributions scrape as the fallback. `STREAK_FETCH_TIMEOUT_MS` bounds both (default 6000ms). Responses are cached under `STREAK_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
 
 ## Parameters
 
