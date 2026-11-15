@@ -25,26 +25,16 @@ const IN_MEMORY: Cache = (() => {
 	};
 })();
 
-// Shared Upstash REST primitives (single implementation in lib/kv).
-import { findEnv, upstashCall } from "../../lib/kv/upstash.js";
+// The KV primitives and the endpoint resolution are shared with every other
+// KV consumer (lib/kv), so the render cache and the contribution cache cannot
+// end up pointed at different buckets by a name only one of them knows.
+import { resolveKvCredentials } from "../../lib/kv/credentials.js";
+import { upstashCall } from "../../lib/kv/upstash.js";
 
 async function createUpstashCache(): Promise<Cache | null> {
-	const prefix = (process.env.UPSTASH_PREFIX || "UPSTASH").toUpperCase();
-	const url =
-		findEnv(
-			`${prefix}_KV_REST_API_URL`,
-			`${prefix}_REST_URL`,
-			"UPSTASH_REST_URL",
-			"ZINNIA_KV_REST_API_URL",
-		) || undefined;
-	const token =
-		findEnv(
-			`${prefix}_KV_REST_API_TOKEN`,
-			`${prefix}_REST_TOKEN`,
-			"UPSTASH_REST_TOKEN",
-			"ZINNIA_KV_REST_API_TOKEN",
-		) || undefined;
-	if (!url || !token) return null;
+	const creds = resolveKvCredentials();
+	if (!creds) return null;
+	const { url, token } = creds;
 	return {
 		get: async (key: string) => {
 			try {
