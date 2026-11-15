@@ -11,6 +11,7 @@ import {
 	markCacheStatus,
 	RENDER_CEILING_MS,
 	RENDER_DEADLINE_MS,
+	remainingRenderBudget,
 	renderBudgetMs,
 	renderCacheKey,
 	renderWithFallback,
@@ -143,6 +144,31 @@ describe("renderBudgetMs", () => {
 		// embed, which is the failure this whole cache exists to prevent.
 		expect(RENDER_CEILING_MS).toBeLessThan(10_000);
 		expect(RENDER_DEADLINE_MS).toBeLessThan(RENDER_CEILING_MS);
+	});
+
+	it("leaves room for the platform overhead behind the response", () => {
+		// The platform's own overhead - cold start, routing - is invisible to
+		// the handler and measured 0.4-1.4s on the no-work health route. The
+		// budget has to fit under Camo's window with that margin, or the
+		// response can arrive after the embedder stopped waiting.
+		expect(RENDER_CEILING_MS).toBeLessThanOrEqual(10_000 - 1500);
+	});
+
+	it("subtracts the time the request already spent from the budget", () => {
+		// The budget is a contract with the embedder about the whole response,
+		// so the cache lookup and the PAT bootstrap count against it.
+		const started = Date.now();
+		expect(remainingRenderBudget(started, true)).toBeLessThanOrEqual(
+			RENDER_DEADLINE_MS,
+		);
+		expect(remainingRenderBudget(started - 500, true)).toBeLessThan(
+			RENDER_DEADLINE_MS,
+		);
+	});
+
+	it("gives a request that already overran its budget no time at all", () => {
+		expect(remainingRenderBudget(Date.now() - 60_000, true)).toBe(0);
+		expect(remainingRenderBudget(Date.now() - 60_000, false)).toBe(0);
 	});
 
 	it("is overridable per deployment and ignores garbage values", () => {

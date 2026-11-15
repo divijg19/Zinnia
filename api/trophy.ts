@@ -22,6 +22,7 @@ import { filterThemeParam, getUsername, safeUrl } from "../lib/params.js";
 import {
 	getCachedRender,
 	markCacheStatus,
+	remainingRenderBudget,
 	renderCacheKey,
 	renderWithFallback,
 	ttlForOutcome,
@@ -327,6 +328,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			cacheKey,
 			freshSeconds: cacheSeconds,
 			cached,
+			// The budget bounds the whole response, so the time already spent
+			// counts against it.
+			deadlineMs: remainingRenderBudget(t0, Boolean(cached)),
 			produce: async () => {
 				const compiled = await renderWithCompiledHandler(req, url);
 				if (compiled) return compiled;

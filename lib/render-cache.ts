@@ -313,14 +313,28 @@ export const RENDER_DEADLINE_MS = 3500;
  * Budget when there is nothing cached, so the real card is the only good answer
  * and an error card would be strictly worse.
  *
- * Chosen to sit above the longest outbound fetch budget (`resolveTimeoutMs`
- * defaults to 8000ms) and below GitHub Camo's 10s origin fetch timeout: the
- * ceiling therefore only ever fires after the upstream has already given up,
- * and the response still reaches an embedder inside its window. Measured cold
- * stats fetches run 2.7-6.3s, which a single 3500ms budget truncated - roughly
- * a quarter of cold renders returned an error card instead.
+ * The number is the whole point of the embed contract, so here is the
+ * arithmetic, measured against the live deployment:
+ *
+ * - GitHub Camo fetches an origin image with a ten second socket timeout
+ *   (`CAMO_SOCKET_TIMEOUT`) and does not cache a failure, so a response that
+ *   arrives after that is a broken image, not a slow card.
+ * - The platform's own overhead - cold start, routing - is invisible to us and
+ *   measured 0.4-1.4s on the no-work health route.
+ * - A cold render of the stats card measured 5.5-6.6s end to end; a cache hit
+ *   answers in 0.44-0.54s.
+ *
+ * 7000ms of budget plus the platform's 1.4s worst case leaves the response at
+ * 8.4s, which is inside Camo's window with room for its own fetch and
+ * processing. The previous 8500ms could reach 9.9s - past the limit, where
+ * the answer is a 404 and a broken image rather than a card.
+ *
+ * It also sits above the outbound fetch budget (`DEFAULT_FETCH_TIMEOUT_MS`,
+ * 6000ms), so a hung upstream gives up inside the ceiling and produces the
+ * error card at a known time, rather than the deadline firing on a producer
+ * that was still waiting on a socket.
  */
-export const RENDER_CEILING_MS = 8500;
+export const RENDER_CEILING_MS = 7000;
 
 /**
  * Budget for one render. See the two constants for why they differ.
@@ -336,6 +350,25 @@ export function renderBudgetMs(hasCachedBody: boolean): number {
 			: process.env.RENDER_CEILING_MS,
 		hasCachedBody ? RENDER_DEADLINE_MS : RENDER_CEILING_MS,
 	);
+}
+
+/**
+ * The render budget minus the time the request has already spent.
+ *
+ * The budget is a contract with the embedder: the *response* has to arrive
+ * inside Camo's window, not just the render. A handler that has already spent
+ * time - the render cache lookup is a KV read with its own budget - must
+ * render into what is left, or the total overruns.
+ *
+ * @param startedAt when the handler began, in epoch milliseconds
+ * @param hasCachedBody whether a previous render is available to fall back on
+ */
+export function remainingRenderBudget(
+	startedAt: number,
+	hasCachedBody: boolean,
+): number {
+	const spent = Date.now() - startedAt;
+	return Math.max(0, renderBudgetMs(hasCachedBody) - spent);
 }
 
 /**

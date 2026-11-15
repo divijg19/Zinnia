@@ -15,7 +15,7 @@ import { getUsername, safeUrl } from "../lib/params.js";
 import {
 	getCachedRender,
 	markCacheStatus,
-	renderBudgetMs,
+	remainingRenderBudget,
 	renderCacheKey,
 	STALE_SERVE_SECONDS,
 	setCachedRender,
@@ -539,7 +539,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		// waiting for the response.
 		const deadline = withDeadline(
 			produceStreak(req, recorder.res, url, user),
-			renderBudgetMs(Boolean(cached)),
+			// The budget bounds the whole response, so the time already spent
+			// - the render cache lookup - counts against it.
+			remainingRenderBudget(t0, Boolean(cached)),
 		);
 		let produced = false;
 		try {

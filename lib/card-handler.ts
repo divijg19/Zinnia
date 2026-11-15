@@ -22,6 +22,7 @@ import {
 import {
 	getCachedRender,
 	markCacheStatus,
+	remainingRenderBudget,
 	renderCacheKey,
 	renderWithFallback,
 	STALE_SERVE_SECONDS,
@@ -162,6 +163,10 @@ export function createCardHandler(
 					freshSeconds: cacheSeconds,
 					// Read once above, to survive a missing PAT; reused here.
 					cached,
+					// The budget bounds the whole response, so the time already
+					// spent - the cache lookup, the PAT bootstrap - counts
+					// against it.
+					deadlineMs: remainingRenderBudget(t0, Boolean(cached)),
 					produce: async () => {
 						const tFetch0 = Date.now();
 						const data = await cfg.fetchData(target, url);

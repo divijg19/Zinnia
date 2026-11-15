@@ -8,7 +8,7 @@ Vendored from [JacobLinCool/LeetCode-Stats-Card](https://github.com/JacobLinCool
 
 `/api/leetcode?username=…` serves `api/leetcode.ts`, which calls `Generator` in `packages/core/src/card.ts`.
 
-The US site is the default: `site` defaults to `us`, and `cn` is only partially supported by some extensions. Fetches are bounded by `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 8000ms). Responses are cached under `LEETCODE_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
+The US site is the default: `site` defaults to `us`, and `cn` is only partially supported by some extensions. Fetches are bounded by `LEETCODE_GRAPHQL_TIMEOUT_MS` (default 6000ms). Responses are cached under `LEETCODE_CACHE_SECONDS` (fallback `86400`) and follow the always-200 plus ETag contract.
 
 ## Parameters
 
