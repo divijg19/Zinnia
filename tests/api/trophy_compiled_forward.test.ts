@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockApiUtilsFactory, restoreMocks } from "../_mockHelpers";
+import { mockCardModuleFactory, restoreMocks } from "../_mockHelpers";
 import { makeReq, makeRes } from "../_testShim";
 
 /**
@@ -76,7 +76,7 @@ describe("trophy compiled-handler path follows the embed contract", () => {
 	it("sends 200 + full body + our cache headers for a stale upstream response", async () => {
 		const compiledBody = "<svg>COMPILED-TROPHY</svg>";
 		vi.resetModules();
-		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		vi.doMock("../../lib/canonical/http_cache.js", mockCardModuleFactory());
 		mockCompiledTrophy(
 			() =>
 				new Response(compiledBody, {
@@ -113,7 +113,7 @@ describe("trophy compiled-handler path follows the embed contract", () => {
 
 	it("falls through to the local renderer on an empty upstream body", async () => {
 		vi.resetModules();
-		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		vi.doMock("../../lib/canonical/http_cache.js", mockCardModuleFactory());
 		mockCompiledTrophy(() => new Response(null, { status: 304 }));
 
 		const trophy = (await import("../../api/trophy.js")).default;
@@ -138,7 +138,7 @@ describe("trophy compiled-handler path follows the embed contract", () => {
 		// response, such a handler would write a body directly and the route
 		// would *also* fall through to the local renderer, sending twice.
 		vi.resetModules();
-		vi.doMock("../../api/_utils", mockApiUtilsFactory());
+		vi.doMock("../../lib/canonical/http_cache.js", mockCardModuleFactory());
 		mockCompiledTrophyWithRealInvoker((_req: unknown, res: unknown) => {
 			(res as { send: (body: string) => unknown }).send(
 				"<svg>WROTE-DIRECTLY</svg>",

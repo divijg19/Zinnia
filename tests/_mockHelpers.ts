@@ -1,8 +1,27 @@
 import { vi } from "vitest";
+// The real module, imported eagerly so the mock factory can be synchronous:
+// `vi.doMock` checks what its factory returns before awaiting it.
+import * as canonicalCardModule from "../lib/canonical/http_cache.js";
 
-/** Test helpers: mock the `api/_utils` factory and the `lib/cache` shim. */
+/**
+ * Test helpers: mock the cache layer and the canonical card module.
+ */
 
-export function mockApiUtilsFactory({
+/**
+ * Mock the canonical card module for a route test.
+ *
+ * The module keeps its real behaviour - the header contract, the theme
+ * filter, the response helpers - because that behaviour is what the route is
+ * supposed to produce. Only the two things a test cannot control are stubbed:
+ * the etag, so it is deterministic, and the cache adapter, so nothing is
+ * read from or written to the filesystem.
+ *
+ * The previous version of this helper re-implemented the module's surface by
+ * hand, which meant the mock could drift from the implementation it stood in
+ * for: a change to the real `Cache-Control` would have left the mock
+ * emitting the old one, and the tests would have passed.
+ */
+export function mockCardModuleFactory({
 	readBody = null,
 	readMeta = null,
 	writeSpy = undefined,
@@ -23,11 +42,7 @@ export function mockApiUtilsFactory({
 	);
 
 	return () => {
-		const allowedThemes = new Set(["watchdog", "light", "dark", "onedark"]);
-		// Mock `lib/cache` defensively: it is the filesystem layer under
-		// lib/canonical/http_cache, so a test that mocks only `api/_utils`
-		// still needs cache reads/writes stubbed. No handler imports it
-		// directly today; keep this in sync with the real module's surface.
+		// The filesystem layer under the canonical module.
 		const cacheMock = () => ({
 			computeEtag: (b: string) => computeEtag(b),
 			readCacheWithMeta: readMetaImpl,
@@ -39,136 +54,13 @@ export function mockApiUtilsFactory({
 		vi.doMock("../../lib/cache.js", cacheMock);
 
 		return {
+			...canonicalCardModule,
+			default: canonicalCardModule.default,
 			computeEtag: (b: string) => computeEtag(b),
-			isValidUsername: (username: string | null | undefined) => {
-				if (!username) return false;
-				return /^[A-Za-z0-9-]{1,39}$/.test(String(username));
-			},
-			getUsername: (url: URL, keys: string[] = ["username", "user"]) => {
-				for (const k of keys) {
-					const v = (url as unknown as URL).searchParams.get(k);
-					if (v && /^[A-Za-z0-9-]{1,39}$/.test(v)) return v;
-				}
-				return null;
-			},
-			ALLOWED_THEMES: allowedThemes,
-			filterThemeParam: (url: URL, key = "theme") => {
-				const raw = (url as unknown as URL).searchParams.get(key);
-				if (!raw) return;
-				const value = String(raw).trim().toLowerCase();
-				if (!allowedThemes.has(value) && !value.includes(",")) {
-					(url as unknown as URL).searchParams.delete(key);
-				}
-			},
-			resolveCacheSeconds: () => 86400,
-			setCacheHeaders: (res: any, seconds: number) => {
-				try {
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=86400, stale-if-error=86400`,
-					);
-				} catch (_e) {
-					// ignore
-				}
-			},
-			setSvgHeaders: (res: any) => {
-				try {
-					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-					res.setHeader("X-Content-Type-Options", "nosniff");
-					res.setHeader("Vary", "Accept-Encoding");
-				} catch (_e) {
-					// ignore
-				}
-			},
-			setShortCacheHeaders: (
-				res: any,
-				seconds = 60,
-				cacheStatus = "transient",
-			) => {
-				try {
-					const s = Math.max(0, Math.min(seconds, 3600));
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
-					);
-					res.setHeader("X-Cache-Status", cacheStatus);
-				} catch (_e) {
-					// ignore
-				}
-			},
-			setFallbackCacheHeaders: (res: any, seconds: number) => {
-				try {
-					const s = Math.max(60, Math.min(seconds, 3600));
-					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
-					);
-					res.setHeader("X-Cache-Status", "fallback");
-				} catch (_e) {
-					// ignore
-				}
-			},
-			setEtagAndAlwaysSend200: (res: any, body: string) => {
-				const etag = computeEtag(body);
-				try {
-					res.setHeader("ETag", `"${etag}"`);
-				} catch (_e) {
-					// ignore
-				}
-			},
-			sendSuccessSvg: (res: any, body: string, seconds: number) => {
-				try {
-					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${seconds}, s-maxage=${seconds}, stale-while-revalidate=86400, stale-if-error=86400`,
-					);
-					res.setHeader("ETag", `"${computeEtag(body)}"`);
-					res.status(200);
-				} catch (_e) {
-					// ignore
-				}
-				return res.send(body);
-			},
-			sendShortSvg: (
-				res: any,
-				body: string,
-				seconds = 60,
-				cacheStatus = "transient",
-			) => {
-				try {
-					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-					const s = Math.max(0, Math.min(seconds, 3600));
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=30, must-revalidate`,
-					);
-					res.setHeader("X-Cache-Status", cacheStatus);
-					res.setHeader("ETag", `"${computeEtag(body)}"`);
-					res.status(200);
-				} catch (_e) {
-					// ignore
-				}
-				return res.send(body);
-			},
-			sendFallbackSvg: (res: any, body: string, seconds: number) => {
-				try {
-					res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
-					const s = Math.max(60, Math.min(seconds, 3600));
-					const swr = Math.min(86400, Math.max(60, Math.floor(s / 2)));
-					res.setHeader(
-						"Cache-Control",
-						`public, max-age=${s}, s-maxage=${s}, stale-while-revalidate=${swr}`,
-					);
-					res.setHeader("X-Cache-Status", "fallback");
-					res.setHeader("ETag", `"${computeEtag(body)}"`);
-					res.status(200);
-				} catch (_e) {
-					// ignore
-				}
-				return res.send(body);
-			},
+			getCacheAdapterForService: () => ({
+				get: async () => readMetaImpl(),
+				set: async () => writeImpl(),
+			}),
 		};
 	};
 }
