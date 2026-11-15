@@ -8,8 +8,8 @@
 	"scripts": {
 		"pretest": "bun run build",
 		"build": "bash scripts/build-shards.sh",
-		"demo:build": "bun scripts/generate-demo-assets.ts && mkdir -p public/demo && cp -r demo/* public/demo/",
-		"demo:dev": "bun scripts/generate-demo-assets.ts && bunx serve demo",
+		"demo:build": "bun scripts/generate-demo-assets.ts && bun scripts/build-demo.ts",
+		"demo:dev": "bun run demo:build && bunx serve public/demo",
 		"vercel:deploy": "vercel --prod --token $VERCEL_TOKEN --yes",
 		"lint": "biome check --error-on-warnings && tsc --noEmit",
 		"format": "biome format . --write",

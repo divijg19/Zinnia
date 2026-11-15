@@ -17,6 +17,23 @@ export type { MockFn, TestRequest, TestResponse } from "./_resShim.js";
 export { headerValue, makeReq, makeRes } from "./_resShim.js";
 
 /**
+ * Query an element the test needs.
+ *
+ * A test that needs an element should fail loudly when it is missing,
+ * rather than silently skipping the assertion it was written for.
+ */
+export function requiredElement<T extends Element = HTMLElement>(
+	root: ParentNode,
+	selector: string,
+): T {
+	const found = root.querySelector<T>(selector);
+	if (!found) {
+		throw new Error(`requiredElement: no match for ${selector}`);
+	}
+	return found;
+}
+
+/**
  * Narrow a value that must be present, throwing a named error when it is not.
  *
  * The biome config forbids non-null assertions, and `expect(x).toBeDefined()`

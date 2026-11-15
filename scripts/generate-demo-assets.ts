@@ -1,13 +1,17 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { renderLeetCode } from "../demo/adapters/leetcode.js";
-import { renderStats } from "../demo/adapters/stats.js";
-import { renderStreak } from "../demo/adapters/streak.js";
-import { renderTopLangs } from "../demo/adapters/toplangs.js";
-import { renderTrophy } from "../demo/adapters/trophy.js";
+import { renderLeetCode } from "../demo/renderers/leetcode.js";
+import { renderStats } from "../demo/renderers/stats.js";
+import { renderStreak } from "../demo/renderers/streak.js";
+import { renderTopLangs } from "../demo/renderers/toplangs.js";
+import { renderTrophy } from "../demo/renderers/trophy.js";
+import type { FetchedData } from "../leetcode/packages/core/src/types.js";
 import { type ThemeDefinition, themes } from "../lib/themes/registry.ts";
+import type { StatsData, TopLangData } from "../stats/src/fetchers/types.js";
 import { normalizeThemeName } from "../streak/src/card_helpers.ts";
+import type { Stats } from "../streak/src/stats.js";
+import type { UserInfo } from "../trophy/src/user_info.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -136,19 +140,39 @@ const TOPLANGS_FIXTURE = {
 	Shell: { name: "Shell", color: "#89e051", size: 1000 },
 };
 
-const RENDERERS: Record<
-	WidgetKind,
-	(
-		def: ThemeDefinition,
-		data: unknown,
-	) => string | Buffer | Promise<string | Buffer>
-> = {
-	stats: renderStats,
-	topLangs: renderTopLangs,
-	streak: renderStreak,
-	trophy: renderTrophy,
-	leetcode: renderLeetCode,
+/** The fixture each card renders from. */
+type MockData = {
+	stats: StatsData;
+	topLangs: TopLangData;
+	streak: Stats;
+	trophy: UserInfo;
+	leetcode: FetchedData;
 };
+
+/**
+ * Render one card for one theme.
+ *
+ * A switch rather than a map of renderers: each card takes its own fixture
+ * type, and a map would have to erase that to hold them all.
+ */
+async function renderCard(
+	kind: WidgetKind,
+	theme: ThemeDefinition,
+	data: MockData,
+): Promise<string> {
+	switch (kind) {
+		case "stats":
+			return renderStats(theme, data.stats);
+		case "topLangs":
+			return renderTopLangs(theme, data.topLangs);
+		case "streak":
+			return renderStreak(theme, data.streak);
+		case "trophy":
+			return renderTrophy(theme, data.trophy);
+		case "leetcode":
+			return renderLeetCode(theme, data.leetcode);
+	}
+}
 
 function assertValidSvg(
 	svg: unknown,
@@ -163,7 +187,7 @@ function assertValidSvg(
 	}
 }
 
-const mockData: Record<WidgetKind, unknown> = {
+const mockData: MockData = {
 	stats: STATS_FIXTURE,
 	topLangs: TOPLANGS_FIXTURE,
 	streak: STREAK_FIXTURE,
@@ -209,7 +233,7 @@ try {
 		const widgets: Partial<Record<WidgetKind, WidgetAsset>> = {};
 		assets[name] = widgets;
 		for (const kind of WIDGET_KINDS) {
-			const svg = await RENDERERS[kind](def, mockData[kind]);
+			const svg = await renderCard(kind, def, mockData);
 			assertValidSvg(svg, kind, name);
 			const file = `${name}-${kind}.svg`;
 			writeFileSync(join(svgDir, file), svg);
@@ -260,9 +284,6 @@ writeFileSync(
 	JSON.stringify({ themes: themeRegistry, aliases }, null, 2),
 );
 
-writeFileSync(join(demoDir, "mock-data.json"), JSON.stringify(mockData));
-
 console.log(`Generated demo assets in ${demoDir}:`);
 console.log(`  - theme-registry.json (${themeRegistry.length} themes)`);
-console.log(`  - mock-data.json`);
 console.log(`  - SVG assets in demo/assets/`);

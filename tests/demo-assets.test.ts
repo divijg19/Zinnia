@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { renderStreak } from "../demo/adapters/streak.js";
+import { renderStreak } from "../demo/renderers/streak.js";
 import { toStreakTheme } from "../lib/themes/adapters/streak.ts";
 import { themes } from "../lib/themes/registry.ts";
 import { required } from "./_testShim";

@@ -2,7 +2,7 @@
  * Shared status/error card SVG.
  *
  * Seven call sites previously inlined this exact template (lib/errors.ts,
- * leetcode/api, streak/api, trophy/api). The card is intentionally identical
+ * leetcode/api, trophy/api). The card is intentionally identical
  * everywhere: a 600x60 dark card with the message in the title, aria-label and
  * body text. Keep it in one place so a design change cannot drift per package.
  */

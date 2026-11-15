@@ -1,20 +1,36 @@
 import { Catalog } from "./Catalog.js";
 import { Dashboard } from "./Dashboard.js";
+import type { DemoRegistry, DemoTheme } from "./types.js";
 import { initPageTheme } from "./utils/page-theme.js";
 import { ThemeSelector } from "./utils/theme-selector.js";
 import { WidgetFactory } from "./widgets/factory.js";
 
-class ThemeDemoApp {
-	constructor() {
-		this.themeRegistry = null;
-		this.assets = null;
-		this.themeSelector = null;
-		this.widgetFactory = null;
-		this.dashboard = null;
-		this.catalog = null;
-		this.currentTheme = "default";
-		this.currentTab = "dashboard";
+/** The tabs the demo page has. */
+type TabName = "dashboard" | "catalog";
+
+/**
+ * An element the page must have, or the demo cannot work.
+ *
+ * Failing here says which element is missing, instead of the app dying
+ * further down with a null dereference.
+ */
+function required<T extends Element>(id: string): T {
+	const element = document.getElementById(id);
+	if (!element) {
+		throw new Error(`demo: #${id} is missing from the page`);
 	}
+	return element as unknown as T;
+}
+
+export class ThemeDemoApp {
+	themeRegistry: DemoRegistry | null = null;
+	assets: DemoRegistry | null = null;
+	themeSelector: ThemeSelector | null = null;
+	widgetFactory: WidgetFactory | null = null;
+	dashboard: Dashboard | null = null;
+	catalog: Catalog | null = null;
+	currentTheme = "default";
+	currentTab: TabName = "dashboard";
 
 	async init() {
 		try {
@@ -33,10 +49,11 @@ class ThemeDemoApp {
 			console.log("Zinnia Theme Demo initialized");
 		} catch (error) {
 			console.error("Failed to initialize demo:", error);
+			const message = error instanceof Error ? error.message : String(error);
 			document.body.innerHTML = `
         <div style="padding: 40px; text-align: center; font-family: system-ui;">
           <h1>Failed to load demo</h1>
-          <p>${error.message}</p>
+          <p>${message}</p>
         </div>
       `;
 		}
@@ -49,17 +66,22 @@ class ThemeDemoApp {
 				`Failed to load theme-registry.json: ${registryRes.status}`,
 			);
 		}
-		const registryData = await registryRes.json();
+		const registryData = (await registryRes.json()) as DemoRegistry;
 		this.assets = registryData;
 		console.log(`Loaded ${this.assets.themes.length} themes`);
 	}
 
 	initComponents() {
-		initPageTheme(document.getElementById("page-theme-toggle"));
+		const assets = this.assets;
+		if (!assets) {
+			throw new Error("demo: the theme registry was not loaded");
+		}
+
+		initPageTheme(required<HTMLElement>("page-theme-toggle"));
 
 		this.themeSelector = new ThemeSelector(
-			document.getElementById("theme-select"),
-			this.assets.themes,
+			required<HTMLSelectElement>("theme-select"),
+			assets.themes,
 		);
 		this.themeSelector.onChange((themeName) => {
 			this.currentTheme = themeName;
@@ -67,28 +89,30 @@ class ThemeDemoApp {
 			this.renderTheme(themeName);
 		});
 
-		this.widgetFactory = new WidgetFactory(this.assets);
+		this.widgetFactory = new WidgetFactory(assets.themes);
 
 		this.dashboard = new Dashboard(
-			document.getElementById("widget-grid"),
+			required<HTMLElement>("widget-grid"),
 			this.widgetFactory,
-			this.assets.themes,
+			assets.themes,
 		);
 
 		this.catalog = new Catalog(
-			document.getElementById("catalog-list"),
+			required<HTMLElement>("catalog-list"),
 			this.widgetFactory,
-			this.assets.themes,
+			assets.themes,
 		);
 		this.catalog.onThemeChange((themeName) => {
-			this.themeSelector.setTheme(themeName);
+			this.themeSelector?.setTheme(themeName);
 		});
 
-		const searchInput = document.querySelector(".theme-search-input");
+		const searchInput = document.querySelector<HTMLInputElement>(
+			".theme-search-input",
+		);
 		if (searchInput) {
-			let debounceTimer = null;
+			let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 			searchInput.addEventListener("input", () => {
-				clearTimeout(debounceTimer);
+				if (debounceTimer) clearTimeout(debounceTimer);
 				debounceTimer = setTimeout(() => {
 					this.applyActiveFilter();
 				}, 100);
@@ -97,14 +121,15 @@ class ThemeDemoApp {
 				if (e.key !== "Enter") return;
 				this.applyActiveFilter();
 				if (this.currentTab === "catalog") {
-					this.catalog.selectFirstMatch();
+					this.catalog?.selectFirstMatch();
 				} else {
-					this.themeSelector.selectFirstMatch();
+					this.themeSelector?.selectFirstMatch();
 				}
 			});
 		}
 
-		const modifierSelect = document.querySelector(".modifier-filter");
+		const modifierSelect =
+			document.querySelector<HTMLSelectElement>(".modifier-filter");
 		if (modifierSelect) {
 			modifierSelect.addEventListener("change", () => {
 				this.applyActiveFilter();
@@ -112,39 +137,41 @@ class ThemeDemoApp {
 		}
 	}
 
-	activeFilterValues() {
-		const query = document.querySelector(".theme-search-input")?.value || "";
-		const modifier = document.querySelector(".modifier-filter")?.value || "";
+	activeFilterValues(): { query: string; modifier: string } {
+		const query =
+			document.querySelector<HTMLInputElement>(".theme-search-input")?.value ||
+			"";
+		const modifier =
+			document.querySelector<HTMLSelectElement>(".modifier-filter")?.value ||
+			"";
 		return { query, modifier };
 	}
 
 	applyActiveFilter() {
 		const { query, modifier } = this.activeFilterValues();
 		if (this.currentTab === "catalog") {
-			this.catalog.filter(query, modifier);
+			this.catalog?.filter(query, modifier);
 		} else {
-			this.themeSelector.filterThemes(query, modifier);
+			this.themeSelector?.filterThemes(query, modifier);
 		}
 	}
 
 	syncFromURL() {
 		const params = new URLSearchParams(window.location.search);
 		this.currentTheme = params.get("theme") || "default";
-		this.currentTab = params.get("tab") || "dashboard";
+		const tab = params.get("tab") || "dashboard";
+		this.currentTab = tab === "catalog" ? "catalog" : "dashboard";
 
-		if (!this.assets.themes.some((t) => t.name === this.currentTheme)) {
+		const themes: DemoTheme[] = this.assets?.themes ?? [];
+		if (!themes.some((t) => t.name === this.currentTheme)) {
 			this.currentTheme = "default";
-		}
-
-		if (!["dashboard", "catalog"].includes(this.currentTab)) {
-			this.currentTab = "dashboard";
 		}
 	}
 
 	setupURLSync() {
 		window.addEventListener("popstate", () => {
 			this.syncFromURL();
-			this.themeSelector.setTheme(this.currentTheme);
+			this.themeSelector?.setTheme(this.currentTheme);
 			this.switchTab(this.currentTab);
 			this.renderTheme(this.currentTheme);
 		});
@@ -161,42 +188,44 @@ class ThemeDemoApp {
 	}
 
 	setupTabNavigation() {
-		const tabButtons = document.querySelectorAll("[data-tab]");
+		const tabButtons = document.querySelectorAll<HTMLElement>("[data-tab]");
 
 		tabButtons.forEach((btn) => {
 			btn.addEventListener("click", () => {
 				const tab = btn.dataset.tab;
 				if (tab && tab !== this.currentTab) {
-					this.currentTab = tab;
+					this.currentTab = tab === "catalog" ? "catalog" : "dashboard";
 					this.updateURL();
-					this.switchTab(tab);
+					this.switchTab(this.currentTab);
 				}
 			});
 
 			btn.addEventListener("keydown", (e) => {
 				if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
 					e.preventDefault();
-					const tabs = Array.from(document.querySelectorAll("[data-tab]"));
+					const tabs = Array.from(
+						document.querySelectorAll<HTMLElement>("[data-tab]"),
+					);
 					const idx = tabs.indexOf(btn);
 					const nextIdx =
 						e.key === "ArrowRight"
 							? (idx + 1) % tabs.length
 							: (idx - 1 + tabs.length) % tabs.length;
-					tabs[nextIdx].focus();
-					tabs[nextIdx].click();
+					tabs[nextIdx]?.focus();
+					tabs[nextIdx]?.click();
 				}
 			});
 		});
 	}
 
-	switchTab(tabName) {
-		document.querySelectorAll("[data-tab]").forEach((btn) => {
+	switchTab(tabName: TabName) {
+		document.querySelectorAll<HTMLElement>("[data-tab]").forEach((btn) => {
 			const isActive = btn.dataset.tab === tabName;
-			btn.setAttribute("aria-selected", isActive);
+			btn.setAttribute("aria-selected", String(isActive));
 			btn.classList.toggle("active", isActive);
 		});
 
-		document.querySelectorAll(".tab-panel").forEach((panel) => {
+		document.querySelectorAll<HTMLElement>(".tab-panel").forEach((panel) => {
 			const isActive = panel.id === `panel-${tabName}`;
 			panel.hidden = !isActive;
 			panel.classList.toggle("active", isActive);
@@ -210,19 +239,19 @@ class ThemeDemoApp {
 		const { query, modifier } = this.activeFilterValues();
 		if (query || modifier) {
 			if (tabName === "catalog") {
-				this.catalog.filter(query, modifier);
+				this.catalog?.filter(query, modifier);
 			} else {
-				this.themeSelector.filterThemes(query, modifier);
+				this.themeSelector?.filterThemes(query, modifier);
 			}
 		} else if (tabName === "catalog" && this.catalog) {
 			this.catalog.filter("", "");
 		}
 	}
 
-	renderTheme(themeName) {
-		this.themeSelector.setTheme(themeName);
-		this.dashboard.updateTheme(themeName);
-		this.catalog.updateTheme(themeName);
+	renderTheme(themeName: string) {
+		this.themeSelector?.setTheme(themeName);
+		this.dashboard?.updateTheme(themeName);
+		this.catalog?.updateTheme(themeName);
 	}
 }
 

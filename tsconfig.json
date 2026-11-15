@@ -36,7 +36,6 @@
 		"trophy/src/renderer.ts",
 		"trophy/api/**/*.ts",
 		"streak/src/**/*.ts",
-		"streak/api/**/*.ts",
 		"leetcode/api/**/*.ts",
 		"leetcode/test/**/*.ts",
 		"leetcode/packages/*/src/_test/**/*.ts",

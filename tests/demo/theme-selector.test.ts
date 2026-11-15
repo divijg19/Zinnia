@@ -27,7 +27,9 @@ describe("demo ThemeSelector", () => {
 		const selector = makeSelector();
 		selector.filterThemes("drac");
 		const visible = Array.from(
-			selector.select.querySelectorAll("option:not([hidden])"),
+			selector.select.querySelectorAll<HTMLOptionElement>(
+				"option:not([hidden])",
+			),
 		).map((o) => o.value);
 		expect(visible).toEqual(["dracula"]);
 	});
@@ -76,20 +78,15 @@ describe("demo ThemeSelector groups", () => {
 			{ name: "mystery", colors: { background: { hex: "zzz" } } },
 		];
 		const groups = selector.groupThemes(input);
+		const names = (group: string) => (groups[group] ?? []).map((t) => t.name);
 		const assigned = Object.values(groups).flat();
 		expect(assigned).toHaveLength(input.length);
 		expect(new Set(assigned.map((t) => t.name)).size).toBe(input.length);
-		expect(groups.Core.map((t) => t.name)).toEqual(["default"]);
-		expect(groups.Catppuccin.map((t) => t.name)).toEqual(["catppuccin_mocha"]);
-		expect(groups.Light.map((t) => t.name)).toEqual(["solarized-light"]);
-		expect(groups.Dark.map((t) => t.name).sort()).toEqual([
-			"dracula",
-			"mystery",
-		]);
-		expect(groups["Gradients & Effects"].map((t) => t.name).sort()).toEqual([
-			"watchdog",
-			"wtf",
-		]);
+		expect(names("Core")).toEqual(["default"]);
+		expect(names("Catppuccin")).toEqual(["catppuccin_mocha"]);
+		expect(names("Light")).toEqual(["solarized-light"]);
+		expect(names("Dark").sort()).toEqual(["dracula", "mystery"]);
+		expect(names("Gradients & Effects").sort()).toEqual(["watchdog", "wtf"]);
 	});
 });
 
@@ -106,16 +103,20 @@ describe("demo ThemeSelector modifier filter", () => {
 		]);
 	}
 
-	function visibleValues(selector) {
+	function visibleValues(selector: ThemeSelector) {
 		return Array.from(
-			selector.select.querySelectorAll("option:not([hidden])"),
+			selector.select.querySelectorAll<HTMLOptionElement>(
+				"option:not([hidden])",
+			),
 		).map((o) => o.value);
 	}
 
 	it("injects a modifier dropdown with only present variants", () => {
 		const selector = makeModifierSelector();
+		const modifierSelect = selector.modifierSelect;
+		if (!modifierSelect) throw new Error("no modifier dropdown");
 		const options = Array.from(
-			selector.modifierSelect.querySelectorAll("option"),
+			modifierSelect.querySelectorAll<HTMLOptionElement>("option"),
 		).map((o) => o.value);
 		expect(options[0]).toBe("");
 		expect(options).toContain("shadow");
@@ -135,8 +136,10 @@ describe("demo ThemeSelector modifier filter", () => {
 
 	it("applies the dropdown change through stored filter state", () => {
 		const selector = makeModifierSelector();
-		selector.modifierSelect.value = "dark-variant";
-		selector.modifierSelect.dispatchEvent(new window.Event("change"));
+		const modifierSelect = selector.modifierSelect;
+		if (!modifierSelect) throw new Error("no modifier dropdown");
+		modifierSelect.value = "dark-variant";
+		modifierSelect.dispatchEvent(new window.Event("change"));
 		expect(visibleValues(selector)).toEqual(["ocean_dark"]);
 		expect(selector.getFilters()).toEqual({
 			query: "",

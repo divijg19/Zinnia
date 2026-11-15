@@ -42,7 +42,7 @@ bun run build
 bunx vercel dev
 ```
 
-Then open `http://localhost:3000/api/stats?username=divijg19`. For the theme gallery, run `bun run demo:dev`.
+Then open `http://localhost:3000/api/stats?username=divijg19`. For the theme gallery, run `bun run demo:dev` - it builds the demo and serves it from `public/demo/`, the same output the deployment ships.
 
 ## Build
 
@@ -60,7 +60,7 @@ Then open `http://localhost:3000/api/stats?username=divijg19`. For the theme gal
 
 Vercel runs `bun run build && bun run demo:build` and ships the bundles through `includeFiles` in `vercel.json`. To deploy by hand, set `VERCEL_TOKEN` and run `bun run vercel:deploy`.
 
-`bun run demo:build` prerenders every theme into `demo/assets/` and regenerates `demo/theme-registry.json`. It is deterministic: CI builds twice and diffs the checksums.
+`bun run demo:build` prerenders every theme into `demo/assets/`, regenerates `demo/theme-registry.json`, and bundles the demo app into `demo/app.js` - the browser loads that bundle, so it is a build artifact and is not tracked. The build publishes only what the page needs into `public/demo/`. It is deterministic: CI builds twice and diffs the checksums of the assets _and_ the bundle.
 
 ## Tests
 

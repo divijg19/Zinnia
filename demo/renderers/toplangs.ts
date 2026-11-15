@@ -1,7 +1,13 @@
-import { toStatsTheme } from "../../lib/themes/adapters/stats.ts";
-import { renderTopLanguages } from "../../stats/src/cards/top-languages.ts";
+import { toStatsTheme } from "../../lib/themes/adapters/stats.js";
+import type { ThemeDefinition } from "../../lib/themes/registry.js";
+import { renderTopLanguages } from "../../stats/src/cards/top-languages.js";
+import type { TopLangData } from "../../stats/src/fetchers/types.js";
 
-export function renderTopLangs(theme, fixture) {
+/** Render the top-languages card for one theme, the way the demo shows it. */
+export function renderTopLangs(
+	theme: ThemeDefinition,
+	fixture: TopLangData,
+): string {
 	return renderTopLanguages(fixture, {
 		...toStatsTheme(theme),
 		theme: theme.name,

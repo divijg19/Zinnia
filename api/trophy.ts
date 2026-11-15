@@ -95,9 +95,9 @@ async function renderWithCompiledHandler(
 			resolveCompiledHandler(
 				import.meta.url,
 				"..",
+				"lib",
 				"trophy-renderer-static.js",
-			) ||
-			resolveCompiledHandler(import.meta.url, "trophy-renderer-static.js");
+			);
 		if (!foundCompiled) {
 			const alt = path.join(
 				process.cwd(),
@@ -179,8 +179,7 @@ async function renderLocally(options: {
 		const candidates = [
 			["..", "api", "_build", "trophy", "renderer.js"],
 			["..", "trophy", "renderer.js"],
-			["..", "trophy-renderer-static.js"],
-			["trophy-renderer-static.js"],
+			["..", "lib", "trophy-renderer-static.js"],
 		];
 		let loaded = false;
 		for (const cand of candidates) {

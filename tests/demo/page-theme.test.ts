@@ -13,7 +13,7 @@ import {
 	STORAGE_KEY,
 } from "../../demo/utils/page-theme.js";
 
-function stubMatchMedia(dark) {
+function stubMatchMedia(dark: boolean) {
 	Object.defineProperty(window, "matchMedia", {
 		value: vi.fn().mockReturnValue({ matches: dark }),
 		configurable: true,

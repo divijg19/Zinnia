@@ -1,10 +1,21 @@
+import type { DemoTheme } from "../types.js";
+
+/**
+ * A widget that renders one of the prerendered card assets.
+ *
+ * The demo shows the cards the generator prerendered, so a widget is an
+ * `<img>` pointing at the asset rather than a live render.
+ */
 export class GeneratedAssetWidget {
-	constructor(kind, theme) {
+	readonly kind: string;
+	readonly theme: DemoTheme;
+
+	constructor(kind: string, theme: DemoTheme) {
 		this.kind = kind;
 		this.theme = theme;
 	}
 
-	render() {
+	render(): string {
 		const asset = this.theme?.widgets?.[this.kind];
 		if (!asset?.src) {
 			return "";

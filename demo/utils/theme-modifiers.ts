@@ -5,9 +5,11 @@
 // field — so both tabs derive tags at runtime from this single module
 // instead of duplicating convention logic.
 
+import type { DemoTheme } from "../types.js";
+
 export const MODIFIER_ALL = "";
 
-export const MODIFIER_OPTIONS = [
+export const MODIFIER_OPTIONS: { value: string; label: string }[] = [
 	{ value: MODIFIER_ALL, label: "All variants" },
 	{ value: "shadow", label: "Shadow" },
 	{ value: "dark-variant", label: "Dark variants" },
@@ -32,8 +34,8 @@ const SPECIAL_SEGMENTS = new Set([
  * Tags are non-exclusive (e.g. github_dark_dimmed is both
  * dark-variant and dimmed).
  */
-export function getModifierTags(theme) {
-	const tags = new Set();
+export function getModifierTags(theme: DemoTheme | undefined): Set<string> {
+	const tags = new Set<string>();
 	const name = String(theme?.name || "").toLowerCase();
 	if (!name) return tags;
 
@@ -51,7 +53,7 @@ export function getModifierTags(theme) {
 	if (name.startsWith("catppuccin")) tags.add("catppuccin");
 
 	// Data-based, mirroring the "Gradients & Effects" group rule in
-	// theme-selector.js so the two stay consistent.
+	// theme-selector.ts so the two stay consistent.
 	const colors = theme?.colors || {};
 	const bg = colors.background?.hex ?? "";
 	const css = colors.css ?? "";
@@ -66,8 +68,10 @@ export function getModifierTags(theme) {
  * Build dropdown options limited to modifiers actually present in the
  * registry, so the filter never offers dead choices.
  */
-export function buildModifierOptions(themes) {
-	const present = new Set();
+export function buildModifierOptions(
+	themes: DemoTheme[],
+): { value: string; label: string }[] {
+	const present = new Set<string>();
 	for (const theme of themes || []) {
 		for (const tag of getModifierTags(theme)) present.add(tag);
 	}

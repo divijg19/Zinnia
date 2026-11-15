@@ -2,9 +2,11 @@
 // Widget SVGs are isolated <img> documents and keep their own theme
 // colors regardless of this setting.
 
+import type { PageTheme } from "../types.js";
+
 export const STORAGE_KEY = "zinnia-demo-page-theme";
 
-export function getStoredTheme() {
+export function getStoredTheme(): PageTheme | null {
 	try {
 		const stored = window.localStorage?.getItem(STORAGE_KEY);
 		return stored === "light" || stored === "dark" ? stored : null;
@@ -13,7 +15,7 @@ export function getStoredTheme() {
 	}
 }
 
-export function getPreferredTheme() {
+export function getPreferredTheme(): PageTheme {
 	try {
 		if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
 			return "dark";
@@ -22,12 +24,12 @@ export function getPreferredTheme() {
 	return "light";
 }
 
-export function resolveTheme() {
+export function resolveTheme(): PageTheme {
 	return getStoredTheme() ?? getPreferredTheme();
 }
 
-export function applyTheme(theme) {
-	const next = theme === "dark" ? "dark" : "light";
+export function applyTheme(theme: string): PageTheme {
+	const next: PageTheme = theme === "dark" ? "dark" : "light";
 	document.documentElement.dataset.pageTheme = next;
 	try {
 		window.localStorage?.setItem(STORAGE_KEY, next);
@@ -35,8 +37,8 @@ export function applyTheme(theme) {
 	return next;
 }
 
-export function initPageTheme(button) {
-	const updateButton = (theme) => {
+export function initPageTheme(button: HTMLElement | null): void {
+	const updateButton = (theme: PageTheme) => {
 		if (!button) return;
 		const dark = theme === "dark";
 		button.setAttribute("aria-pressed", String(dark));
