@@ -9,7 +9,16 @@ import {
 	setGlobalFetchMock,
 } from "../_testShim";
 
-// Helper to load handler fresh per scenario
+/**
+ * The renderer export shapes the streak route can find.
+ *
+ * The route loads the compiled renderer through the canonical loader, which
+ * tries a handful of specifiers and export shapes. This covers the ones the
+ * route actually accepts, so a change in how the shard is bundled cannot
+ * leave the streak card without a renderer.
+ */
+
+/** Load the route with the renderer module mocked into one shape. */
 async function loadHandlerWithMocks(
 	mockModPath: string,
 	mockExport: unknown,
@@ -32,24 +41,18 @@ async function loadHandlerWithMocks(
 	setGlobalFetchMock(
 		makeFetchResolved({ ok: false, status: 500, text: async () => "" }),
 	);
-	// Normalize module shape: if caller provided a raw function, treat it as a
-	// `default` export so runtime imports like `mod.default` behave correctly.
-	//
+
 	// Vitest may also expect certain named exports to exist on mocked modules
 	// (even if they're unused). Provide them as `undefined` by default so the
 	// canonical loader can still exercise the intended export-shape branches.
-	const baseMock =
-		typeof mockExport === "function"
-			? { default: mockExport }
-			: (mockExport ?? {});
 	const moduleMock = {
 		loadStreakRenderer: undefined,
 		renderFallbackSvg: undefined,
 		renderForUser: undefined,
-		...(baseMock as any),
+		...((mockExport ?? {}) as any),
 	};
 
-	// The canonical loader imports streak renderer from a few specifiers.
+	// The canonical loader imports the streak renderer from a few specifiers.
 	// Mock all the common variants to keep this test deterministic.
 	const absIndexJs = path.resolve(process.cwd(), "streak/dist/index.js");
 	const absIndex = path.resolve(process.cwd(), "streak/dist/index");
@@ -66,8 +69,17 @@ async function loadHandlerWithMocks(
 	for (const spec of specifiers) {
 		vi.doMock(spec, () => moduleMock as any);
 	}
-	const mod = await import("../../streak/api/index.ts");
+	const mod = await import("../../api/streak.js");
 	return mod.default as any;
+}
+
+/** Drive the route and return the body it sent. */
+async function renderThrough(handler: any): Promise<string> {
+	const req: any = makeReq("/api/streak?user=test");
+	req.query = { user: "test" };
+	const res: any = makeRes();
+	await handler(req, res);
+	return res.send.mock.calls[0]?.[0] as string;
 }
 
 describe("renderer import permutations", () => {
@@ -81,60 +93,31 @@ describe("renderer import permutations", () => {
 		process.env.STREAK_USE_TS = "1";
 	});
 
-	it("accepts top-level renderForUser function", async () => {
+	it("accepts a compiled handler exported as default", async () => {
+		// The shape the shard actually ships: a request handler.
+		const handler = await loadHandlerWithMocks("../../streak/dist/index", {
+			default: async () => new Response("<svg>DEFAULT-HANDLER</svg>"),
+		});
+		expect(await renderThrough(handler)).toContain(
+			"<svg>DEFAULT-HANDLER</svg>",
+		);
+	});
+
+	it("accepts a top-level renderForUser function", async () => {
 		const handler = await loadHandlerWithMocks("../../streak/dist/index", {
 			renderForUser: async () => ({
 				contentType: "image/svg+xml",
 				body: "<svg>TOP</svg>",
 			}),
 		});
-		const req: any = makeReq("/api/streak?user=test");
-		req.query = { user: "test" };
-		const res: any = makeRes();
-		await handler(req, res);
-		expect(res.send.mock.calls[0][0]).toContain("<svg>TOP</svg>");
-	});
-
-	it("accepts default.renderForUser shape", async () => {
-		const handler = await loadHandlerWithMocks("../../streak/dist/index", {
-			default: {
-				renderForUser: async () => ({
-					contentType: "image/svg+xml",
-					body: "<svg>DEF.RENDER</svg>",
-				}),
-			},
-		});
-		const req: any = makeReq("/api/streak?user=test");
-		req.query = { user: "test" };
-		const res: any = makeRes();
-		await handler(req, res);
-		expect(res.send.mock.calls[0][0]).toContain("<svg>DEF.RENDER</svg>");
-	});
-
-	it("accepts default as function (module default export)", async () => {
-		const handler = await loadHandlerWithMocks(
-			"../../streak/dist/index",
-			async () => ({
-				contentType: "image/svg+xml",
-				body: "<svg>DEFAULT-FN</svg>",
-			}),
-		);
-		const req: any = makeReq("/api/streak?user=test");
-		req.query = { user: "test" };
-		const res: any = makeRes();
-		await handler(req, res);
-		expect(res.send.mock.calls[0][0]).toContain("<svg>DEFAULT-FN</svg>");
+		expect(await renderThrough(handler)).toContain("<svg>TOP</svg>");
 	});
 
 	it("falls back to svg_builder when module missing exports", async () => {
 		const handler = await loadHandlerWithMocks("../../streak/dist/index", {
 			nothing: true,
 		});
-		const req: any = makeReq("/api/streak?user=test");
-		req.query = { user: "test" };
-		const res: any = makeRes();
-		await handler(req, res);
-		const out = res.send.mock.calls[0][0] as string;
+		const out = await renderThrough(handler);
 		expect(out).toContain("<svg");
 	});
 });

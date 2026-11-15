@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-/** Test helpers: mock `api/_utils` factory and `api/cache` shim. */
+/** Test helpers: mock the `api/_utils` factory and the `lib/cache` shim. */
 
 export function mockApiUtilsFactory({
 	readBody = null,
@@ -24,7 +24,7 @@ export function mockApiUtilsFactory({
 
 	return () => {
 		const allowedThemes = new Set(["watchdog", "light", "dark", "onedark"]);
-		// Mock `api/cache` defensively: it is the filesystem layer under
+		// Mock `lib/cache` defensively: it is the filesystem layer under
 		// lib/canonical/http_cache, so a test that mocks only `api/_utils`
 		// still needs cache reads/writes stubbed. No handler imports it
 		// directly today; keep this in sync with the real module's surface.
@@ -33,10 +33,10 @@ export function mockApiUtilsFactory({
 			readCacheWithMeta: readMetaImpl,
 			writeCacheWithMeta: writeImpl,
 		});
-		vi.doMock("../../api/cache", cacheMock);
+		vi.doMock("../../lib/cache", cacheMock);
 		// Some bundlers/resolvers include the .js extension in module ids;
 		// register the variant as well so the mock is applied consistently.
-		vi.doMock("../../api/cache.js", cacheMock);
+		vi.doMock("../../lib/cache.js", cacheMock);
 
 		return {
 			computeEtag: (b: string) => computeEtag(b),

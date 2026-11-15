@@ -50,7 +50,7 @@ describe("/api/streak preserves gradient for watchdog theme", () => {
 			],
 		}));
 
-		const mod = await import("../../streak/api/index.ts");
+		const mod = await import("../../api/streak.js");
 		const handler = mod.default;
 
 		const req: any = makeReq("/api/streak?user=test&theme=watchdog");

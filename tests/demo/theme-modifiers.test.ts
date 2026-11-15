@@ -69,8 +69,8 @@ describe("demo theme modifier tags", () => {
 
 	it("returns no tags for plain base themes or empty input", () => {
 		expect(getModifierTags({ name: "dracula" }).size).toBe(0);
-		expect(getModifierTags(null).size).toBe(0);
-		expect(getModifierTags({}).size).toBe(0);
+		expect(getModifierTags(undefined).size).toBe(0);
+		expect(getModifierTags({ name: "" }).size).toBe(0);
 	});
 });
 

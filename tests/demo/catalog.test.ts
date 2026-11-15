@@ -5,9 +5,10 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Catalog } from "../../demo/Catalog.js";
+import { requiredElement } from "../_testShim";
 
 const stubFactory = {
-	createAll: () => [],
+	createAll: (_themeName: string) => [],
 };
 
 function makeThemes() {
@@ -39,8 +40,9 @@ function makeCatalog() {
 
 afterEach(() => {
 	document.body.innerHTML = "";
-	// @ts-expect-error test cleanup
-	delete window.navigator.clipboard;
+	// The clipboard is read-only on the navigator, so the test installs it
+	// as a configurable property and takes it away again afterwards.
+	Reflect.deleteProperty(window.navigator, "clipboard");
 });
 
 describe("demo Catalog", () => {
@@ -56,7 +58,10 @@ describe("demo Catalog", () => {
 		const onThemeChange = vi.fn();
 		catalog.onThemeChange(onThemeChange);
 
-		const darkRow = container.querySelector('[data-theme="dark"]');
+		const darkRow = requiredElement<HTMLElement>(
+			container,
+			'[data-theme="dark"]',
+		);
 		darkRow.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 
 		expect(onThemeChange).toHaveBeenCalledWith("dark");
@@ -77,14 +82,20 @@ describe("demo Catalog", () => {
 		const onThemeChange = vi.fn();
 		catalog.onThemeChange(onThemeChange);
 		const writeText = vi.fn().mockResolvedValue(undefined);
-		window.navigator.clipboard = { writeText };
+		Object.defineProperty(window.navigator, "clipboard", {
+			value: { writeText },
+			configurable: true,
+		});
 
-		const copyBtn = container.querySelector('[data-copy-theme="dark"]');
+		const copyBtn = requiredElement<HTMLElement>(
+			container,
+			'[data-copy-theme="dark"]',
+		);
 		copyBtn.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 		await Promise.resolve();
 
 		expect(writeText).toHaveBeenCalledTimes(1);
-		const copied = JSON.parse(writeText.mock.calls[0][0]);
+		const copied = JSON.parse(String(writeText.mock.calls[0]?.[0] ?? "{}"));
 		expect(copied.name).toBe("dark");
 		expect(copied.widgets).toBeUndefined();
 		expect(onThemeChange).not.toHaveBeenCalled();
@@ -99,7 +110,8 @@ describe("demo Catalog", () => {
 	it("highlights the matched query in theme names", () => {
 		const { container, catalog } = makeCatalog();
 		catalog.filter("ark");
-		const nameCell = container.querySelector(
+		const nameCell = requiredElement<HTMLElement>(
+			container,
 			'[data-theme="dark"] .theme-name-cell > span',
 		);
 		expect(nameCell.innerHTML).toContain("<mark>ark</mark>");

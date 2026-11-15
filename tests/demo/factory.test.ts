@@ -25,7 +25,7 @@ const registry = [
 
 describe("demo WidgetFactory", () => {
 	it("creates all five widget kinds for a known theme", () => {
-		const widgets = new WidgetFactory().createAll("default", registry);
+		const widgets = new WidgetFactory(registry).createAll("default");
 		expect(widgets.map((w) => w.kind)).toEqual([
 			"stats",
 			"topLangs",
@@ -39,6 +39,6 @@ describe("demo WidgetFactory", () => {
 	});
 
 	it("returns no widgets for an unknown theme", () => {
-		expect(new WidgetFactory().createAll("nope", registry)).toEqual([]);
+		expect(new WidgetFactory(registry).createAll("nope")).toEqual([]);
 	});
 });

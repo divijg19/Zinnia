@@ -9,7 +9,7 @@ Unified, self-hosted GitHub profile cards: stats, top languages, contribution st
 ```sh
 bun install --frozen-lockfile   # dependencies
 bun run build                   # bundles, see CONTRIBUTING.md
-bun run demo:build              # prerender demo assets for all 96 themes
+bun run demo:build              # prerender the demo assets and bundle the demo page
 bun run test                    # rebuilds, then runs vitest
 bun run lint                    # biome + tsc
 bun run warm                    # refresh the cached embeds (see "Keeping the embeds warm")
@@ -154,7 +154,7 @@ Exhausted tokens are skipped. A rate-limited key is set aside for 60s and an aut
 
 ## Themes
 
-96 themes live in `lib/themes/registry.ts`, each with optional per-widget `streak`, `trophy`, and `leetcode` overrides. `lib/themes/adapters/` turns them into each card's option set. Run `bun run demo:dev` to preview all of them; there is no static theme table to keep in sync.
+96 themes live in `lib/themes/registry.ts`, each with optional per-widget `streak`, `trophy`, and `leetcode` overrides. `lib/themes/adapters/` turns them into each card's option set. Run `bun run demo:dev` to preview all of them; there is no static theme table to keep in sync. The demo is TypeScript too - `demo/` holds the sources, `bun run demo:build` bundles them into the page.
 
 ## FAQ
 

@@ -6,7 +6,7 @@
 // Vercel's `VercelResponse` and the test shims both satisfy them without
 // either one importing the other.
 
-import * as cache from "../../api/cache.js";
+import * as cache from "../cache.js";
 
 // How long a shared cache may serve a fresh body past its TTL while it
 // refreshes behind the request. A day absorbs a slow origin refresh without
@@ -235,7 +235,7 @@ export function pickForwardedHeaders(
 	return out;
 }
 
-// Cache operations and the etag hash both live in api/cache (the
+// Cache operations and the etag hash both live in lib/cache (the
 // filesystem layer); re-export rather than reimplement so the digest
 // algorithm has exactly one definition.
 
@@ -276,10 +276,6 @@ export function getCacheAdapterForService(service: string): CacheAdapter {
 			}
 		},
 	};
-}
-
-export function getCacheAdapter(service: string): CacheAdapter {
-	return getCacheAdapterForService(service);
 }
 
 // Response send helpers. Always 200 + full body with ETag set;
@@ -337,7 +333,6 @@ export default {
 	pickForwardedHeaders,
 	safeUrl,
 	computeEtag,
-	getCacheAdapter: getCacheAdapterForService,
 	getCacheAdapterForService,
 	setEtagAndAlwaysSend200,
 	sendSuccessSvg,

@@ -1,18 +1,32 @@
 // Theme Selector Component
 // Handles theme selection with search and color swatches
 
+import type { DemoTheme } from "../types.js";
 import { buildModifierOptions, getModifierTags } from "./theme-modifiers.js";
 
+/** The categories the selector groups themes into. */
+type ThemeGroups = {
+	Core: DemoTheme[];
+	Catppuccin: DemoTheme[];
+	Light: DemoTheme[];
+	Dark: DemoTheme[];
+	"Gradients & Effects": DemoTheme[];
+};
+
 export class ThemeSelector {
-	constructor(selectElement, themes) {
+	select: HTMLSelectElement;
+	themes: DemoTheme[];
+	onChangeCallback: ((themeName: string) => void) | null = null;
+	filteredThemes: DemoTheme[];
+	currentQuery = "";
+	currentModifier = "";
+	searchInput: HTMLInputElement | null = null;
+	modifierSelect: HTMLSelectElement | null = null;
+
+	constructor(selectElement: HTMLSelectElement, themes: DemoTheme[]) {
 		this.select = selectElement;
 		this.themes = themes;
-		this.onChangeCallback = null;
 		this.filteredThemes = [...themes];
-		this.currentQuery = "";
-		this.currentModifier = "";
-		this.searchInput = null;
-		this.modifierSelect = null;
 
 		this.init();
 	}
@@ -21,7 +35,7 @@ export class ThemeSelector {
 		this.populate();
 		this.select.addEventListener("change", (e) => {
 			if (this.onChangeCallback) {
-				this.onChangeCallback(e.target.value);
+				this.onChangeCallback((e.target as HTMLSelectElement).value);
 			}
 		});
 
@@ -49,8 +63,8 @@ export class ThemeSelector {
 		searchIcon.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 
 		wrapper.insertBefore(searchWrapper, this.select);
-		searchWrapper.appendChild(searchIcon);
-		searchWrapper.appendChild(searchInput);
+		wrapper.appendChild(searchIcon);
+		wrapper.appendChild(searchInput);
 		this.searchInput = searchInput;
 
 		const modifierSelect = document.createElement("select");
@@ -65,16 +79,16 @@ export class ThemeSelector {
 		wrapper.insertBefore(modifierSelect, this.select);
 		this.modifierSelect = modifierSelect;
 
-		let debounceTimer = null;
+		let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 		searchInput.addEventListener("input", (e) => {
-			clearTimeout(debounceTimer);
+			if (debounceTimer) clearTimeout(debounceTimer);
 			debounceTimer = setTimeout(() => {
-				this.currentQuery = e.target.value;
+				this.currentQuery = (e.target as HTMLInputElement).value;
 				this.applyFilters();
 			}, 100);
 		});
 		modifierSelect.addEventListener("change", (e) => {
-			this.currentModifier = e.target.value;
+			this.currentModifier = (e.target as HTMLSelectElement).value;
 			this.applyFilters();
 		});
 
@@ -87,7 +101,6 @@ export class ThemeSelector {
 	}
 
 	populate() {
-		const _currentValue = this.select.value;
 		this.select.innerHTML = "";
 
 		// Group themes by category for optgroups
@@ -115,7 +128,8 @@ export class ThemeSelector {
 		}
 	}
 
-	static luminance(hex) {
+	/** The relative luminance of a hex colour, or null when it is not one. */
+	static luminance(hex: string | undefined): number | null {
 		const h = String(hex || "").replace(/^#/, "");
 		const full =
 			h.length === 3
@@ -125,17 +139,17 @@ export class ThemeSelector {
 						.join("")
 				: h;
 		if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
-		const [r, g, b] = [0, 2, 4].map((i) => {
+		const channel = (i: number) => {
 			const c = parseInt(full.slice(i, i + 2), 16) / 255;
 			return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-		});
-		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+		};
+		return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
 	}
 
-	groupThemes(themes) {
+	groupThemes(themes: DemoTheme[]): Record<string, DemoTheme[]> {
 		// Data-driven groups derived from registry content: new themes land
 		// in a sensible group automatically instead of an "Other" bucket.
-		const groups = {
+		const groups: ThemeGroups = {
 			Core: [],
 			Catppuccin: [],
 			Light: [],
@@ -185,12 +199,14 @@ export class ThemeSelector {
 		);
 	}
 
-	firstVisibleTheme() {
-		const first = this.select.querySelector("option:not([hidden])");
+	firstVisibleTheme(): string | null {
+		const first = this.select.querySelector<HTMLOptionElement>(
+			"option:not([hidden])",
+		);
 		return first?.value ?? null;
 	}
 
-	selectFirstMatch() {
+	selectFirstMatch(): string | null {
 		const name = this.firstVisibleTheme();
 		if (!name) return null;
 		this.select.value = name;
@@ -200,7 +216,7 @@ export class ThemeSelector {
 		return name;
 	}
 
-	filterThemes(query, modifier = this.currentModifier) {
+	filterThemes(query: string, modifier: string = this.currentModifier) {
 		const lowerQuery = String(query || "")
 			.toLowerCase()
 			.trim();
@@ -210,7 +226,7 @@ export class ThemeSelector {
 
 		for (const option of options) {
 			const themeName = option.value.toLowerCase();
-			const displayName = option.textContent.toLowerCase();
+			const displayName = (option.textContent ?? "").toLowerCase();
 			const matchesQuery =
 				!lowerQuery ||
 				themeName.includes(lowerQuery) ||
@@ -228,7 +244,7 @@ export class ThemeSelector {
 		}
 	}
 
-	getFilters() {
+	getFilters(): { query: string; modifier: string } {
 		return { query: this.currentQuery, modifier: this.currentModifier };
 	}
 
@@ -236,11 +252,11 @@ export class ThemeSelector {
 		this.filterThemes(this.currentQuery, this.currentModifier);
 	}
 
-	onChange(callback) {
+	onChange(callback: (themeName: string) => void) {
 		this.onChangeCallback = callback;
 	}
 
-	setTheme(themeName) {
+	setTheme(themeName: string) {
 		if (this.themes.some((t) => t.name === themeName)) {
 			this.select.value = themeName;
 		}

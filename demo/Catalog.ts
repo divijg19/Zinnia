@@ -1,18 +1,30 @@
 // Catalog Component
 // Tab 2: Scrollable list showing all themes with all 4 widgets
 
+import type { DemoTheme } from "./types.js";
 import { getModifierTags } from "./utils/theme-modifiers.js";
+import type { GeneratedAssetWidget } from "./widgets/asset-widget.js";
+import type { WidgetSource } from "./widgets/factory.js";
 
 export class Catalog {
-	constructor(container, widgetFactory, themeRegistry) {
+	container: HTMLElement | null;
+	widgetFactory: WidgetSource;
+	themeRegistry: DemoTheme[];
+	currentTheme = "default";
+	filteredThemes: DemoTheme[];
+	currentQuery = "";
+	currentModifier = "";
+	onThemeChangeCallback: ((themeName: string) => void) | null = null;
+
+	constructor(
+		container: HTMLElement | null,
+		widgetFactory: WidgetSource,
+		themeRegistry: DemoTheme[],
+	) {
 		this.container = container;
 		this.widgetFactory = widgetFactory;
 		this.themeRegistry = themeRegistry || [];
-		this.currentTheme = "default";
 		this.filteredThemes = [...this.themeRegistry];
-		this.currentQuery = "";
-		this.currentModifier = "";
-		this.onThemeChangeCallback = null;
 
 		this.initKeyboardNav();
 		this.initRowSelection();
@@ -34,13 +46,17 @@ export class Catalog {
 		// Mouse selection: clicking a row selects its theme everywhere.
 		if (this.container) {
 			this.container.addEventListener("click", (e) => {
-				const copyBtn = e.target.closest("[data-copy-theme]");
+				const target = e.target as Element | null;
+				const copyBtn = target?.closest("[data-copy-theme]");
 				if (copyBtn) {
 					e.stopPropagation();
-					this.copyThemeJson(copyBtn.dataset.copyTheme, copyBtn);
+					this.copyThemeJson(
+						(copyBtn as HTMLElement).dataset.copyTheme ?? "",
+						copyBtn as HTMLElement,
+					);
 					return;
 				}
-				const row = e.target.closest(".catalog-row");
+				const row = target?.closest(".catalog-row") as HTMLElement | null;
 				if (row?.dataset.theme) {
 					this.selectTheme(row.dataset.theme);
 				}
@@ -48,7 +64,7 @@ export class Catalog {
 		}
 	}
 
-	selectTheme(themeName) {
+	selectTheme(themeName: string) {
 		if (!themeName || themeName === this.currentTheme) return;
 		this.currentTheme = themeName;
 		this.render();
@@ -57,14 +73,17 @@ export class Catalog {
 		}
 	}
 
-	themeJson(themeName) {
+	themeJson(themeName: string): string | null {
 		const theme = this.themeRegistry.find((t) => t.name === themeName);
 		if (!theme) return null;
 		const { widgets: _widgets, ...definition } = theme;
 		return JSON.stringify(definition, null, 2);
 	}
 
-	async copyThemeJson(themeName, button) {
+	async copyThemeJson(
+		themeName: string,
+		button: HTMLElement | null,
+	): Promise<boolean> {
 		const json = this.themeJson(themeName);
 		if (!json) return false;
 		try {
@@ -91,21 +110,21 @@ export class Catalog {
 		return true;
 	}
 
-	updateTheme(themeName) {
+	updateTheme(themeName: string) {
 		this.currentTheme = themeName;
 		this.render();
 	}
 
-	selectFirstMatch() {
+	selectFirstMatch(): string | null {
 		const first = this.filteredThemes[0];
 		if (!first) return null;
-		const row = this.container.querySelector(`[data-theme="${first.name}"]`);
+		const row = this.container?.querySelector(`[data-theme="${first.name}"]`);
 		row?.scrollIntoView?.({ behavior: "smooth", block: "center" });
 		this.selectTheme(first.name);
 		return first.name;
 	}
 
-	highlightMatch(text, query) {
+	highlightMatch(text: string, query: string): string {
 		const escaped = String(text)
 			.replace(/&/g, "&amp;")
 			.replace(/</g, "&lt;")
@@ -116,7 +135,7 @@ export class Catalog {
 		return escaped.replace(new RegExp(`(${safe})`, "gi"), "<mark>$1</mark>");
 	}
 
-	filter(query, modifier = this.currentModifier) {
+	filter(query: string, modifier: string = this.currentModifier) {
 		this.currentQuery = query || "";
 		this.currentModifier = modifier || "";
 		if (!this.currentQuery && !this.currentModifier) {
@@ -143,9 +162,11 @@ export class Catalog {
 		}
 	}
 
-	navigateThemes(direction) {
-		const rows = this.container.querySelectorAll(".catalog-row:not([hidden])");
-		if (rows.length === 0) return;
+	navigateThemes(direction: number) {
+		const rows = this.container?.querySelectorAll<HTMLElement>(
+			".catalog-row:not([hidden])",
+		);
+		if (!rows || rows.length === 0) return;
 
 		const currentIndex = Array.from(rows).findIndex(
 			(row) => row.dataset.theme === this.currentTheme,
@@ -176,23 +197,20 @@ export class Catalog {
 
 		const html = this.filteredThemes
 			.map((theme) => {
-				const widgets = this.widgetFactory.createAll(
-					theme.name,
-					this.themeRegistry,
-				);
+				const widgets = this.widgetFactory.createAll(theme.name);
 				return `
         <li class="catalog-row theme-row" data-theme="${theme.name}" role="listitem" aria-current="${theme.name === this.currentTheme ? "true" : "false"}">
           <div class="theme-name-cell">
             <div class="theme-swatch">
-              ${theme.previewColors
+              ${(theme.previewColors ?? [])
 								.map(
 									(color) =>
 										`<span class="swatch" style="background: ${color};"></span>`,
 								)
 								.join("")}
-              </div>
-              <span>${this.highlightMatch(theme.displayName || theme.name, this.currentQuery)}</span>
-              <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
+            </div>
+            <span>${this.highlightMatch(theme.displayName || theme.name, this.currentQuery)}</span>
+            <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
             </div>
             <div class="widget-cell">${this.renderWidget(widgets[0])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[1])}</div>
@@ -212,12 +230,12 @@ export class Catalog {
 		}
 	}
 
-	renderWidget(widget) {
+	renderWidget(widget: GeneratedAssetWidget | undefined): string {
 		if (!widget) return "";
 		return widget.render();
 	}
 
-	onThemeChange(callback) {
+	onThemeChange(callback: (themeName: string) => void) {
 		this.onThemeChangeCallback = callback;
 	}
 }

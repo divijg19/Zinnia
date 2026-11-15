@@ -1,4 +1,8 @@
-const WIDGET_LABELS = {
+import type { DemoTheme } from "./types.js";
+import type { GeneratedAssetWidget } from "./widgets/asset-widget.js";
+import type { WidgetSource } from "./widgets/factory.js";
+
+const WIDGET_LABELS: Record<string, string> = {
 	stats: "GitHub Stats",
 	topLangs: "Top Languages",
 	streak: "GitHub Streak",
@@ -7,15 +11,23 @@ const WIDGET_LABELS = {
 };
 
 export class Dashboard {
-	constructor(container, widgetFactory, themeRegistry) {
+	container: HTMLElement | null;
+	widgetFactory: WidgetSource;
+	themeRegistry: DemoTheme[];
+	widgets: GeneratedAssetWidget[] = [];
+	currentTheme = "default";
+
+	constructor(
+		container: HTMLElement | null,
+		widgetFactory: WidgetSource,
+		themeRegistry: DemoTheme[],
+	) {
 		this.container = container;
 		this.widgetFactory = widgetFactory;
 		this.themeRegistry = themeRegistry;
-		this.widgets = [];
-		this.currentTheme = "default";
 	}
 
-	async updateTheme(themeName) {
+	async updateTheme(themeName: string) {
 		this.currentTheme = themeName;
 		await this.render();
 	}
@@ -23,10 +35,7 @@ export class Dashboard {
 	async render() {
 		if (!this.container || !this.widgetFactory || !this.themeRegistry) return;
 
-		const widgets = await this.widgetFactory.createAll(
-			this.currentTheme,
-			this.themeRegistry,
-		);
+		const widgets = await this.widgetFactory.createAll(this.currentTheme);
 
 		this.container.innerHTML = widgets
 			.map(
