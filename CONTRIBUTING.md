@@ -73,7 +73,7 @@ Vercel runs `bun run build && bun run demo:build` and ships the bundles through 
 | `tests/lib`                                   | shared library, including exact theme-adapter parity |
 | `tests/demo`, `tests/smoke`                   | demo asset smoke test and offline handler smoke test |
 
-Shared test doubles live in `tests/_testShim.ts`: request and response shims, PAT env save and restore, fetch mocks, and the loader and retryer mock factories. Extend it instead of writing local mocks.
+Shared test doubles live in `tests/_testShim.ts`: request and response shims, PAT env save and restore, fetch mocks, and the SVG header assertions. Extend it instead of writing local mocks. The `vi.doMock` factories live in `tests/_mockHelpers.ts`, separately, because the `vi.doMock` _call_ has to stay in the test file - vitest resolves the specifier relative to the caller.
 
 Vitest runs in the `node` environment by default. The nine suites that touch the DOM carry a `// @vitest-environment jsdom` docblock; add the same docblock to a new file that needs `document` or `window`. Building a DOM for every file cost the suite roughly 35s of worker startup, so the DOM is built only where it is used.
 
@@ -89,3 +89,15 @@ Vitest runs in the `node` environment by default. The nine suites that touch the
 ## Pull requests
 
 Keep each PR to one concern and meet the bar above. For a change that affects what an embed returns, also run `bun run embed:smoke -- --base http://localhost:3000` against local dev.
+
+## Documentation
+
+The README is the front door: what the project is, how to run it, and the
+routes. Everything else lives in `docs/`:
+
+- [docs/RESPONSE-CONTRACT.md](docs/RESPONSE-CONTRACT.md) - what every card route guarantees
+- [docs/CACHING.md](docs/CACHING.md) - the TTLs, the render cache and the budgets
+- [docs/EMBEDS.md](docs/EMBEDS.md) - the manifest, the warmer and the smoke check
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) - the environment variables and the PAT rotation
+- [docs/THEMES.md](docs/THEMES.md) - the registry, the adapters and the demo
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - the runtimes, the build and the CI

@@ -192,14 +192,14 @@ async function loadStreakRenderer(): Promise<StreakRenderer> {
 		} catch {}
 
 		try {
-			const fallbackMod = await import("../lib/canonical/loader.js");
-			if (fallbackMod && typeof fallbackMod.renderFallbackSvg === "function") {
-				_renderForUser = async (user: string) => {
-					const svg = await fallbackMod.renderFallbackSvg(user);
-					return { status: 200, body: svg, contentType: "image/svg+xml" };
-				};
-				return _renderForUser;
-			}
+			const { renderFallbackSvg } = await import(
+				"../lib/canonical/fallback-card.js"
+			);
+			_renderForUser = async (user: string) => {
+				const svg = await renderFallbackSvg(user);
+				return { status: 200, body: svg, contentType: "image/svg+xml" };
+			};
+			return _renderForUser;
 		} catch (e2) {
 			try {
 				console.warn("streak: fallback renderer unavailable", e2);
@@ -248,10 +248,9 @@ import {
 } from "./_utils.js";
 
 /**
- * Produce a streak response into `res` (which may be a recorder rather than the live
- * response). Every success and failure path of the historical flow lives here
- * unchanged; the caller decides whether to serve the result, cache it, or replace it
- * with the last known good render.
+ * Produce a streak response into `res`, which may be a recorder rather than the
+ * live response. The caller decides whether to serve the result, cache it, or
+ * replace it with the last known good render.
  */
 async function produceStreak(
 	req: VercelRequest,
@@ -374,7 +373,7 @@ async function produceStreak(
 					);
 				} catch {}
 				try {
-					const lb = await import("../lib/canonical/loader.js");
+					const lb = await import("../lib/canonical/fallback-card.js");
 					if (lb && typeof lb.renderFallbackSvg === "function") {
 						const svg = await lb.renderFallbackSvg(user as string);
 						try {
@@ -477,10 +476,10 @@ async function produceStreak(
 /**
  * Serve `/api/streak`.
  *
- * Wraps the historical render flow (see {@link produceStreak}) with the shared
- * render cache and `?debug=1` diagnostics. That flow is unchanged and writes
- * into a recorder, so this wrapper can tell a real card apart from an error
- * card and, in the latter case, serve the previous render instead.
+ * Wraps the render flow (see {@link produceStreak}) with the shared render
+ * cache and `?debug=1` diagnostics. The flow writes into a recorder, so this
+ * wrapper can tell a real card apart from an error card and, in the latter
+ * case, serve the previous render instead.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	const diag = newDiag("streak");
@@ -668,7 +667,7 @@ type Captured = {
 /**
  * A `VercelResponse`-shaped sink that records instead of writing.
  *
- * Lets the historical render flow run untouched while the wrapper inspects what
+ * Lets the render flow run untouched while the wrapper inspects what
  * it produced - the only way to tell a real card from an error card, and so
  * decide whether to cache it or substitute the previous render.
  */
