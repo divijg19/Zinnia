@@ -16,7 +16,7 @@ embedded.
 
 ```json
 {
-	"baseUrl": "https://zinnia-rho.vercel.app",
+	"baseUrl": "https://YOUR-DEPLOYMENT.vercel.app",
 	"embeds": [{ "name": "stats", "path": "/api/stats?username=…" }]
 }
 ```
@@ -24,7 +24,7 @@ embedded.
 ## The warmer
 
 ```sh
-bun run warm --base https://zinnia-rho.vercel.app
+bun run warm --base https://YOUR-DEPLOYMENT.vercel.app
 ```
 
 Re-requests every card with a cache-busting parameter. That forces the origin
@@ -45,7 +45,7 @@ cold start rather than exposing a slow card.
 ## The smoke check
 
 ```sh
-bun run embed:smoke --base https://zinnia-rho.vercel.app --cold --budget 5000
+bun run embed:smoke --base https://YOUR-DEPLOYMENT.vercel.app --cold --budget 5000
 ```
 
 Renders every card in the manifest with a unique query string and checks the
@@ -83,9 +83,12 @@ token.
 
 ## Embedding a card
 
+Point it at **your own** deployment - the cards are served by the instance you
+deployed, not by a shared one:
+
 ```html
 <img
-  src="https://zinnia-rho.vercel.app/api/stats?username=YOUR_NAME&theme=watchdog"
+  src="https://YOUR-DEPLOYMENT.vercel.app/api/stats?username=YOUR_NAME&theme=watchdog"
   alt="GitHub Stats"
 />
 ```
@@ -94,3 +97,9 @@ token.
 - `theme` takes a name from the [theme registry](THEMES.md).
 - `?debug=1` returns JSON diagnostics instead of an image - see
   [the response contract](RESPONSE-CONTRACT.md).
+
+## After a fork
+
+`config/embeds.json` still points at the instance it was written for. Set its
+`baseUrl` to your deployment and its `username` to yours, or the warmer, the
+smoke check and the manifest check keep verifying someone else's cards.
