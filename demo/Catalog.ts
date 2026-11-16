@@ -3,6 +3,12 @@
 
 import type { DemoTheme } from "./types.js";
 import { findMatches, highlightMatches } from "./utils/html.js";
+import {
+	facetLabel,
+	facetsOf,
+	SECTIONS,
+	sectionThemes,
+} from "./utils/theme-taxonomy.js";
 import type { GeneratedAssetWidget } from "./widgets/asset-widget.js";
 import type { WidgetSource } from "./widgets/factory.js";
 
@@ -194,34 +200,54 @@ export class Catalog {
 			return;
 		}
 
-		const html = this.filteredThemes
-			.map((theme) => {
-				const widgets = this.widgetFactory.createAll(theme.name);
-				return `
+		const sections = sectionThemes(this.filteredThemes);
+		const html = SECTIONS.flatMap((section) => {
+			const themes = sections[section];
+			if (!themes.length) return [];
+			return [
+				`<li class="catalog-section" role="presentation">
+          <span class="catalog-section-name">${section}</span>
+          <span class="catalog-section-count">${themes.length}</span>
+        </li>`,
+				...themes.map((theme) => this.renderRow(theme)),
+			];
+		}).join("");
+
+		this.container.innerHTML = html;
+	}
+
+	/** One row of the gallery: the name, its qualities, and the five cards. */
+	renderRow(theme: DemoTheme): string {
+		const widgets = this.widgetFactory.createAll(theme.name);
+		const facets = facetsOf(theme)
+			.map((facet) => `<span class="catalog-facet">${facetLabel(facet)}</span>`)
+			.join("");
+		return `
         <li class="catalog-row theme-row" data-theme="${theme.name}" role="listitem" aria-current="${theme.name === this.currentTheme ? "true" : "false"}">
-          <div class="theme-name-cell">
-            <div class="theme-swatch">
-              ${(theme.previewColors ?? [])
-								.map(
-									(color) =>
-										`<span class="swatch" style="background: ${color};"></span>`,
-								)
-								.join("")}
-            </div>
-            <span>${this.highlightMatch(theme.displayName || theme.name, this.currentQuery)}</span>
-            <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
+          <div class="catalog-left">
+            <div class="theme-name-cell">
+              <div class="theme-name-head">
+                <div class="theme-swatch">
+                  ${(theme.previewColors ?? [])
+										.map(
+											(color) =>
+												`<span class="swatch" style="background: ${color};"></span>`,
+										)
+										.join("")}
+                </div>
+                <span class="theme-name-text">${this.highlightMatch(theme.displayName || theme.name, this.currentQuery)}</span>
+                <button type="button" class="copy-json-btn" data-copy-theme="${theme.name}" title="Copy canonical theme JSON">JSON</button>
+              </div>
+              <span class="catalog-facets">${facets}</span>
             </div>
             <div class="widget-cell">${this.renderWidget(widgets[0])}</div>
+          </div>
             <div class="widget-cell">${this.renderWidget(widgets[1])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[2])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[3])}</div>
             <div class="widget-cell">${this.renderWidget(widgets[4])}</div>
         </li>
       `;
-			})
-			.join("");
-
-		this.container.innerHTML = html;
 	}
 
 	renderWidget(widget: GeneratedAssetWidget | undefined): string {

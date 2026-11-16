@@ -116,7 +116,7 @@ describe("demo Catalog", () => {
 		);
 		const nameCell = requiredElement<HTMLElement>(
 			container,
-			'[data-theme="dark"] .theme-name-cell > span',
+			'[data-theme="dark"] .theme-name-head > span',
 		);
 		expect(nameCell.innerHTML).toContain("<mark>ark</mark>");
 	});

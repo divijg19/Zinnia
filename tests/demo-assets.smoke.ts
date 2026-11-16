@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 
 const dom = new JSDOM(
-	`<!DOCTYPE html><html><body><button id="page-theme-toggle"></button><div id="widget-grid"></div><ul id="catalog-list"></ul><input id="theme-search" type="text" role="combobox" aria-expanded="false" aria-controls="theme-suggestions" /><div id="theme-suggestions" role="listbox" hidden></div><div id="modifier-chips"></div><button id="theme-prev"></button><span id="theme-name"></span><button id="theme-next"></button><span id="catalog-count"></span></body></html>`,
+	`<!DOCTYPE html><html><body><button id="page-theme-toggle"></button><div id="widget-grid"></div><ul id="catalog-list"></ul><input id="theme-search" type="text" role="combobox" aria-expanded="false" aria-controls="theme-suggestions" /><div id="theme-suggestions" role="listbox" hidden></div><div id="facet-chips"></div><button id="theme-prev"></button><span id="theme-name"></span><button id="theme-next"></button><span id="catalog-count"></span></body></html>`,
 	{ url: "http://localhost/" },
 );
 const { window } = dom;

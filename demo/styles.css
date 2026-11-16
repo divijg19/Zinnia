@@ -213,20 +213,26 @@ body {
 	box-shadow: var(--demo-shadow-hover);
 }
 
-/* A category in the suggestion list. */
+/* A category in the suggestion list: the heading stands out from the
+   themes inside it, so you can scan the groups at a glance. */
 .suggestion-group + .suggestion-group {
-	border-top: 1px solid var(--demo-border);
-	margin-top: 4px;
-	padding-top: 4px;
+	margin-top: 6px;
 }
 
 .suggestion-group-title {
-	padding: 4px 8px;
-	font-size: 0.6875rem;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0 -4px;
+	padding: 6px 12px;
+	font-size: 0.75rem;
 	font-weight: 700;
-	letter-spacing: 0.04em;
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: var(--demo-muted);
+	color: var(--demo-fg);
+	background: var(--demo-bg);
+	border-top: 1px solid var(--demo-border);
+	border-bottom: 1px solid var(--demo-border);
 }
 
 .suggestion {
@@ -338,14 +344,14 @@ body {
 	white-space: nowrap;
 }
 
-/* The variant filters. */
-.modifier-chips {
+/* The facet filters. */
+.facet-chips {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
 }
 
-.modifier-chip {
+.facet-chip {
 	padding: 4px 10px;
 	font-size: 0.75rem;
 	font-family: inherit;
@@ -359,15 +365,22 @@ body {
 		border-color var(--demo-transition);
 }
 
-.modifier-chip:hover {
+.facet-chip:hover {
 	color: var(--demo-fg);
 	border-color: var(--demo-accent);
 }
 
-.modifier-chip[aria-checked="true"] {
+.facet-chip[aria-checked="true"] {
 	color: var(--demo-accent);
 	border-color: var(--demo-accent);
 	font-weight: 600;
+}
+
+/* The number of themes a facet matches. */
+.facet-count {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	opacity: 0.8;
 }
 
 /* Tab Navigation */
@@ -422,10 +435,7 @@ body {
 	max-width: var(--container-max);
 	width: 100%;
 	margin: 0 auto;
-	/* The footer is fixed at the bottom of the viewport, so the content
-	   keeps clear of it. */
-	padding: var(--container-padding) var(--container-padding)
-		calc(var(--container-padding) + var(--footer-height));
+	padding: var(--container-padding);
 }
 
 /* Tab Panels
@@ -565,7 +575,7 @@ body:not(.demo-ready) .tab-panel.active {
 	   and the page toggle, docked toward the right edge. The width is fixed
 	   so the navbar is identical on both tabs and while the count text
 	   changes. */
-	margin-left: auto;
+	margin-left: 0;
 	width: 14ch;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -575,23 +585,58 @@ body:not(.demo-ready) .tab-panel.active {
 .catalog-list {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	overflow-x: auto;
+	gap: 10px;
 }
 
+/* The sections the gallery is grouped into, matching the suggestions. */
+.catalog-section {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 18px 4px 6px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--demo-muted);
+	content-visibility: auto;
+	contain-intrinsic-size: auto 44px;
+}
+
+.catalog-section:first-child {
+	padding-top: 4px;
+}
+
+.catalog-section-count {
+	font-weight: 600;
+	letter-spacing: 0;
+	text-transform: none;
+	opacity: 0.7;
+}
+
+/* Each row keeps a fixed-width name column on the left, with the first card
+   stacked directly beneath it and the other four cards to the right. The
+   name column is as tall as its content, not the height of the cards. */
 .catalog-row {
 	display: grid;
-	grid-template-columns: 220px repeat(5, minmax(240px, 1fr));
-	gap: var(--widget-gap);
+	grid-template-columns: 240px repeat(4, minmax(0, 1fr));
+	gap: 8px;
 	align-items: start;
+	padding: 8px;
 	background: var(--demo-card-bg);
 	border: 1px solid var(--demo-border);
 	border-radius: var(--demo-radius);
-	/* Each row scrolls its 5 widget cells horizontally on its own,
-	   so every theme is fully inspectable on narrow screens. */
-	overflow-x: auto;
-	overflow-y: hidden;
 	transition: box-shadow var(--demo-transition);
+	content-visibility: auto;
+	contain-intrinsic-size: auto 280px;
+}
+
+.catalog-left {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
 }
 
 .catalog-row:hover {
@@ -604,6 +649,8 @@ body:not(.demo-ready) .tab-panel.active {
 
 .copy-json-btn {
 	margin-left: auto;
+	align-self: flex-start;
+	flex-shrink: 0;
 	padding: 2px 8px;
 	font-size: 0.6875rem;
 	font-weight: 600;
@@ -629,16 +676,50 @@ body:not(.demo-ready) .tab-panel.active {
 
 .catalog-row .theme-name-cell {
 	display: flex;
-	align-items: center;
-	padding: 16px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	width: 100%;
+	padding: 8px 10px;
 	background: var(--demo-bg);
-	border-right: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius-sm);
 	font-weight: 600;
 	font-size: 0.875rem;
-	min-width: 200px;
+	min-width: 0;
+}
+
+.theme-name-head {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+}
+
+.theme-name-text {
+	flex: 1;
+	min-width: 0;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.catalog-facets {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.catalog-facet {
+	display: inline-block;
+	padding: 1px 6px;
+	font-size: 0.625rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--demo-muted);
+	background: var(--demo-card-bg);
+	border: 1px solid var(--demo-border);
+	border-radius: 999px;
 	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
 .catalog-row[aria-current="true"] {
@@ -658,7 +739,7 @@ body:not(.demo-ready) .tab-panel.active {
 .catalog-row .theme-swatch {
 	display: inline-flex;
 	gap: 4px;
-	margin-right: 12px;
+	flex-shrink: 0;
 }
 
 .catalog-row .swatch {
@@ -714,8 +795,9 @@ body:has(#panel-dashboard.active) .catalog-count {
 }
 
 .catalog-row .widget-cell {
-	padding: 8px;
-	min-height: 120px;
+	padding: 4px;
+	min-height: 0;
+	min-width: 0;
 }
 
 .catalog-row .widget-cell svg,
@@ -725,27 +807,19 @@ body:has(#panel-dashboard.active) .catalog-count {
 	display: block;
 }
 
-/* Footer
-   A bar at the bottom of the viewport, like the sticky header at the top.
-   In the flow it sat at the end of the document, so it left the viewport
-   whenever the page grew or shrank - the gallery is 96 rows long and the
-   dashboard is one screen. */
+/* Footer: at the end of the page, not a fixed bar, so the catalog can
+   use the full screen and the footer appears when you reach the bottom. */
 .demo-footer {
-	position: fixed;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 90;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: var(--footer-height);
-	padding: 0 var(--container-padding);
+	padding: 16px var(--container-padding);
 	text-align: center;
 	color: var(--demo-muted);
 	font-size: 0.875rem;
 	background: var(--demo-card-bg);
 	border-top: 1px solid var(--demo-border);
+	margin-top: 24px;
 }
 
 .demo-footer a {
@@ -771,17 +845,8 @@ body:has(#panel-dashboard.active) .catalog-count {
 		grid-template-columns: 1fr;
 	}
 
-	.catalog-row .theme-name-cell {
-		border-right: none;
-		border-bottom: 1px solid var(--demo-border);
-	}
-
 	.catalog-row .widget-cell {
 		border-top: 1px solid var(--demo-border);
-	}
-
-	.catalog-row .widget-cell:first-child {
-		border-top: none;
 	}
 }
 
@@ -830,17 +895,17 @@ body:has(#panel-dashboard.active) .catalog-count {
 
 	/* One row of chips, scrolled sideways: the header keeps its height
 	   when the chips appear. */
-	.modifier-chips {
+	.facet-chips {
 		flex-wrap: nowrap;
 		overflow-x: auto;
 		scrollbar-width: none;
 	}
 
-	.modifier-chips::-webkit-scrollbar {
+	.facet-chips::-webkit-scrollbar {
 		display: none;
 	}
 
-	.modifier-chip {
+	.facet-chip {
 		flex-shrink: 0;
 	}
 }
