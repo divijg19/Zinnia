@@ -7,23 +7,26 @@ import {
 	type ThemeCombobox,
 } from "./utils/theme-combobox.js";
 import {
-	buildModifierOptions,
-	filterByModifier,
-	getModifierTags,
-	MODIFIER_ALL,
-} from "./utils/theme-groups.js";
-import {
 	buildSearchIndex,
 	type SearchIndex,
 	searchThemes,
 	type ThemeMatch,
 } from "./utils/theme-search.js";
+import {
+	countFacets,
+	FACET_ALL,
+	FACET_OPTIONS,
+	facetLabel,
+	facetsOf,
+	filterByFacets,
+	type ThemeFacet,
+} from "./utils/theme-taxonomy.js";
 import { WidgetFactory } from "./widgets/factory.js";
 
 /**
  * The demo application.
  *
- * One theme, one query, one variant filter, shared by both tabs: the
+ * One theme, one query, one facet filter, shared by both tabs: the
  * dashboard shows the selected theme, the gallery lists the matching ones,
  * and the search drives both.
  */
@@ -39,7 +42,7 @@ export class ThemeDemoApp {
 	/** How far each tab was scrolled, so switching back returns you there. */
 	scrollPositions: Partial<Record<"dashboard" | "catalog", number>> = {};
 	query = "";
-	modifier = MODIFIER_ALL;
+	facet: ThemeFacet | typeof FACET_ALL = FACET_ALL;
 
 	async init() {
 		try {
@@ -110,7 +113,7 @@ export class ThemeDemoApp {
 		});
 
 		this.initSearch();
-		this.initModifierChips();
+		this.initFacetChips();
 		this.initThemeStepper();
 	}
 
@@ -125,7 +128,7 @@ export class ThemeDemoApp {
 			input,
 			list,
 			index: this.searchIndex,
-			accept: (theme) => this.acceptsModifier(theme),
+			accept: (theme) => this.acceptsFacet(theme),
 			onSelect: (theme) => {
 				// The box now holds the chosen theme, so the query follows
 				// it: the gallery shows the theme the search picked.
@@ -157,22 +160,20 @@ export class ThemeDemoApp {
 		});
 	}
 
-	/** The variant chips, derived from the registry. */
-	initModifierChips() {
-		const container = document.getElementById("modifier-chips");
+	/** The facet chips, derived from the registry. */
+	initFacetChips() {
+		const container = document.getElementById("facet-chips");
 		if (!container) return;
 		container.addEventListener("click", (event) => {
-			const target = (event.target as Element | null)?.closest(
-				".modifier-chip",
-			);
-			const value = target?.getAttribute("data-modifier");
+			const target = (event.target as Element | null)?.closest(".facet-chip");
+			const value = target?.getAttribute("data-facet");
 			if (value === null || value === undefined) return;
-			this.modifier = value;
-			this.renderModifierChips();
+			this.facet = (value || FACET_ALL) as ThemeFacet | typeof FACET_ALL;
+			this.renderFacetChips();
 			this.combobox?.refresh();
 			this.applyFilters();
-			// The variant filter changes which themes match, so the preview
-			// follows the new best match.
+			// The filter changes which themes match, so the preview follows
+			// the new best match.
 			if (this.query.trim()) {
 				this.previewBestMatch(this.combobox?.matches() ?? []);
 			}
@@ -180,15 +181,24 @@ export class ThemeDemoApp {
 		});
 	}
 
-	/** Draw the variant chips, with the active one marked. */
-	renderModifierChips() {
-		const container = document.getElementById("modifier-chips");
+	/** Draw the facet chips, with the active one marked and the counts on. */
+	renderFacetChips() {
+		const container = document.getElementById("facet-chips");
 		if (!container) return;
 		const themes = this.registry?.themes ?? [];
-		container.innerHTML = buildModifierOptions(themes)
+		const counts = countFacets(themes);
+		const chips = [
+			{ value: FACET_ALL, label: "All themes", count: themes.length },
+			...FACET_OPTIONS.map((option) => ({
+				value: option.value,
+				label: option.label,
+				count: counts[option.value],
+			})),
+		];
+		container.innerHTML = chips
 			.map(
-				(option) =>
-					`<button type="button" class="modifier-chip" role="radio" aria-checked="${option.value === this.modifier}" data-modifier="${option.value}">${option.label}</button>`,
+				(chip) =>
+					`<button type="button" class="facet-chip" role="radio" aria-checked="${chip.value === this.facet}" data-facet="${chip.value}">${chip.label} <span class="facet-count">${chip.count}</span></button>`,
 			)
 			.join("");
 	}
@@ -209,15 +219,15 @@ export class ThemeDemoApp {
 	 */
 	visibleThemes(): DemoTheme[] {
 		const matches = searchThemes(this.searchIndex, this.query);
-		return filterByModifier(
+		return filterByFacets(
 			matches.map((match) => match.theme),
-			this.modifier,
+			this.facet === FACET_ALL ? [] : [this.facet],
 		);
 	}
 
-	acceptsModifier(theme: DemoTheme): boolean {
-		if (this.modifier === MODIFIER_ALL) return true;
-		return getModifierTags(theme).has(this.modifier);
+	acceptsFacet(theme: DemoTheme): boolean {
+		if (this.facet === FACET_ALL) return true;
+		return facetsOf(theme).includes(this.facet);
 	}
 
 	/** Show the best match of the current query. */
@@ -260,7 +270,9 @@ export class ThemeDemoApp {
 		const count = document.getElementById("catalog-count");
 		if (count) {
 			const total = this.registry?.themes.length ?? 0;
-			count.textContent = `${visible.length} / ${total} themes`;
+			const facet =
+				this.facet === FACET_ALL ? "" : ` · ${facetLabel(this.facet)}`;
+			count.textContent = `${visible.length} / ${total} themes${facet}`;
 		}
 	}
 
@@ -270,13 +282,15 @@ export class ThemeDemoApp {
 		const tab = params.get("tab");
 		this.currentTab = tab === "catalog" ? "catalog" : "dashboard";
 		this.query = params.get("q") || "";
-		this.modifier = params.get("variant") || MODIFIER_ALL;
+		this.facet = (params.get("facet") || FACET_ALL) as
+			| ThemeFacet
+			| typeof FACET_ALL;
 
 		const themes = this.registry?.themes ?? [];
 		if (!themes.some((theme) => theme.name === this.currentTheme)) {
 			this.currentTheme = "default";
 		}
-		this.renderModifierChips();
+		this.renderFacetChips();
 		this.combobox?.setQuery(this.query);
 		const name = document.getElementById("theme-name");
 		if (name) name.textContent = this.currentTheme;
@@ -298,7 +312,7 @@ export class ThemeDemoApp {
 		if (this.currentTheme !== "default") params.set("theme", this.currentTheme);
 		if (this.currentTab !== "dashboard") params.set("tab", this.currentTab);
 		if (this.query.trim()) params.set("q", this.query.trim());
-		if (this.modifier !== MODIFIER_ALL) params.set("variant", this.modifier);
+		if (this.facet !== FACET_ALL) params.set("facet", this.facet);
 		const url = params.toString()
 			? `?${params.toString()}`
 			: window.location.pathname;

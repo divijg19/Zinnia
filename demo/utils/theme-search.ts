@@ -1,4 +1,11 @@
 import type { DemoTheme } from "../types.js";
+import {
+	facetLabel,
+	facetsOf,
+	familyOf,
+	isFilterQuery,
+	sectionOf,
+} from "./theme-taxonomy.js";
 
 /**
  * Theme search.
@@ -27,6 +34,10 @@ type IndexedTheme = {
 	lowerDisplayName: string;
 	/** True where a word starts: after `_` or `-`, or at a camelCase hump. */
 	boundaries: boolean[];
+	/** The family the theme belongs to, lowercased. */
+	family: string;
+	/** The words the qualities and the section of the theme answer to. */
+	words: string[];
 };
 
 export type SearchIndex = IndexedTheme[];
@@ -35,10 +46,10 @@ export type SearchIndex = IndexedTheme[];
  * How a theme matched.
  *
  * The kind outranks the score: an exact match beats a better fuzzy match,
- * every time. `fuzzy` is the only kind a user cannot produce on purpose, so
- * it is also the only one worth labelling in the UI.
+ * every time. `facet` is last: it matches the qualities of a theme rather
+ * than its name, so it never outranks a name the user can see.
  */
-export type MatchKind = "exact" | "prefix" | "substring" | "fuzzy";
+export type MatchKind = "exact" | "prefix" | "substring" | "fuzzy" | "facet";
 
 /** A theme that matched, best first. */
 export type ThemeMatch = {
@@ -48,13 +59,6 @@ export type ThemeMatch = {
 	/** Indices into the theme name, for highlighting. */
 	matches: number[];
 	kind: MatchKind;
-};
-
-const KIND_RANK: Record<MatchKind, number> = {
-	exact: 0,
-	prefix: 1,
-	substring: 2,
-	fuzzy: 3,
 };
 
 const SCORE_MATCH = 16;
@@ -97,6 +101,8 @@ export function buildSearchIndex(themes: DemoTheme[]): SearchIndex {
 			lowerName: name.toLowerCase(),
 			lowerDisplayName: displayName.toLowerCase(),
 			boundaries,
+			family: familyOf(theme).toLowerCase(),
+			words: filterWords(theme),
 		};
 	});
 }
@@ -214,13 +220,44 @@ function scoreEntry(
 		};
 	}
 	const fuzzy = fuzzyMatch(entry, query);
-	if (!fuzzy) return null;
-	return {
-		theme: entry.theme,
-		score: fuzzy.score,
-		matches: fuzzy.indices,
-		kind: "fuzzy",
-	};
+	if (fuzzy) {
+		return {
+			theme: entry.theme,
+			score: fuzzy.score,
+			matches: fuzzy.indices,
+			kind: "fuzzy",
+		};
+	}
+
+	// The qualities of a theme are names too: a query that picks a filter by
+	// clicking has to pick it by typing.
+	if (entry.family.includes(query) || matchesFilter(entry, query)) {
+		return { theme: entry.theme, score: 0, matches: [], kind: "facet" };
+	}
+	return null;
+}
+
+/** Whether the query is asking for a quality or a section this theme has. */
+function matchesFilter(entry: IndexedTheme, query: string): boolean {
+	if (!isFilterQuery(query)) return false;
+	return entry.words.includes(query);
+}
+
+/**
+ * The words a theme answers to beyond its name: the labels of the facets it
+ * carries, and the name of the section it is grouped into.
+ */
+function filterWords(theme: DemoTheme): string[] {
+	const words = new Set<string>();
+	for (const facet of facetsOf(theme)) {
+		words.add(facetLabel(facet).toLowerCase());
+	}
+	for (const word of sectionOf(theme)
+		.toLowerCase()
+		.split(/[\s&]+/)) {
+		words.add(word);
+	}
+	return [...words];
 }
 
 /**
@@ -243,6 +280,7 @@ export function searchThemes(index: SearchIndex, query: string): ThemeMatch[] {
 	const regex = parseRegex(trimmed);
 	const needle = regex ? trimmed : trimmed.toLowerCase();
 	const matches: ThemeMatch[] = [];
+	const rank = kindRank(trimmed);
 
 	for (const entry of index) {
 		const scored = scoreEntry(entry, needle, regex);
@@ -250,7 +288,7 @@ export function searchThemes(index: SearchIndex, query: string): ThemeMatch[] {
 	}
 
 	matches.sort((a, b) => {
-		const byKind = KIND_RANK[a.kind] - KIND_RANK[b.kind];
+		const byKind = rank[a.kind] - rank[b.kind];
 		if (byKind !== 0) return byKind;
 		if (b.score !== a.score) return b.score - a.score;
 		const byLength = a.theme.name.length - b.theme.name.length;
@@ -258,4 +296,17 @@ export function searchThemes(index: SearchIndex, query: string): ThemeMatch[] {
 		return a.theme.name.localeCompare(b.theme.name);
 	});
 	return matches;
+}
+
+/**
+ * How the kinds rank for a query.
+ *
+ * A query that asks for a quality - a word that picks a filter - is answered
+ * by the qualities before it is answered by a lucky subsequence of a name.
+ */
+function kindRank(query: string): Record<MatchKind, number> {
+	if (isFilterQuery(query)) {
+		return { exact: 0, prefix: 1, substring: 2, facet: 3, fuzzy: 4 };
+	}
+	return { exact: 0, prefix: 1, substring: 2, fuzzy: 3, facet: 4 };
 }

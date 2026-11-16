@@ -48,7 +48,7 @@ const PAGE = `
 		<button type="button" id="theme-prev"></button>
 		<span id="theme-name"></span>
 		<button type="button" id="theme-next"></button>
-		<div id="modifier-chips"></div>
+		<div id="facet-chips"></div>
 		<span id="catalog-count"></span>
 	</div>
 	<button type="button" data-tab="dashboard"></button>
@@ -139,15 +139,13 @@ describe("the demo page", () => {
 		expect(ocean?.querySelector(".suggestion-name")?.textContent).toBe(
 			"ocean_dark",
 		);
-		expect(ocean?.querySelector(".suggestion-tags")?.textContent).toBe(
-			"Dark variants",
-		);
+		expect(ocean?.querySelector(".suggestion-tags")?.textContent).toBe("Dark");
 	});
 
-	it("filters by variant", async () => {
+	it("filters by facet", async () => {
 		await mountApp();
 		const chip = document.querySelector<HTMLElement>(
-			'.modifier-chip[data-modifier="shadow"]',
+			'.facet-chip[data-facet="shadow"]',
 		);
 		chip?.click();
 		await settle();

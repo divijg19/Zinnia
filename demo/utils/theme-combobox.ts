@@ -1,16 +1,17 @@
 import type { DemoTheme } from "../types.js";
 import { highlightMatches } from "./html.js";
 import {
-	getModifierTags,
-	groupOf,
-	MODIFIER_OPTIONS,
-	type ThemeGroup,
-} from "./theme-groups.js";
-import {
 	type SearchIndex,
 	searchThemes,
 	type ThemeMatch,
 } from "./theme-search.js";
+import {
+	facetLabel,
+	facetsOf,
+	SECTIONS,
+	sectionOf,
+	type ThemeSection,
+} from "./theme-taxonomy.js";
 
 /**
  * The theme search box.
@@ -58,14 +59,9 @@ export type ThemeCombobox = {
  */
 const DEFAULT_LIMIT = Number.POSITIVE_INFINITY;
 
-/** The label of a variant tag, for the suggestion list. */
-const TAG_LABELS = new Map(
-	MODIFIER_OPTIONS.map((option) => [option.value, option.label]),
-);
-
 /** The suggestions of one category, in the order they are shown. */
 type SuggestionGroup = {
-	name: ThemeGroup;
+	name: ThemeSection;
 	matches: ThemeMatch[];
 };
 
@@ -78,9 +74,9 @@ type SuggestionGroup = {
  */
 function groupMatches(matches: ThemeMatch[]): SuggestionGroup[] {
 	const groups: SuggestionGroup[] = [];
-	const byName = new Map<ThemeGroup, SuggestionGroup>();
+	const byName = new Map<ThemeSection, SuggestionGroup>();
 	for (const match of matches) {
-		const name = groupOf(match.theme);
+		const name = sectionOf(match.theme);
 		let group = byName.get(name);
 		if (!group) {
 			group = { name, matches: [] };
@@ -92,13 +88,27 @@ function groupMatches(matches: ThemeMatch[]): SuggestionGroup[] {
 	return groups;
 }
 
+/**
+ * Put the groups in the order the categories are always shown.
+ *
+ * With a query the ranking decides; with an empty box the categories read in
+ * their own order, which is what the gallery shows too.
+ */
+function orderGroups(
+	groups: SuggestionGroup[],
+	ranked: boolean,
+): SuggestionGroup[] {
+	if (ranked) return groups;
+	return [...groups].sort(
+		(a, b) => SECTIONS.indexOf(a.name) - SECTIONS.indexOf(b.name),
+	);
+}
+
 /** The suggestions, as they are drawn. */
 function renderSuggestion(match: ThemeMatch, active: boolean): string {
 	const theme = match.theme;
 	const asset = theme.widgets?.stats;
-	const tags = [...getModifierTags(theme)].map(
-		(tag) => TAG_LABELS.get(tag) ?? tag,
-	);
+	const tags = facetsOf(theme).map((facet) => facetLabel(facet));
 	const thumb = asset?.src
 		? `<img class="suggestion-thumb" src="${asset.src}" alt="" width="${asset.width ?? 495}" height="${asset.height ?? 195}" loading="lazy" decoding="async" />`
 		: "";
@@ -183,7 +193,12 @@ export function createThemeCombobox(
 
 	function refresh(): void {
 		matches = currentMatches();
-		groups = groupMatches(matches.slice(0, limit));
+		// An empty box lists the categories in their own order; a query is
+		// answered best match first.
+		groups = orderGroups(
+			groupMatches(matches.slice(0, limit)),
+			Boolean(input.value.trim()),
+		);
 		// The suggestions are drawn grouped, so the list the keyboard walks
 		// is the grouped one.
 		visible = groups.flatMap((group) => group.matches);
