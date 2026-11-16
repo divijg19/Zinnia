@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Zinnia Theme Demo - Preview all 96 themes across 4 widgets">
+  <meta name="description" content="Zinnia Theme Demo - Preview all 96 themes across 5 widgets">
   <title>Zinnia Theme Demo</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
@@ -24,12 +24,47 @@
     <div class="header-bar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">🎨</span>
-        <h1 class="brand-name" title="Preview all 96 themes across 4 widgets">Zinnia</h1>
+        <h1 class="brand-name" title="Preview all 96 themes across 5 widgets">Zinnia</h1>
       </div>
-      <div class="theme-selector-container">
-        <label for="theme-select" class="visually-hidden">Select theme</label>
-        <select id="theme-select" aria-label="Select theme"></select>
+
+      <div class="theme-combobox">
+        <label for="theme-search" class="visually-hidden">Search themes</label>
+        <div class="theme-search-field">
+          <svg class="theme-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+          </svg>
+          <input
+            id="theme-search"
+            type="text"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="theme-suggestions"
+            aria-autocomplete="list"
+            aria-label="Search themes"
+            placeholder="Search 96 themes"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          >
+        </div>
+        <div id="theme-suggestions" class="suggestions" role="listbox" aria-label="Theme suggestions" hidden></div>
       </div>
+
+      <div class="theme-stepper">
+        <button type="button" id="theme-prev" class="theme-step" aria-label="Previous theme" title="Previous theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <span id="theme-name" class="theme-name" title="The theme on screen">default</span>
+        <button type="button" id="theme-next" class="theme-step" aria-label="Next theme" title="Next theme">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+
       <div class="tab-nav" role="tablist" aria-label="Demo tabs">
         <button type="button" role="tab" id="tab-dashboard" data-tab="dashboard" aria-selected="true" aria-controls="panel-dashboard">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -50,6 +85,7 @@
           <span>Catalog</span>
         </button>
       </div>
+
       <span class="catalog-count" id="catalog-count" role="status" aria-live="polite"></span>
       <button type="button" class="page-theme-toggle" id="page-theme-toggle" aria-pressed="false" aria-label="Switch to dark mode">
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -68,14 +104,28 @@
         </svg>
       </button>
     </div>
+
+    <div class="header-filters">
+      <div id="modifier-chips" class="modifier-chips" role="radiogroup" aria-label="Filter by variant"></div>
+    </div>
   </header>
 
   <main id="main-content">
     <section id="panel-dashboard" role="tabpanel" class="tab-panel active" aria-labelledby="tab-dashboard">
-      <div class="widget-grid" id="widget-grid"></div>
+      <div class="widget-grid" id="widget-grid">
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-card-image"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-card-image"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-card-image"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-card-image"></div></div>
+        <div class="skeleton-card" aria-hidden="true"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-card-image"></div></div>
+      </div>
     </section>
     <section id="panel-catalog" role="tabpanel" class="tab-panel" hidden aria-labelledby="tab-catalog">
-      <ul class="catalog-list" id="catalog-list"></ul>
+      <ul class="catalog-list" id="catalog-list">
+        <li class="skeleton-row" aria-hidden="true"><div class="skeleton skeleton-name"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div></li>
+        <li class="skeleton-row" aria-hidden="true"><div class="skeleton skeleton-name"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div></li>
+        <li class="skeleton-row" aria-hidden="true"><div class="skeleton skeleton-name"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div><div class="skeleton skeleton-cell"></div></li>
+      </ul>
     </section>
   </main>
 

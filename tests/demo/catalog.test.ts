@@ -33,9 +33,10 @@ function makeThemes() {
 function makeCatalog() {
 	const container = document.createElement("ul");
 	document.body.appendChild(container);
-	const catalog = new Catalog(container, stubFactory, makeThemes());
+	const themes = makeThemes();
+	const catalog = new Catalog(container, stubFactory, themes);
 	catalog.render();
-	return { container, catalog };
+	return { container, catalog, themes };
 }
 
 afterEach(() => {
@@ -103,13 +104,16 @@ describe("demo Catalog", () => {
 
 	it("shows an empty state when the filter matches nothing", () => {
 		const { container, catalog } = makeCatalog();
-		catalog.filter("no-such-theme-xyz");
+		catalog.setVisible([], "no-such-theme-xyz");
 		expect(container.querySelector(".catalog-empty")).not.toBeNull();
 	});
 
 	it("highlights the matched query in theme names", () => {
-		const { container, catalog } = makeCatalog();
-		catalog.filter("ark");
+		const { container, catalog, themes } = makeCatalog();
+		catalog.setVisible(
+			themes.filter((theme) => theme.name === "dark"),
+			"ark",
+		);
 		const nameCell = requiredElement<HTMLElement>(
 			container,
 			'[data-theme="dark"] .theme-name-cell > span',
@@ -117,27 +121,19 @@ describe("demo Catalog", () => {
 		expect(nameCell.innerHTML).toContain("<mark>ark</mark>");
 	});
 
-	it("selects the first filtered theme on selectFirstMatch", () => {
+	it("marks the selected theme in place", () => {
 		const { container, catalog } = makeCatalog();
-		const onThemeChange = vi.fn();
-		catalog.onThemeChange(onThemeChange);
-		catalog.filter("ark");
-		expect(catalog.selectFirstMatch()).toBe("dark");
-		expect(onThemeChange).toHaveBeenCalledWith("dark");
+		catalog.updateTheme("dark");
 		expect(
 			container
 				.querySelector('[data-theme="dark"]')
 				?.getAttribute("aria-current"),
 		).toBe("true");
-	});
-
-	it("returns null on selectFirstMatch with no matches", () => {
-		const { catalog } = makeCatalog();
-		const onThemeChange = vi.fn();
-		catalog.onThemeChange(onThemeChange);
-		catalog.filter("no-such-theme-xyz");
-		expect(catalog.selectFirstMatch()).toBeNull();
-		expect(onThemeChange).not.toHaveBeenCalled();
+		expect(
+			container
+				.querySelector('[data-theme="default"]')
+				?.getAttribute("aria-current"),
+		).toBe("false");
 	});
 
 	it("navigates themes with arrow keys", () => {
@@ -149,51 +145,5 @@ describe("demo Catalog", () => {
 			new window.KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
 		);
 		expect(onThemeChange).toHaveBeenCalledWith("dark");
-	});
-});
-
-describe("demo Catalog modifier filter", () => {
-	function makeModifierCatalog() {
-		const container = document.createElement("ul");
-		document.body.appendChild(container);
-		const themes = [
-			...makeThemes(),
-			{
-				name: "shadow_red",
-				displayName: "shadow_red",
-				previewColors: ["#ff0000"],
-				colors: { title: { hex: "ff0000" } },
-				widgets: {},
-			},
-			{
-				name: "ocean_dark",
-				displayName: "ocean_dark",
-				previewColors: ["#000080"],
-				colors: { title: { hex: "000080" } },
-				widgets: {},
-			},
-		];
-		const catalog = new Catalog(container, stubFactory, themes);
-		catalog.render();
-		return { container, catalog };
-	}
-
-	it("filters by modifier alone", () => {
-		const { catalog } = makeModifierCatalog();
-		catalog.filter("", "shadow");
-		expect(catalog.filteredThemes.map((t) => t.name)).toEqual(["shadow_red"]);
-	});
-
-	it("combines text query with modifier", () => {
-		const { catalog } = makeModifierCatalog();
-		catalog.filter("dark", "dark-variant");
-		expect(catalog.filteredThemes.map((t) => t.name)).toEqual(["ocean_dark"]);
-	});
-
-	it("resets to all themes when both are cleared", () => {
-		const { catalog } = makeModifierCatalog();
-		catalog.filter("dark", "dark-variant");
-		catalog.filter("", "");
-		expect(catalog.filteredThemes).toHaveLength(4);
 	});
 });

@@ -1,10 +1,16 @@
 // Catalog Component
-// Tab 2: Scrollable list showing all themes with all 4 widgets
+// Tab 2: Scrollable list showing all themes with all 5 widgets
 
 import type { DemoTheme } from "./types.js";
-import { getModifierTags } from "./utils/theme-modifiers.js";
+import { findMatches, highlightMatches } from "./utils/html.js";
 import type { GeneratedAssetWidget } from "./widgets/asset-widget.js";
 import type { WidgetSource } from "./widgets/factory.js";
+
+/** Whether two theme lists are the same themes in the same order. */
+function sameNames(a: DemoTheme[], b: DemoTheme[]): boolean {
+	if (a.length !== b.length) return false;
+	return a.every((theme, index) => theme.name === b[index]?.name);
+}
 
 export class Catalog {
 	container: HTMLElement | null;
@@ -13,7 +19,8 @@ export class Catalog {
 	currentTheme = "default";
 	filteredThemes: DemoTheme[];
 	currentQuery = "";
-	currentModifier = "";
+	/** Whether the rows are on screen already. */
+	rendered = false;
 	onThemeChangeCallback: ((themeName: string) => void) | null = null;
 
 	constructor(
@@ -67,7 +74,7 @@ export class Catalog {
 	selectTheme(themeName: string) {
 		if (!themeName || themeName === this.currentTheme) return;
 		this.currentTheme = themeName;
-		this.render();
+		this.markCurrent();
 		if (this.onThemeChangeCallback) {
 			this.onThemeChangeCallback(themeName);
 		}
@@ -110,56 +117,52 @@ export class Catalog {
 		return true;
 	}
 
+	/**
+	 * Mark the selected row.
+	 *
+	 * The rows themselves do not depend on the selection, so the marker is
+	 * updated in place: a full re-render would rebuild every card of every
+	 * theme on each keystroke.
+	 */
+	markCurrent() {
+		const rows = this.container?.querySelectorAll<HTMLElement>(".catalog-row");
+		for (const row of rows ?? []) {
+			row.setAttribute(
+				"aria-current",
+				String(row.dataset.theme === this.currentTheme),
+			);
+		}
+	}
+
 	updateTheme(themeName: string) {
 		this.currentTheme = themeName;
-		this.render();
+		this.markCurrent();
 	}
 
-	selectFirstMatch(): string | null {
-		const first = this.filteredThemes[0];
-		if (!first) return null;
-		const row = this.container?.querySelector(`[data-theme="${first.name}"]`);
-		row?.scrollIntoView?.({ behavior: "smooth", block: "center" });
-		this.selectTheme(first.name);
-		return first.name;
-	}
-
+	/** The name with the current query highlighted. */
 	highlightMatch(text: string, query: string): string {
-		const escaped = String(text)
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;");
-		const q = String(query || "").trim();
-		if (!q) return escaped;
-		const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-		return escaped.replace(new RegExp(`(${safe})`, "gi"), "<mark>$1</mark>");
+		return highlightMatches(text, findMatches(text, query.trim()));
 	}
 
-	filter(query: string, modifier: string = this.currentModifier) {
-		this.currentQuery = query || "";
-		this.currentModifier = modifier || "";
-		if (!this.currentQuery && !this.currentModifier) {
-			this.filteredThemes = [...this.themeRegistry];
-		} else {
-			const lowerQuery = this.currentQuery.toLowerCase().trim();
-			this.filteredThemes = this.themeRegistry.filter((theme) => {
-				const matchesQuery =
-					!lowerQuery ||
-					theme.name.toLowerCase().includes(lowerQuery) ||
-					theme.displayName?.toLowerCase().includes(lowerQuery);
-				const matchesModifier =
-					!this.currentModifier ||
-					getModifierTags(theme).has(this.currentModifier);
-				return matchesQuery && matchesModifier;
-			});
-		}
-		this.render();
+	/**
+	 * Show the themes the search picked.
+	 *
+	 * The filtering happens in the application, so the gallery and the
+	 * suggestions always agree about what a query means. Nothing is rebuilt
+	 * when the filter has not changed: switching tabs calls this every time.
+	 */
+	setVisible(themes: DemoTheme[], query = "") {
+		const nextQuery = query || "";
+		const unchanged =
+			this.rendered &&
+			nextQuery === this.currentQuery &&
+			sameNames(this.filteredThemes, themes);
+		if (unchanged) return;
 
-		// Update count
-		const countEl = document.getElementById("catalog-count");
-		if (countEl) {
-			countEl.textContent = `${this.filteredThemes.length} / ${this.themeRegistry.length} themes`;
-		}
+		this.currentQuery = nextQuery;
+		this.filteredThemes = [...themes];
+		this.rendered = true;
+		this.render();
 	}
 
 	navigateThemes(direction: number) {
@@ -188,10 +191,6 @@ export class Catalog {
 
 		if (this.filteredThemes.length === 0) {
 			this.container.innerHTML = `<li class="catalog-empty">No themes match the current filter.</li>`;
-			const countEl = document.getElementById("catalog-count");
-			if (countEl) {
-				countEl.textContent = `0 / ${this.themeRegistry.length} themes`;
-			}
 			return;
 		}
 
@@ -223,11 +222,6 @@ export class Catalog {
 			.join("");
 
 		this.container.innerHTML = html;
-
-		const countEl = document.getElementById("catalog-count");
-		if (countEl) {
-			countEl.textContent = `${this.filteredThemes.length} / ${this.themeRegistry.length} themes`;
-		}
 	}
 
 	renderWidget(widget: GeneratedAssetWidget | undefined): string {
