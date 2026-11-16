@@ -9,7 +9,7 @@ There is no static theme table to keep in sync: the registry is the only
 source, and the adapters derive from it.
 
 ```html
-<img src="https://zinnia-rho.vercel.app/api/stats?username=…&theme=radical" />
+<img src="https://YOUR-DEPLOYMENT.vercel.app/api/stats?username=…&theme=radical" />
 ```
 
 `?theme=` takes one name or a comma-separated list. Each name is checked on

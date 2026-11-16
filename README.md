@@ -1,11 +1,13 @@
 # `Zinnia`
 
-Self-hosted GitHub profile cards: **stats**, **top languages**, **contribution
-streak**, **trophies** and **LeetCode**. One TypeScript monorepo, one deploy
-surface, no account to sign up for.
+Self-hostable cards for your GitHub profile README: **stats**, **top
+languages**, **contribution streak**, **trophies** and **LeetCode**. One
+TypeScript monorepo, one deploy surface, no account of its own.
+
+Fork it, deploy your own instance to Vercel, and embed the cards:
 
 ```html
-<img src="https://zinnia-rho.vercel.app/api/stats?username=YOUR_NAME&theme=watchdog" alt="GitHub Stats" />
+<img src="https://YOUR-DEPLOYMENT.vercel.app/api/stats?username=YOUR_NAME&theme=watchdog" alt="GitHub Stats" />
 ```
 
 Every card answers **200 with a renderable SVG**, carries an `ETag`, and
@@ -14,8 +16,24 @@ That is the whole design: an embed that shows an error is still an embed, an
 embed that shows nothing is a broken image on someone's profile.
 
 > **Runtime:** Node.js 26 (`engines.node`) runs the deployed functions and the
-> test process; Bun installs, builds and runs the scripts. Live at
-> `zinnia-rho.vercel.app`.
+> test process; Bun installs, builds and runs the scripts. The reference
+> deployment is `zinnia-rho.vercel.app`.
+
+## Deploy your own
+
+1. **Fork** the repository.
+2. **Create a Vercel project** from the fork. The build command is
+   `bun run build && bun run demo:build`.
+3. **Set `PAT_1`** to a GitHub token with read access to public data. Without
+   one, the stats, languages and trophy cards answer with an error card. (The
+   streak card falls back to the public contributions page; LeetCode needs no
+   token.)
+4. **Deploy.** Let Vercel's GitHub integration do it, or run
+   `bun run vercel:deploy` with `VERCEL_TOKEN` set.
+5. **Point the manifest at your instance.** `config/embeds.json` holds the
+   card URLs, and the warmer, the smoke check and CI all read it: set its
+   `baseUrl` to your deployment and the `username` in each path to yours, or
+   the checks keep verifying someone else's cards.
 
 ## Getting started
 
@@ -23,8 +41,8 @@ embed that shows nothing is a broken image on someone's profile.
 bun install --frozen-lockfile   # dependencies
 bun run build                   # the five card shards
 bun run demo:build              # prerender the demo assets and bundle the demo page
-bun run test                    # rebuild, then run vitest
 bun run lint                    # biome + tsc
+bun run test                    # rebuild, then run vitest
 ```
 
 Targeted suites: `bun run test:api`, `test:stats`, `test:demo`, `test:leetcode`.
@@ -34,15 +52,15 @@ Type-check only: `bun run type-check`. Format: `bun run format`.
 
 All handlers live in `api/*.ts`; Vercel rewrites `/(.*)` onto `/api/$1`.
 
-| Route                                         | Card                                                      |
-| --------------------------------------------- | --------------------------------------------------------- |
-| `/api/stats?username=…`                       | stats                                                     |
-| `/api/top-langs?username=…`                   | top languages                                             |
-| `/api/streak?username=…` (`user=` also works) | contribution streak                                       |
-| `/api/trophy?username=…`                      | profile trophies                                          |
-| `/api/leetcode?username=…`                    | LeetCode stats                                            |
-| `/api/health`                                 | a health **SVG** card, embeddable (`?text=` custom label) |
-| `/api/healthz` (`/api/__health` alias)        | a health **JSON** probe (`{"ok":true}`, `X-Ready: 1`)     |
+| Route                                         | Card                                                    |
+| --------------------------------------------- | ------------------------------------------------------- |
+| `/api/stats?username=…`                       | stats                                                   |
+| `/api/top-langs?username=…`                   | top languages                                           |
+| `/api/streak?username=…` (`user=` also works) | contribution streak                                     |
+| `/api/trophy?username=…`                      | profile trophies                                        |
+| `/api/leetcode?username=…`                    | LeetCode stats                                          |
+| `/api/health`                                 | health **SVG** card, embeddable (`?text=` custom label) |
+| `/api/healthz` (`/api/__health` alias)        | health **JSON** probe (`{"ok":true}`, `X-Ready: 1`)     |
 
 ## What you can rely on
 
@@ -71,16 +89,16 @@ The full matrix, with defaults and annotations, is in
 
 ## Documentation
 
-- **[Response contract](docs/RESPONSE-CONTRACT.md)** - what every card route
+- **[RESPONSE CONTRACT](docs/RESPONSE-CONTRACT.md)** - what every card route
   guarantees, the headers, the cache tiers, the diagnostics and the error codes.
-- **[Caching](docs/CACHING.md)** - the TTLs, the render cache, the two render
+- **[CACHING](docs/CACHING.md)** - the TTLs, the render cache, the two render
   budgets and the arithmetic behind them.
-- **[Embeds](docs/EMBEDS.md)** - the manifest, the warmer, the smoke check, and
+- **[EMBEDS](docs/EMBEDS.md)** - the manifest, the warmer, the smoke check, and
   what GitHub's image proxy does to a slow card.
-- **[Configuration](docs/CONFIGURATION.md)** - the environment variables, the KV
+- **[CONFIGURATION](docs/CONFIGURATION.md)** - the environment variables, the KV
   resolution and the PAT rotation.
-- **[Themes](docs/THEMES.md)** - the registry, the adapters and the demo.
-- **[Deployment](docs/DEPLOYMENT.md)** - the runtimes, the build, the functions
+- **[THEMES](docs/THEMES.md)** - the registry, the adapters and the demo.
+- **[DEPLOYMENT](docs/DEPLOYMENT.md)** - the runtimes, the build, the functions
   and the CI.
 - [CONTRIBUTING.md](CONTRIBUTING.md) - local setup, build, tests, conventions
 - [SECURITY.md](SECURITY.md) - reporting a vulnerability
