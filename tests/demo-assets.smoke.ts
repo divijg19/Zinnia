@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 
 const dom = new JSDOM(
-	`<!DOCTYPE html><html><body><button id="page-theme-toggle"></button><div id="widget-grid"></div><div id="catalog-list"></div><select id="theme-select"></select></body></html>`,
+	`<!DOCTYPE html><html><body><button id="page-theme-toggle"></button><div id="widget-grid"></div><ul id="catalog-list"></ul><input id="theme-search" type="text" role="combobox" aria-expanded="false" aria-controls="theme-suggestions" /><div id="theme-suggestions" role="listbox" hidden></div><div id="modifier-chips"></div><button id="theme-prev"></button><span id="theme-name"></span><button id="theme-next"></button><span id="catalog-count"></span></body></html>`,
 	{ url: "http://localhost/" },
 );
 const { window } = dom;
@@ -10,6 +10,7 @@ globalThis.window = window;
 globalThis.document = window.document;
 globalThis.history = window.history;
 globalThis.HTMLElement = window.HTMLElement;
+globalThis.HTMLInputElement = window.HTMLInputElement;
 
 const { WidgetFactory } = await import("../demo/widgets/factory.js");
 const { Dashboard } = await import("../demo/Dashboard.js");
@@ -80,4 +81,39 @@ if (bundled.length !== expectedKinds.length) {
 }
 if (window.document.body.textContent?.includes("Failed to load demo")) {
 	throw new Error("smoke: the bundled app failed to initialise");
+}
+
+// The search is the reason the demo exists, so the bundle gets to answer a
+// query as well.
+const search = window.document.getElementById("theme-search");
+if (!search) {
+	throw new Error("smoke: the demo page has no search box");
+}
+const known = registryFile.themes
+	.map((theme: { name: string }) => theme.name)
+	.find(
+		(name: string) =>
+			registryFile.themes.filter((theme: { name: string }) =>
+				theme.name.includes(name),
+			).length === 1,
+	);
+if (!known) {
+	throw new Error("smoke: no theme matches a single theme by name");
+}
+search.value = known;
+search.dispatchEvent(new window.Event("input"));
+await new Promise((resolve) => setTimeout(resolve, 50));
+
+const rows = window.document.querySelectorAll("#catalog-list .catalog-row");
+console.log("bundled catalog rows after search:", rows.length);
+if (rows.length !== 1) {
+	throw new Error(
+		`smoke: the search matched ${rows.length} themes, expected 1`,
+	);
+}
+if (rows[0]?.getAttribute("data-theme") !== known) {
+	throw new Error("smoke: the search matched the wrong theme");
+}
+if (window.document.getElementById("theme-name")?.textContent !== known) {
+	throw new Error("smoke: the search did not select the matched theme");
 }

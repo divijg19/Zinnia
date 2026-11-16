@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
 	buildModifierOptions,
+	filterByModifier,
 	getModifierTags,
+	groupThemes,
+	isEffectTheme,
+	luminance,
 	MODIFIER_ALL,
-} from "../../demo/utils/theme-modifiers.js";
+} from "../../demo/utils/theme-groups.js";
 
 describe("demo theme modifier tags", () => {
 	it("tags shadow-prefixed themes", () => {
@@ -81,7 +85,7 @@ describe("demo modifier dropdown options", () => {
 			{ name: "shadow_red" },
 		]);
 		expect(options[0]).toEqual({ value: MODIFIER_ALL, label: "All variants" });
-		const values = options.map((o) => o.value);
+		const values = options.map((option) => option.value);
 		expect(values).toContain("shadow");
 		expect(values).not.toContain("dimmed");
 		expect(values).not.toContain("catppuccin");
@@ -91,5 +95,81 @@ describe("demo modifier dropdown options", () => {
 		expect(buildModifierOptions([])).toEqual([
 			{ value: MODIFIER_ALL, label: "All variants" },
 		]);
+	});
+});
+
+describe("demo theme groups", () => {
+	it("computes relative luminance for hex colors", () => {
+		expect(luminance("ffffff")).toBeCloseTo(1, 2);
+		expect(luminance("000000")).toBe(0);
+		expect(luminance("fff")).toBeCloseTo(1, 2);
+		expect(luminance("not-a-color")).toBeNull();
+		expect(luminance("")).toBeNull();
+	});
+
+	it("partitions every theme into exactly one group", () => {
+		const input = [
+			{ name: "default", colors: {} },
+			{ name: "catppuccin_mocha", colors: {} },
+			{ name: "solarized-light", colors: { background: { hex: "fdf6e3" } } },
+			{ name: "dracula", colors: { background: { hex: "282a36" } } },
+			{
+				name: "watchdog",
+				colors: { background: { hex: "45,520806,021D4A" } },
+			},
+			{ name: "wtf", colors: { css: "#root { animation: x 1s; }" } },
+			{ name: "mystery", colors: { background: { hex: "zzz" } } },
+		];
+		const groups = groupThemes(input);
+		const names = (group: string) =>
+			(groups[group as keyof typeof groups] ?? []).map((theme) => theme.name);
+		const assigned = Object.values(groups).flat();
+		expect(assigned).toHaveLength(input.length);
+		expect(new Set(assigned.map((theme) => theme.name)).size).toBe(
+			input.length,
+		);
+		expect(names("Core")).toEqual(["default"]);
+		expect(names("Catppuccin")).toEqual(["catppuccin_mocha"]);
+		expect(names("Light")).toEqual(["solarized-light"]);
+		expect(names("Dark").sort()).toEqual(["dracula", "mystery"]);
+		expect(names("Gradients & Effects").sort()).toEqual(["watchdog", "wtf"]);
+	});
+
+	it("agrees with the modifier tags about what counts as an effect", () => {
+		// The groups and the tags used to be written out twice, with a
+		// comment saying the two copies had to be kept in sync.
+		const effect = {
+			name: "ambient_gradient",
+			colors: { background: { hex: "35,4158d0,c850c0" } },
+		};
+		expect(isEffectTheme(effect)).toBe(true);
+		expect(getModifierTags(effect).has("gradient-effect")).toBe(true);
+	});
+});
+
+describe("demo modifier filter", () => {
+	const themes = [
+		{ name: "dracula" },
+		{ name: "shadow_red" },
+		{ name: "ocean_dark" },
+		{ name: "catppuccin_mocha" },
+	];
+
+	it("keeps only the themes that carry the tag", () => {
+		expect(
+			filterByModifier(themes, "shadow").map((theme) => theme.name),
+		).toEqual(["shadow_red"]);
+		expect(
+			filterByModifier(themes, "dark-variant").map((theme) => theme.name),
+		).toEqual(["ocean_dark"]);
+	});
+
+	it("keeps every theme when no variant is chosen", () => {
+		expect(filterByModifier(themes, MODIFIER_ALL)).toHaveLength(4);
+		expect(filterByModifier(themes, "")).toHaveLength(4);
+	});
+
+	it("keeps nothing when no theme carries the tag", () => {
+		expect(filterByModifier(themes, "dimmed")).toEqual([]);
 	});
 });

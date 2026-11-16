@@ -20,6 +20,7 @@
 
 	/* Layout */
 	--header-height: 60px;
+	--footer-height: 44px;
 	--widget-gap: 16px;
 	--container-padding: 24px;
 	--container-max: 1400px;
@@ -54,6 +55,12 @@ html {
 	font-size: 16px;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	/* The scrollbar keeps its place whether the page scrolls or not, so
+	   the content does not change width when the tab changes. */
+	scrollbar-gutter: stable;
+	/* ...and where a browser does not reserve the gutter (Safari before
+	   18.2), the scrollbar is there from the start rather than appearing. */
+	overflow-y: scroll;
 }
 
 body {
@@ -88,9 +95,10 @@ body {
 	background: var(--demo-card-bg);
 	border-bottom: 1px solid var(--demo-border);
 	padding: 0 var(--container-padding);
-	min-height: var(--header-height);
+	/* Two rows: the controls, then the variant filters. */
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	align-items: stretch;
 }
 
 .header-bar {
@@ -101,6 +109,16 @@ body {
 	max-width: var(--container-max);
 	margin: 0 auto;
 	min-height: var(--header-height);
+}
+
+.header-filters {
+	width: 100%;
+	max-width: var(--container-max);
+	margin: 0 auto;
+	/* The chips are drawn once the registry has loaded. The row keeps its
+	   height meanwhile, so the page below does not move. */
+	min-height: 38px;
+	padding-bottom: 10px;
 }
 
 .brand {
@@ -123,95 +141,233 @@ body {
 	margin: 0;
 }
 
-.theme-selector-container {
-	display: flex;
-	gap: 8px;
-	flex: 1;
-	min-width: 280px;
-	max-width: 520px;
-}
-
-#theme-select {
-	flex: 1;
-	min-width: 0;
-	width: auto;
-	padding: 8px 12px;
-	font-size: 0.875rem;
-	font-family: inherit;
-	border: 1px solid var(--demo-border);
-	border-radius: var(--demo-radius-sm);
-	background: var(--demo-card-bg);
-	color: var(--demo-fg);
-	cursor: pointer;
-	transition:
-		border-color var(--demo-transition),
-		box-shadow var(--demo-transition);
-}
-
-.theme-selector-wrapper {
+/* Theme search: a text box with a list of suggestions. */
+.theme-combobox {
 	position: relative;
-	flex: 1.3;
-	min-width: 0;
-	width: auto;
+	flex: 1 1 320px;
+	/* The width is fixed by the flex basis, not by the text in the box, so
+	   typing never moves the rest of the navbar. */
+	min-width: 220px;
+	max-width: 420px;
 }
 
-.theme-selector-wrapper .theme-search-input {
-	width: 100%;
-	padding: 8px 12px 8px 36px;
-	font-size: 0.875rem;
-	font-family: inherit;
-	border: 1px solid var(--demo-border);
-	border-radius: var(--demo-radius-sm);
-	background: var(--demo-card-bg);
-	color: var(--demo-fg);
-	box-sizing: border-box;
-	transition:
-		border-color var(--demo-transition),
-		box-shadow var(--demo-transition);
+.theme-search-field {
+	position: relative;
+	display: flex;
+	align-items: center;
 }
 
-.theme-selector-wrapper .theme-search-input:focus {
-	outline: none;
-	border-color: var(--demo-accent);
-	box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
-}
-
-.theme-selector-wrapper .theme-search-icon {
+.theme-search-icon {
 	position: absolute;
-	left: 8px;
-	top: 50%;
-	transform: translateY(-50%);
+	left: 10px;
 	pointer-events: none;
 	color: var(--demo-muted);
 }
 
-#theme-select:focus {
-	outline: none;
-	border-color: var(--demo-accent);
-	box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
-}
-
-.modifier-filter {
-	flex: 0 1 150px;
-	min-width: 0;
-	width: auto;
-	padding: 8px 12px;
+#theme-search {
+	width: 100%;
+	padding: 8px 12px 8px 32px;
 	font-size: 0.875rem;
 	font-family: inherit;
 	border: 1px solid var(--demo-border);
 	border-radius: var(--demo-radius-sm);
 	background: var(--demo-card-bg);
 	color: var(--demo-fg);
-	cursor: pointer;
 	transition:
 		border-color var(--demo-transition),
 		box-shadow var(--demo-transition);
 }
 
-.modifier-filter:focus {
+#theme-search::placeholder {
+	color: var(--demo-muted);
+}
+
+#theme-search:focus {
 	outline: none;
 	border-color: var(--demo-accent);
 	box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
+}
+
+/* The suggestion list. */
+.suggestions {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	right: 0;
+	z-index: 200;
+	margin: 0;
+	padding: 4px;
+	list-style: none;
+	max-height: 420px;
+	/* Always a scrollbar: the list holds every theme, and a scrollbar that
+	   comes and goes moves the suggestions sideways. */
+	overflow-y: scroll;
+	/* The scrollbar keeps its place, so the suggestions do not change width
+	   when the list becomes scrollable. */
+	scrollbar-gutter: stable;
+	scrollbar-width: thin;
+	scrollbar-color: var(--demo-border) transparent;
+	background: var(--demo-card-bg);
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius);
+	box-shadow: var(--demo-shadow-hover);
+}
+
+/* A category in the suggestion list. */
+.suggestion-group + .suggestion-group {
+	border-top: 1px solid var(--demo-border);
+	margin-top: 4px;
+	padding-top: 4px;
+}
+
+.suggestion-group-title {
+	padding: 4px 8px;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--demo-muted);
+}
+
+.suggestion {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 8px;
+	border-radius: var(--demo-radius-sm);
+	cursor: pointer;
+}
+
+.suggestion:hover,
+.suggestion.active {
+	background: var(--demo-bg);
+}
+
+.suggestion-thumb {
+	width: 88px;
+	height: 36px;
+	flex-shrink: 0;
+	object-fit: cover;
+	border: 1px solid var(--demo-border);
+	border-radius: 3px;
+}
+
+.suggestion-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.suggestion-name {
+	font-size: 0.875rem;
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.suggestion-display,
+.suggestion-tags {
+	font-size: 0.6875rem;
+	color: var(--demo-muted);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.suggestion mark {
+	background: rgba(255, 214, 0, 0.4);
+	color: inherit;
+	border-radius: 2px;
+}
+
+.suggestion-empty {
+	padding: 12px;
+	font-size: 0.8125rem;
+	color: var(--demo-muted);
+}
+
+.suggestion-empty code {
+	font-size: 0.75rem;
+	background: var(--demo-bg);
+	padding: 1px 4px;
+	border-radius: 3px;
+}
+
+/* Previous and next theme. */
+.theme-stepper {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+.theme-step {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	color: var(--demo-muted);
+	background: transparent;
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius-sm);
+	cursor: pointer;
+	transition:
+		color var(--demo-transition),
+		border-color var(--demo-transition);
+}
+
+.theme-step:hover {
+	color: var(--demo-accent);
+	border-color: var(--demo-accent);
+}
+
+.theme-name {
+	/* A fixed width keeps the stepper in place when a longer theme name
+	   is selected. The longest name in the registry is
+	   `vision-friendly-dark`, 20 characters, and the box holds it. */
+	width: 22ch;
+	padding: 0 6px;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-align: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* The variant filters. */
+.modifier-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.modifier-chip {
+	padding: 4px 10px;
+	font-size: 0.75rem;
+	font-family: inherit;
+	color: var(--demo-muted);
+	background: var(--demo-card-bg);
+	border: 1px solid var(--demo-border);
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		color var(--demo-transition),
+		border-color var(--demo-transition);
+}
+
+.modifier-chip:hover {
+	color: var(--demo-fg);
+	border-color: var(--demo-accent);
+}
+
+.modifier-chip[aria-checked="true"] {
+	color: var(--demo-accent);
+	border-color: var(--demo-accent);
+	font-weight: 600;
 }
 
 /* Tab Navigation */
@@ -266,11 +422,17 @@ body {
 	max-width: var(--container-max);
 	width: 100%;
 	margin: 0 auto;
-	padding: var(--container-padding);
+	/* The footer is fixed at the bottom of the viewport, so the content
+	   keeps clear of it. */
+	padding: var(--container-padding) var(--container-padding)
+		calc(var(--container-padding) + var(--footer-height));
 }
 
-/* Tab Panels */
-.tab-panel {
+/* Tab Panels
+   The first paint fades in. A tab switch swaps the panels instantly: the
+   same animation replayed on a switch blanked the whole panel and slid it
+   four pixels, which read as the page jumping. */
+body:not(.demo-ready) .tab-panel.active {
 	animation: fadeIn 0.2s ease;
 }
 
@@ -283,6 +445,74 @@ body {
 		opacity: 1;
 		transform: translateY(0);
 	}
+}
+
+/* Placeholders for the content that is still loading.
+   They hold the space the cards will take, so the page does not jump when
+   the registry arrives. */
+.skeleton {
+	background: linear-gradient(
+		90deg,
+		var(--demo-bg) 25%,
+		var(--demo-border) 37%,
+		var(--demo-bg) 63%
+	);
+	background-size: 400% 100%;
+	animation: shimmer 1.4s ease infinite;
+	border-radius: var(--demo-radius-sm);
+}
+
+@keyframes shimmer {
+	from {
+		background-position: 100% 0;
+	}
+	to {
+		background-position: 0 0;
+	}
+}
+
+.skeleton-card {
+	display: flex;
+	flex-direction: column;
+	background: var(--demo-card-bg);
+	border: 1px solid var(--demo-card-border);
+	border-radius: var(--demo-radius);
+	box-shadow: var(--demo-shadow);
+	overflow: hidden;
+}
+
+.skeleton-title {
+	height: 12px;
+	margin: 12px;
+}
+
+.skeleton-card-image {
+	min-height: 0;
+	margin: 0 8px 8px;
+	/* The shape of the card it stands in for, so the row it sits in keeps
+	   its height. */
+	aspect-ratio: 495 / 195;
+}
+
+.skeleton-row {
+	display: grid;
+	grid-template-columns: 220px repeat(5, minmax(240px, 1fr));
+	gap: var(--widget-gap);
+	align-items: start;
+	background: var(--demo-card-bg);
+	border: 1px solid var(--demo-border);
+	border-radius: var(--demo-radius);
+	overflow: hidden;
+}
+
+.skeleton-name {
+	height: 24px;
+	margin: 16px;
+}
+
+.skeleton-cell {
+	height: 104px;
+	margin: 8px;
 }
 
 /* Dashboard Grid */
@@ -332,11 +562,13 @@ body {
 	white-space: nowrap;
 	flex-shrink: 0;
 	/* Navbar item: absorbs free space so it sits between the tab group
-	   and the page toggle, docked toward the right edge. Fixed minimum
-	   width keeps the navbar layout identical on both tabs and while
-	   the count text changes. */
+	   and the page toggle, docked toward the right edge. The width is fixed
+	   so the navbar is identical on both tabs and while the count text
+	   changes. */
 	margin-left: auto;
-	min-width: 14ch;
+	width: 14ch;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	text-align: right;
 }
 
@@ -493,13 +725,26 @@ body:has(#panel-dashboard.active) .catalog-count {
 	display: block;
 }
 
-/* Footer */
+/* Footer
+   A bar at the bottom of the viewport, like the sticky header at the top.
+   In the flow it sat at the end of the document, so it left the viewport
+   whenever the page grew or shrank - the gallery is 96 rows long and the
+   dashboard is one screen. */
 .demo-footer {
-	margin-top: auto;
-	padding: 24px var(--container-padding);
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 90;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: var(--footer-height);
+	padding: 0 var(--container-padding);
 	text-align: center;
 	color: var(--demo-muted);
 	font-size: 0.875rem;
+	background: var(--demo-card-bg);
 	border-top: 1px solid var(--demo-border);
 }
 
@@ -522,6 +767,10 @@ body:has(#panel-dashboard.active) .catalog-count {
 		grid-template-columns: 1fr;
 	}
 
+	.skeleton-row {
+		grid-template-columns: 1fr;
+	}
+
 	.catalog-row .theme-name-cell {
 		border-right: none;
 		border-bottom: 1px solid var(--demo-border);
@@ -539,7 +788,7 @@ body:has(#panel-dashboard.active) .catalog-count {
 @media (max-width: 640px) {
 	:root {
 		--container-padding: 16px;
-		--header-height: 164px;
+		--header-height: 60px;
 	}
 
 	.header-bar {
@@ -548,18 +797,51 @@ body:has(#panel-dashboard.active) .catalog-count {
 		row-gap: 10px;
 	}
 
-	.theme-selector-container {
+	/* The search moves under the brand on a narrow screen, and every
+	   control keeps its place in the order. */
+	.theme-stepper {
+		order: 1;
+	}
+
+	.theme-combobox {
+		order: 2;
+		flex-basis: 100%;
 		max-width: none;
 	}
 
 	.tab-nav {
+		order: 3;
 		width: 100%;
 		margin-inline: 0;
+	}
+
+	.catalog-count {
+		order: 4;
+	}
+
+	.page-theme-toggle {
+		order: 5;
 	}
 
 	.tab-nav button {
 		flex: 1;
 		justify-content: center;
+	}
+
+	/* One row of chips, scrolled sideways: the header keeps its height
+	   when the chips appear. */
+	.modifier-chips {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.modifier-chips::-webkit-scrollbar {
+		display: none;
+	}
+
+	.modifier-chip {
+		flex-shrink: 0;
 	}
 }
 
@@ -606,7 +888,11 @@ body:has(#panel-dashboard.active) .catalog-count {
 @media (min-width: 1025px) {
 	body:has(#panel-dashboard.active) {
 		height: 100dvh;
-		overflow: hidden;
+		/* `auto` and not `hidden`: the page still cannot scroll here - it
+		   fits - but the scrollbar gutter stays reserved, so the content
+		   is the same width as on the catalog tab. */
+		overflow-y: auto;
+		overflow-x: hidden;
 	}
 
 	body:has(#panel-dashboard.active) #main-content {
@@ -632,6 +918,16 @@ body:has(#panel-dashboard.active) .catalog-count {
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
+	}
+
+	body:has(#panel-dashboard.active) .skeleton-card {
+		min-height: 0;
+	}
+
+	body:has(#panel-dashboard.active) .skeleton-card-image {
+		/* The card fills the row here, so the placeholder does too. */
+		flex: 1;
+		aspect-ratio: auto;
 	}
 
 	body:has(#panel-dashboard.active) .widget-card:hover {

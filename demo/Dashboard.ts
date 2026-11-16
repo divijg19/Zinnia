@@ -1,14 +1,6 @@
 import type { DemoTheme } from "./types.js";
 import type { GeneratedAssetWidget } from "./widgets/asset-widget.js";
-import type { WidgetSource } from "./widgets/factory.js";
-
-const WIDGET_LABELS: Record<string, string> = {
-	stats: "GitHub Stats",
-	topLangs: "Top Languages",
-	streak: "GitHub Streak",
-	trophy: "Trophy Case",
-	leetcode: "LeetCode",
-};
+import { WIDGET_LABELS, type WidgetSource } from "./widgets/factory.js";
 
 export class Dashboard {
 	container: HTMLElement | null;
@@ -16,6 +8,8 @@ export class Dashboard {
 	themeRegistry: DemoTheme[];
 	widgets: GeneratedAssetWidget[] = [];
 	currentTheme = "default";
+	/** Whether the cards are on screen already. */
+	rendered = false;
 
 	constructor(
 		container: HTMLElement | null,
@@ -28,8 +22,12 @@ export class Dashboard {
 	}
 
 	async updateTheme(themeName: string) {
+		// Selecting the theme that is on screen must not rebuild the cards:
+		// every card is an <img>, and replacing them makes the grid flash.
+		if (this.rendered && themeName === this.currentTheme) return;
 		this.currentTheme = themeName;
 		await this.render();
+		this.rendered = true;
 	}
 
 	async render() {

@@ -44,3 +44,10 @@ The generator (`scripts/generate-demo-assets.ts`) renders every theme in
 every widget and writes the result to `demo/assets/`, along with the theme
 registry the page loads. It is deterministic, and CI builds it twice and
 diffs the checksums.
+
+The page finds a theme by name, by a regular expression (`/pattern/`) or by
+a subsequence, and shows it with its card. The suggestions are grouped by
+category - core, catppuccin, light, dark, gradients - the way the old
+`<select>` grouped them, and the list scrolls. The search drives the gallery
+and the dashboard alike, and the whole view lives in the URL, so a link carries
+it. The matcher is `demo/utils/theme-search.ts` and it depends on nothing.
