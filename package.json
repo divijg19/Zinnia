@@ -27,12 +27,12 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.6.8",
 		"@types/node": "^26.6.6",
-		"@vercel/node": "^31.0.0",
-		"@vitest/coverage-v8": "^5.1.0",
+		"@vercel/node": "^31.0.2",
+		"@vitest/coverage-v8": "^5.1.1",
 		"jsdom": "^31.0.1",
 		"typescript": "^7.0.2",
-		"vercel": "^65.16.0",
-		"vitest": "^5.1.0"
+		"vercel": "^66.1.0",
+		"vitest": "^5.1.1"
 	},
 	"dependencies": {
 		"emoji-name-map": "^2.0.3",
