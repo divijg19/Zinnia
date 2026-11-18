@@ -217,42 +217,77 @@ export function joinUrl(base: string, path: string): string {
 	return `${base.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** What a card request produced. */
-export type CardResult = {
+/** What one request for a card produced. */
+export type CardAttempt = {
+	/** The exact URL requested, including this attempt's cache-buster. */
+	url: string;
 	status: number;
 	ms: number;
 	bytes: number;
-	/** The route's own cache tier: `hit`, `miss`, `stale`, `fallback`. */
+	/** The route's own cache tier: `hit`, `miss`, `stale`, `fallback`, `transient`. */
 	cacheStatus: string;
 	/** Every contract violation found; empty when the card is healthy. */
 	problems: string[];
-	/** How many requests it took to get there. */
-	attempts: number;
 };
+
+/** What the sequence of requests produced. */
+export type CardResult = CardAttempt & {
+	/** How many requests it took to get here. */
+	attempts: number;
+	/** Every attempt in order, including their individual diagnostics. */
+	history: CardAttempt[];
+};
+
+/**
+ * Give a retry its own cache-busting parameter.
+ *
+ * Error cards are served with a 60s shared cache lifetime, so retrying the
+ * identical URL only reads the cached error card back from Vercel's edge -
+ * measured at 17ms against 586ms for the real render. A fresh `_cb` makes the
+ * edge miss again while the render cache (which deliberately ignores `_`)
+ * still sees the same card, exactly as the `--cold` smoke check relies on.
+ */
+function withFreshCacheBust(url: string): string {
+	const parsed = new URL(url);
+	parsed.searchParams.set("_cb", cacheBustParam().slice("_cb=".length));
+	return parsed.toString();
+}
 
 /**
  * Fetch a card and check it against the contract.
  *
- * A card that breaks the contract is retried: the first request after an
- * idle period pays the platform's cold start, which says something about the
- * deployment rather than about the card. A genuinely slow or broken card
- * fails again on the retry.
+ * A card that breaks the contract is retried after a short pause: the first
+ * request after an idle period pays the platform's cold start, and a transient
+ * upstream failure may clear within seconds. Each retry gets a fresh cache
+ * buster so it actually reaches the origin. Every attempt's problems are kept
+ * in `history`, because discarding all but the last one hides the reason the
+ * earlier requests failed.
  */
 export async function fetchCard(
 	url: string,
 	budgetMs: number,
 	retries = 0,
+	retryDelayMs = 0,
 ): Promise<CardResult> {
+	const history: CardAttempt[] = [];
 	let result: CardResult = {
+		url,
 		status: 0,
 		ms: 0,
 		bytes: 0,
 		cacheStatus: "-",
 		problems: ["not requested"],
 		attempts: 0,
+		history,
 	};
 
 	for (let attempt = 0; attempt <= retries; attempt++) {
+		// The first request keeps the caller's URL (already cache-busted by the
+		// scripts); only retries need a fresh one.
+		const attemptUrl = attempt === 0 ? url : withFreshCacheBust(url);
+		if (attempt > 0 && retryDelayMs > 0) {
+			await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+		}
 		let problems: string[] = [];
 		let status = 0;
 		let ms = 0;
@@ -261,7 +296,7 @@ export async function fetchCard(
 
 		try {
 			const started = Date.now();
-			const response = await fetch(url);
+			const response = await fetch(attemptUrl, { cache: "no-store" });
 			status = response.status;
 			const contentType = response.headers.get("content-type") ?? "";
 			const etag = response.headers.get("etag") ?? "";
@@ -284,14 +319,16 @@ export async function fetchCard(
 			problems = [`fetch failed: ${String(error)}`];
 		}
 
-		result = {
+		const current: CardAttempt = {
+			url: attemptUrl,
 			status,
 			ms,
 			bytes,
 			cacheStatus,
 			problems,
-			attempts: attempt + 1,
 		};
+		history.push(current);
+		result = { ...current, attempts: attempt + 1, history };
 		if (problems.length === 0) break;
 	}
 	return result;

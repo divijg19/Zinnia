@@ -60,9 +60,12 @@ jobs:
       - name: Warm the cards
         env:
           BASE: ${{ inputs.base || 'https://zinnia-rho.vercel.app' }}
-        run: bun scripts/warm-embeds.ts --base "$BASE"
+        run: bun scripts/warm-embeds.ts --base "$BASE" --retries 2 --retry-delay 10000
 
+      # Diagnostics from the smoke step explain a warm failure (it prints the
+      # ?debug=1 payload for a broken card), so keep it running after a failure.
       - name: Smoke the cards
+        if: ${{ !cancelled() }}
         env:
           BASE: ${{ inputs.base || 'https://zinnia-rho.vercel.app' }}
         run: bun scripts/smoke-embeds.ts --base "$BASE" --cold

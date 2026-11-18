@@ -24,8 +24,13 @@
  *   --base    origin to warm (default: the manifest's baseUrl)
  *   --budget  per-card time budget in ms (default 5000)
  *   --config  manifest path (default config/embeds.json)
- *   --user    warm another account instead of the manifest's username
- *   --retries attempts per card before it is called unhealthy (default 1)
+ *   --user        warm another account instead of the manifest's username
+ *   --retries     retries after the first attempt (default 2, so 3 attempts)
+ *   --retry-delay pause before each retry in ms (default 10000)
+ *
+ * Error cards are cached at the edge for a minute, so a retry only reaches the
+ * origin when it asks for a fresh cache-busted URL - which `fetchCard` does.
+ * The delay lets a short GitHub outage clear between attempts.
  *
  * Exits non-zero when a card breaks the embed contract, so it can be used as
  * a health check as well as a warmer.
@@ -48,7 +53,8 @@ function flag(name: string, fallback: string): string {
 
 const configFile = flag("--config", "config/embeds.json");
 const budgetMs = Number(flag("--budget", "5000")) || 5000;
-const retries = Math.max(0, Number(flag("--retries", "1")) || 0);
+const retries = Math.max(0, Number(flag("--retries", "2")) || 0);
+const retryDelayMs = Math.max(0, Number(flag("--retry-delay", "10000")) || 0);
 const user = args.includes("--user") ? flag("--user", "") : undefined;
 
 const manifest = await loadManifest(configFile);
@@ -68,7 +74,7 @@ const rows: {
 for (const embed of embeds) {
 	const separator = embed.path.includes("?") ? "&" : "?";
 	const url = `${joinUrl(base, embed.path)}${separator}${cacheBustParam()}`;
-	const result = await fetchCard(url, budgetMs, retries);
+	const result = await fetchCard(url, budgetMs, retries, retryDelayMs);
 
 	if (result.problems.length === 0) {
 		console.log(
@@ -77,7 +83,15 @@ for (const embed of embeds) {
 	} else {
 		failures += 1;
 		console.log(`FAIL: ${embed.name} (${url})`);
-		for (const problem of result.problems) console.log(`    - ${problem}`);
+		// Report every attempt: the last one can be a fast CDN hit on a cached
+		// error card, while the first one carries the real upstream diagnostic.
+		for (const [index, attempt] of result.history.entries()) {
+			if (attempt.problems.length === 0) continue;
+			console.log(
+				`    attempt ${index + 1}/${result.attempts} (${attempt.ms}ms, X-Cache-Status=${attempt.cacheStatus}):`,
+			);
+			for (const problem of attempt.problems) console.log(`      - ${problem}`);
+		}
 	}
 	rows.push({
 		card: embed.name,
