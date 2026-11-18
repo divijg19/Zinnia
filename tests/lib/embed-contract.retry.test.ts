@@ -72,7 +72,7 @@ describe("fetchCard retries", () => {
 		expect(result.problems).toEqual([]);
 		expect(result.history).toHaveLength(3);
 		expect(result.history[0]?.problems).toContain(
-			"error card (ZINNIA_ERR marker)",
+			"error card (ZINNIA_ERR:STATS_INTERNAL)",
 		);
 		expect(result.history[2]?.problems).toEqual([]);
 	});
@@ -83,10 +83,12 @@ describe("fetchCard retries", () => {
 		const result = await fetchCard(CARD_URL, 5000, 1);
 
 		expect(result.attempts).toBe(2);
-		expect(result.problems).toContain("error card (ZINNIA_ERR marker)");
+		expect(result.problems).toContain("error card (ZINNIA_ERR:STATS_INTERNAL)");
 		expect(result.history).toHaveLength(2);
 		for (const attempt of result.history) {
-			expect(attempt.problems).toContain("error card (ZINNIA_ERR marker)");
+			expect(attempt.problems).toContain(
+				"error card (ZINNIA_ERR:STATS_INTERNAL)",
+			);
 			expect(attempt.cacheStatus).toBe("transient");
 		}
 	});
