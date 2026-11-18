@@ -104,6 +104,18 @@ export function hiddenByAnimation(body: string): string[] {
 }
 
 /**
+ * The machine-readable code an error card carries in its trailing comment.
+ *
+ * Routes emit `<!-- ZINNIA_ERR:STATS_INTERNAL -->` so a reader can tell a rate
+ * limit from a failed render. Naming that code in a check failure is the whole
+ * point: a bare "error card (ZINNIA_ERR marker)" sends triage to Vercel logs
+ * for something the response body already said.
+ */
+export function errorCardCode(body: string): string | null {
+	return /<!--\s*ZINNIA_ERR:([A-Z0-9_]+)\s*-->/.exec(body)?.[1] ?? null;
+}
+
+/**
  * Structural checks on the SVG body.
  *
  * A full XML parse is not available in Bun without adding a dependency, so
@@ -119,12 +131,15 @@ export function hiddenByAnimation(body: string): string[] {
  * rectangle with most of its content invisible - correct on the machine that
  * built it, broken on a phone. And no element may be hidden by a base
  * `opacity: 0` that only an animation reveals, which is blank wherever
- * animations do not run.
+ * animations do not run. An error card is reported with its `ZINNIA_ERR` code
+ * so a failing check names the cause instead of just the symptom.
  */
 export function inspectSvg(body: string): string[] {
 	const problems: string[] = [];
 	if (!body.includes("<svg")) problems.push("empty/non-SVG body");
-	if (body.includes("ZINNIA_ERR:"))
+	const errorCode = errorCardCode(body);
+	if (errorCode) problems.push(`error card (ZINNIA_ERR:${errorCode})`);
+	else if (body.includes("ZINNIA_ERR:"))
 		problems.push("error card (ZINNIA_ERR marker)");
 	if (body.includes("NaN")) problems.push("NaN in output");
 
