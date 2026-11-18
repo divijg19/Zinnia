@@ -23,7 +23,8 @@
  *                  evicting the card.
  *   --budget       per-endpoint time budget in ms (default 5000)
  *   --config       manifest path (default config/embeds.json)
- *   --retries      attempts per endpoint before it is called unhealthy (default 1)
+ *   --retries      retries after the first attempt (default 1, so 2 attempts)
+ *   --retry-delay  pause before each retry in ms (default 10000)
  *
  * Why the budget matters: GitHub Camo gives up fetching an origin image after
  * 10s and renders nothing at all, so an endpoint that answers in 9s is a
@@ -56,6 +57,7 @@ function has(name: string): boolean {
 const configFile = flag("--config", "config/embeds.json");
 const BUDGET_MS = Number(flag("--budget", "5000")) || 5000;
 const RETRIES = Math.max(0, Number(flag("--retries", "1")) || 0);
+const RETRY_DELAY_MS = Math.max(0, Number(flag("--retry-delay", "10000")) || 0);
 const COLD = has("--cold");
 const user = args.includes("--user") ? flag("--user", "") : undefined;
 const leetcodeUser = args.includes("--leetcode-user")
@@ -138,7 +140,12 @@ for (const embed of embeds) {
 	const requestUrl = COLD
 		? `${url}${url.includes("?") ? "&" : "?"}${cacheBustParam()}`
 		: url;
-	const result = await fetchCard(requestUrl, BUDGET_MS, RETRIES);
+	const result = await fetchCard(
+		requestUrl,
+		BUDGET_MS,
+		RETRIES,
+		RETRY_DELAY_MS,
+	);
 
 	rows.push({
 		endpoint: embed.name,
@@ -154,7 +161,13 @@ for (const embed of embeds) {
 	} else {
 		failures += 1;
 		console.log(`FAIL: ${embed.name} (${requestUrl})`);
-		for (const p of result.problems) console.log(`    - ${p}`);
+		for (const [index, attempt] of result.history.entries()) {
+			if (attempt.problems.length === 0) continue;
+			console.log(
+				`    attempt ${index + 1}/${result.attempts} (${attempt.ms}ms, X-Cache-Status=${attempt.cacheStatus}):`,
+			);
+			for (const problem of attempt.problems) console.log(`      - ${problem}`);
+		}
 		await diagnose(embed.path);
 	}
 }
