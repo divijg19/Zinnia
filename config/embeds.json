@@ -12,7 +12,7 @@
 		},
 		{
 			"name": "streak",
-			"path": "/api/streak?user=divijg19&hide_border=true&theme=watchdog"
+			"path": "/api/streak?username=divijg19&hide_border=true&theme=watchdog"
 		},
 		{
 			"name": "trophy",

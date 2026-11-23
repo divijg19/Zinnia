@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { cardIdentityParams } from "./card-identity.js";
 import { emptyRenderer } from "./errors.js";
 import { resolveTimeoutMs } from "./fetch-timeout.js";
 import { resolveKvCredentials } from "./kv/credentials.js";
@@ -114,14 +115,13 @@ function kvKeyFor(service: string, cacheKey: string): string {
  * for JSON instead of an image. Excluding them means one URL family shares one
  * render and `?cache=` stops being a silent cache buster. Underscore params are
  * dropped so ad-hoc probes (the embed smoke script's `&_cb=`) exercise the real
- * cache rather than evicting it.
+ * cache rather than evicting it. `user` and `username` are the same account,
+ * so they collapse to one key too (see `lib/card-identity.ts`): otherwise a
+ * rename in a profile README silently unwarms the card it still embeds.
  */
 export function renderCacheKey(url: URL): string {
-	const entries = [...url.searchParams].sort(([a], [b]) =>
-		a < b ? -1 : a > b ? 1 : 0,
-	);
 	const params = new URLSearchParams();
-	for (const [key, value] of entries) {
+	for (const [key, value] of cardIdentityParams(url.searchParams)) {
 		const lower = key.toLowerCase();
 		if (lower === "debug" || lower === "cache") continue;
 		if (key.startsWith("_")) continue;

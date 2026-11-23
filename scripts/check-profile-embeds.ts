@@ -8,6 +8,10 @@
  * falls back to the cold path, and a cold path that runs past ten seconds is
  * a broken image rather than a slow one.
  *
+ * Identities come from `lib/card-identity.ts`, the same canonicalization the
+ * render cache uses, so `?user=` and `?username=` are one card here as they
+ * are at the origin. A rename in the README must not read as unwarmed drift.
+ *
  * This compares the two sets of URLs:
  * - a card in the README but not in the manifest would never be refreshed;
  * - a card in the manifest but not in the README is refreshed for nothing.
@@ -23,6 +27,7 @@
  *   --ref     branch of that repository (default main)
  *   --config  manifest path (default config/embeds.json)
  */
+import { embedIdentity } from "../lib/card-identity.ts";
 import { loadManifest } from "./lib/embed-contract.ts";
 
 const args = process.argv.slice(2);
@@ -39,28 +44,6 @@ const ref = flag("--ref", "main");
 
 const manifest = await loadManifest(configFile);
 const origin = new URL(manifest.baseUrl);
-
-/**
- * Reduce a card URL to a comparable identity: the path plus its parameters,
- * sorted, so that a different parameter order is not a difference.
- *
- * A manifest entry is a path relative to the origin, a README entry is
- * absolute; `base` resolves the former.
- */
-function identity(url: string, base?: string): string | null {
-	let parsed: URL;
-	try {
-		parsed = base ? new URL(url, base) : new URL(url);
-	} catch {
-		return null;
-	}
-	if (parsed.origin !== origin.origin) return null;
-	const params = [...parsed.searchParams].sort(([a], [b]) =>
-		a < b ? -1 : a > b ? 1 : 0,
-	);
-	const query = params.map(([key, value]) => `${key}=${value}`).join("&");
-	return query ? `${parsed.pathname}?${query}` : parsed.pathname;
-}
 
 /**
  * Every image URL in the README.
@@ -91,13 +74,13 @@ const markdown = await response.text();
 
 const inReadme = new Map<string, string>();
 for (const url of readmeUrls(markdown)) {
-	const id = identity(url);
+	const id = embedIdentity(url, undefined, origin.origin);
 	if (id) inReadme.set(id, url);
 }
 
 const inManifest = new Map<string, string>();
 for (const embed of manifest.embeds) {
-	const id = identity(embed.path, manifest.baseUrl);
+	const id = embedIdentity(embed.path, manifest.baseUrl, origin.origin);
 	if (id) inManifest.set(id, embed.path);
 }
 
