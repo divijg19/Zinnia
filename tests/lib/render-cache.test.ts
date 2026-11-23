@@ -120,6 +120,18 @@ describe("renderCacheKey", () => {
 		);
 	});
 
+	it("treats ?user= and ?username= as the same card", () => {
+		expect(renderCacheKey(new URL("https://x/api/streak?user=alice"))).toBe(
+			renderCacheKey(new URL("https://x/api/streak?username=alice")),
+		);
+	});
+
+	it("keeps both spellings when they disagree", () => {
+		expect(
+			renderCacheKey(new URL("https://x/api/streak?user=alice&username=bob")),
+		).not.toBe(renderCacheKey(new URL("https://x/api/streak?username=alice")));
+	});
+
 	it("omits the question mark when there is no query", () => {
 		expect(renderCacheKey(new URL("https://x/api/stats"))).toBe("/api/stats");
 	});
